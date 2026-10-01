@@ -56,7 +56,23 @@ function buildMessage(p) {
 }
 
 // Trim stray spaces/newlines from a pasted token.
-const readToken = () => String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
+// Accepts the usual naming slips (stray spaces or quotes, different case, a VITE_ prefix, TELEGRAM_TOKEN/BOT_TOKEN).
+const TOKEN_NAMES = ["TELEGRAM_BOT_TOKEN", "VITE_TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN", "BOT_TOKEN"];
+const tokenVar = () => {
+  const keys = Object.keys(process.env);
+  for (const want of TOKEN_NAMES) {
+    const key = keys.find((k) => k.trim().toUpperCase() === want && String(process.env[k] || "").trim());
+    if (key) return key;
+  }
+  return null;
+};
+const readToken = () => {
+  const key = tokenVar();
+  return key ? String(process.env[key]).trim().replace(/^["']|["']$/g, "").trim() : "";
+};
+// Names only (never values) of variables that look Telegram-related, so the setup check can show what Vercel passed in.
+const telegramVarNames = () => Object.keys(process.env).filter((k) => /TELEGRAM|BOT/i.test(k));
+const deployment = () => ({ environment: process.env.VERCEL_ENV || "unknown", host: process.env.VERCEL_URL || "unknown" });
 const tg = async (token, method, body) => {
   const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, body instanceof FormData
     ? { method: "POST", body }
@@ -77,14 +93,22 @@ export default async function handler(req, res) {
   const token = readToken();
   // GET /api/pitch: setup check for the admin (reports status only, never the token).
   if (req.method === "GET") {
-    if (!token) return res.status(200).json({ configured: false, help: "TELEGRAM_BOT_TOKEN is not set for this deployment. Add it in Vercel → Settings → Environment Variables (Production), then redeploy." });
-    if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(token)) return res.status(200).json({ configured: true, tokenLooksValid: false, help: "TELEGRAM_BOT_TOKEN doesn't look like a bot token (expected 123456789:ABC…). Copy it again from @BotFather." });
+    if (!token) {
+      const names = telegramVarNames();
+      return res.status(200).json({
+        configured: false, deployment: deployment(), telegramVariablesSeen: names,
+        help: names.length
+          ? `Found ${names.join(", ")} but it is empty. Paste the token from @BotFather as its value, save, then redeploy.`
+          : `This deployment (${deployment().environment}) has no TELEGRAM_BOT_TOKEN. In Vercel open the project that serves this domain → Settings → Environment Variables, add TELEGRAM_BOT_TOKEN with Production ticked, save, then Deployments → latest → Redeploy.`,
+      });
+    }
+    if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(token)) return res.status(200).json({ configured: true, variable: tokenVar(), tokenLooksValid: false, help: "TELEGRAM_BOT_TOKEN doesn't look like a bot token (expected 123456789:ABC…). Copy it again from @BotFather." });
     try {
       const me = await tg(token, "getMe");
       if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data) });
       const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
       return res.status(200).json({
-        configured: true, tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
+        configured: true, variable: tokenVar(), deployment: deployment(), tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
         help: chat.ok ? "All set: party pitches will be delivered." : explain(chat.data),
       });
     } catch (e) {
@@ -96,7 +120,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "Method not allowed." });
   }
   if (!token) {
-    console.error("TELEGRAM_BOT_TOKEN is missing for this deployment");
+    console.error("TELEGRAM_BOT_TOKEN is missing for this deployment", deployment(), telegramVarNames());
     return res.status(503).json({ ok: false, error: "Submissions are temporarily unavailable. Please try again later." });
   }
 
