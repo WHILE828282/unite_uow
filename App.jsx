@@ -22,12 +22,16 @@ const GRADIENTS = {
 };
 
 const CLUBS = [
-  { id: 1, name: "Basketball Club", emoji: "🏀", category: "Sports", desc: "Pickup games, weekly training and the inter-university league.", members: 86, slots: [{ id: "bb-mon", day: 0, start: "18:00", end: "20:00", title: "Open training", level: "All levels", where: "Sports Hall · Court 1", cap: 24, taken: 15 }, { id: "bb-wed", day: 2, start: "19:00", end: "21:00", title: "Skills & drills", level: "Beginners", where: "Sports Hall · Court 2", cap: 20, taken: 17 }, { id: "bb-sat", day: 5, start: "10:00", end: "12:00", title: "Scrimmage", level: "Intermediate+", where: "Sports Hall · Court 1", cap: 20, taken: 9 }], where: "Sports Hall", lead: { name: "Hamza Rauf", role: "Club captain", email: "basketball@uniteuow.com" }, note: "Bring court shoes; balls and bibs provided." },
-  { id: 2, name: "Football Society", emoji: "⚽", category: "Sports", desc: "Competitive squads and casual kickabouts for every level.", members: 124, slots: [{ id: "fb-mon", day: 0, start: "19:30", end: "21:00", title: "Five-a-side", level: "All levels", where: "Pitch 2", cap: 30, taken: 22 }, { id: "fb-wed", day: 2, start: "19:30", end: "21:00", title: "Squad training", level: "Competitive", where: "Pitch 2", cap: 22, taken: 20 }, { id: "fb-fri", day: 4, start: "17:00", end: "18:30", title: "Casual kickabout", level: "All levels", where: "Pitch 1", cap: 30, taken: 11 }], where: "Pitch 2", lead: { name: "Diego Fernandes", role: "President", email: "football@uniteuow.com" }, note: "Boots or turf shoes. Squads are mixed every session." },
-  { id: 3, name: "Robotics & AI Club", emoji: "🤖", category: "Tech", desc: "Build bots, train models and compete in regional hackathons.", members: 58, slots: [{ id: "rb-tue", day: 1, start: "17:00", end: "19:00", title: "ML study group", level: "All levels", where: "Lab B2.14", cap: 25, taken: 14 }, { id: "rb-sun", day: 6, start: "16:00", end: "18:00", title: "Build session", level: "All levels", where: "Lab B2.14", cap: 20, taken: 16 }], where: "Lab B2.14", lead: { name: "Aisha Siddiqui", role: "President", email: "robotics@uniteuow.com" }, note: "Laptops recommended. Arduino kits on loan from the lab." },
-  { id: 4, name: "Entrepreneurship Hub", emoji: "🚀", category: "Business", desc: "Pitch nights, founder talks and mentoring from local startups.", members: 97, slots: [{ id: "eh-tue", day: 1, start: "13:00", end: "14:00", title: "Founder office hours", level: "Open", where: "Room 3.02, Block 3", cap: 12, taken: 7 }, { id: "eh-thu", day: 3, start: "17:00", end: "18:30", title: "Pitch night", level: "All levels", where: "Innovation Studio", cap: 40, taken: 26 }], where: "Innovation Studio", lead: { name: "Rahul Menon", role: "Founder & lead", email: "founders@uniteuow.com" }, note: "Pitch slots open every second Thursday." },
-  { id: 5, name: "Finance Club", emoji: "💼", category: "Business", desc: "Market simulations, stock-pitch nights and networking with banking and fintech professionals.", members: 72, slots: [{ id: "fc-mon", day: 0, start: "17:00", end: "18:00", title: "Markets briefing", level: "All levels", where: "Room 2.11, Block 2", cap: 35, taken: 21 }, { id: "fc-thu", day: 3, start: "18:00", end: "19:30", title: "Stock-pitch workshop", level: "Intermediate", where: "Room 2.11, Block 2", cap: 24, taken: 18 }], where: "Room 2.11", lead: { name: "Sara Al Hashimi", role: "President", email: "finance@uniteuow.com" }, note: "Smart casual for networking nights." },
-  { id: 6, name: "Photography Club", emoji: "📸", category: "Arts", desc: "Photo walks around Dubai, editing workshops and exhibitions.", members: 63, slots: [{ id: "ph-wed", day: 2, start: "13:00", end: "14:00", title: "Editing clinic", level: "All levels", where: "Media Lab, Block 4", cap: 16, taken: 10 }, { id: "ph-fri", day: 4, start: "15:30", end: "17:30", title: "Photo walk", level: "All levels", where: "Meet at Campus Courtyard", cap: 20, taken: 8 }], where: "Campus Courtyard", lead: { name: "Lina Petrova", role: "Club lead", email: "photo@uniteuow.com" }, note: "Any camera works, phones included." },
+  { id: 1, name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 18 }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 21 }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
+  { id: 2, name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 15 }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 19 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
+  { id: 3, name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 14 }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 17 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
+  { id: 4, name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets", cap: 28, taken: 20 }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
+  { id: 5, name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 12 }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 9 }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
+  { id: 6, name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts", cap: 16, taken: 11 }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
+  { id: 7, name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge", cap: 30, taken: 13 }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
+  { id: 8, name: "Tech & E-sports Club", emoji: "🎮", category: "Tech", desc: "Build projects, run hackathons and compete in campus e-sports leagues.", members: 72, slots: [{ id: "te-tue", day: 1, start: "16:00", end: "18:00", title: "Build night & e-sports scrims", level: "All levels", where: "Computer Lab", cap: 40, taken: 26 }], where: "Computer Lab", lead: { name: "Tech & E-sports committee", role: "Club committee", email: "tech@uniteuow.com" }, note: "Bring a laptop for build nights; consoles and PCs provided for scrims." },
+  { id: 9, name: "Finance & Entrepreneurship Society", emoji: "💼", category: "Business", desc: "Market simulations, pitch practice and networking with founders and finance professionals.", members: 85, slots: [{ id: "fe-thu", day: 3, start: "15:00", end: "17:00", title: "Workshop & pitch session", level: "All levels", where: "Innovation Studio", cap: 45, taken: 31 }], where: "Innovation Studio", lead: { name: "Finance & Entrepreneurship committee", role: "Society committee", email: "finance@uniteuow.com" }, note: "Smart casual for networking events." },
+  { id: 10, name: "Music & Dance Club", emoji: "🎵", category: "Arts", desc: "Jam sessions, choreography and performances at campus events.", members: 58, slots: [{ id: "md-mon", day: 0, start: "16:00", end: "18:00", title: "Rehearsal & jam", level: "All levels", where: "Multi-purpose Room", cap: 35, taken: 20 }], where: "Multi-purpose Room", lead: { name: "Music & Dance committee", role: "Club committee", email: "music@uniteuow.com" }, note: "Comfortable clothes for dance; instruments welcome." },
 ];
 
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
@@ -50,8 +54,8 @@ const PARTIES = [
     contact: { name: "Yusuf Ibrahim", role: "Host", email: "openmic@uniteuow.com" },
     desc: "Sing, play, recite or just listen. Sign up for a five-minute slot on the night or come for the karak and the atmosphere. All talent levels welcome.",
     perks: ["5-min slots", "Free karak", "Acoustic setup"] },
-  { id: 5, lang: "English", title: "Finance Club Networking Night", emoji: "💼", category: "Career", date: "2026-10-22", time: "6:00 PM", where: "Auditorium Foyer, Block 3", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 100, taken: 64, wait: 0, vibe: { score: 4.6, count: 73 }, host: "Finance Club",
-    contact: { name: "Finance Club Committee", role: "Organizers", email: "finance@uniteuow.com" },
+  { id: 5, lang: "English", title: "Finance Society Networking Night", emoji: "💼", category: "Career", date: "2026-10-22", time: "6:00 PM", where: "Auditorium Foyer, Block 3", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 100, taken: 64, wait: 0, vibe: { score: 4.6, count: 73 }, host: "Finance & Entrepreneurship Society",
+    contact: { name: "Finance & Entrepreneurship Society", role: "Organizers", email: "finance@uniteuow.com" },
     desc: "Meet finance professionals, alumni and recruiters over canapés. A short panel on breaking into banking and fintech in the UAE is followed by open networking. Smart casual.",
     perks: ["Industry panel", "Alumni mentors", "Canapés"] },
   { id: 6, lang: "English", title: "Halloween Costume Party", emoji: "🎃", category: "Social", date: "2026-10-30", time: "8:30 PM", where: "Grand Ballroom, Dubai Knowledge Park", address: "Dubai Knowledge Park, Dubai, UAE", maps: "Dubai Knowledge Park", price: 75, spots: 120, taken: 120, wait: 4, vibe: { score: 4.9, count: 156 }, host: "Student Council",
@@ -84,7 +88,7 @@ const PARTIES = [
     perks: ["Materials included", "Take-home piece", "Beginners welcome"] },
 ];
 
-const CLUB_FILTERS = ["All", "Sports", "Tech", "Business", "Culture", "Arts"];
+const CLUB_FILTERS = ["All", "Sports", "Tech", "Business", "Arts"];
 const PARTY_FILTERS = ["All", "Social", "Music", "Sports", "Gaming", "Career"];
 const EVENT_TYPES = ["Party", "Social", "Academic Study", "Networking", "Sports", "Gaming", "Music", "Arts & Culture"];
 const DRESS_CODES = ["Casual", "Smart casual", "Business formal", "Sportswear", "Costume / themed", "Traditional wear"];
@@ -100,12 +104,16 @@ const FLOOR_STATIC = [
   { label: "Info Desk", emoji: "ℹ️", c: 10, r: 8, w: 3, h: 1 },
 ];
 const BOOTHS = [
-  { id: "b1", kind: "club", ref: 1, short: "Basketball", c: 1, r: 3, w: 2, h: 2 },
-  { id: "b2", kind: "club", ref: 2, short: "Football", c: 3, r: 3, w: 2, h: 2 },
-  { id: "b3", kind: "club", ref: 6, short: "Photo Club", c: 5, r: 3, w: 2, h: 2 },
-  { id: "b4", kind: "club", ref: 5, short: "Finance", c: 7, r: 3, w: 2, h: 2 },
-  { id: "b5", kind: "club", ref: 3, short: "Robotics", c: 9, r: 3, w: 2, h: 2 },
-  { id: "b6", kind: "club", ref: 4, short: "Startup Hub", c: 11, r: 3, w: 2, h: 2 },
+  { id: "b1", kind: "club", ref: 1, short: "Football", c: 1, r: 3, w: 2, h: 1 },
+  { id: "b2", kind: "club", ref: 2, short: "Basketball", c: 3, r: 3, w: 2, h: 1 },
+  { id: "b3", kind: "club", ref: 3, short: "Volleyball", c: 5, r: 3, w: 2, h: 1 },
+  { id: "b4", kind: "club", ref: 4, short: "Cricket", c: 7, r: 3, w: 2, h: 1 },
+  { id: "b5", kind: "club", ref: 5, short: "Rackets", c: 9, r: 3, w: 2, h: 1 },
+  { id: "b6", kind: "club", ref: 6, short: "Padel", c: 11, r: 3, w: 2, h: 1 },
+  { id: "b14", kind: "club", ref: 7, short: "Chess", c: 1, r: 4, w: 3, h: 1 },
+  { id: "b15", kind: "club", ref: 8, short: "Tech & E-sports", c: 4, r: 4, w: 3, h: 1 },
+  { id: "b16", kind: "club", ref: 9, short: "Finance", c: 7, r: 4, w: 3, h: 1 },
+  { id: "b17", kind: "club", ref: 10, short: "Music & Dance", c: 10, r: 4, w: 3, h: 1 },
   { id: "b7", kind: "party", ref: 4, short: "Open Mic", c: 5, r: 1, w: 4, h: 2 },
   { id: "b8", kind: "party", ref: 2, short: "Futsal", c: 1, r: 5, w: 2, h: 2 },
   { id: "b9", kind: "party", ref: 3, short: "PS5 Cup", c: 3, r: 5, w: 2, h: 2 },
@@ -118,12 +126,12 @@ const BOOTHS = [
 const FEED = [
   ["Sarah J.", "just registered for", "UOWD Futsal Tournament", "2 mins ago"],
   ["Omar K.", "just bought a ticket for", "Rooftop Sunset Mixer", "just now"],
-  ["Maryam A.", "just joined", "Robotics & AI Club", "5 mins ago"],
+  ["Maryam A.", "just joined", "Tech & E-sports Club", "5 mins ago"],
   ["Ali H.", "just joined the waitlist for", "Halloween Costume Party", "1 min ago"],
   ["Noor S.", "just bought a ticket for", "Post-Midterm Yacht Party", "3 mins ago"],
-  ["Daniel P.", "just reserved a spot at", "Finance Club Networking Night", "4 mins ago"],
+  ["Daniel P.", "just reserved a spot at", "Finance Society Networking Night", "4 mins ago"],
   ["Rashid T.", "just entered the", "PS5 Tournament", "6 mins ago"],
-  ["Fatima R.", "just joined", "Basketball Club", "7 mins ago"],
+  ["Fatima R.", "registered for tryouts with the", "Basketball Team", "7 mins ago"],
 ];
 
 /* ------------------------------------------------------------------ */
@@ -365,10 +373,10 @@ function ThemeToggle({ dark, onToggle }) {
   );
 }
 
-const Badge = ({ kind }) =>
+const Badge = ({ kind, team }) =>
   kind === "official" ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
-      <Check /> Official UOWD Club
+      <Check /> Official UOWD {team ? "Team" : "Club"}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
@@ -1226,7 +1234,7 @@ function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
       </div>
 
       <div className="space-y-5 p-5">
-        <Badge kind="official" />
+        <Badge kind="official" team={c.category === "Sports"} />
         <div>
           <h3 className="text-sm font-semibold text-slate-900">About the club</h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{c.desc}</p>
@@ -1348,11 +1356,11 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
                     transition: "opacity .2s ease, transform .2s ease, box-shadow .2s ease",
                   }}
                 >
-                  <span className="absolute left-1 top-1 flex items-center justify-center rounded-full font-bold" style={{ width: 14, height: 14, fontSize: 8, background: "rgba(0,0,0,0.3)" }}>{b.n}</span>
-                  {b.kind === "club" && <span className="absolute right-1 top-1 flex items-center justify-center rounded-full bg-white text-indigo-600" style={{ width: 13, height: 13 }}><Check className="h-2 w-2" /></span>}
+                  <span className={`absolute left-1 top-1 ${b.h === 1 ? "hidden sm:flex" : "flex"} items-center justify-center rounded-full font-bold`} style={{ width: 14, height: 14, fontSize: 8, background: "rgba(0,0,0,0.3)" }}>{b.n}</span>
+                  {b.kind === "club" && <span className={`absolute right-1 top-1 ${b.h === 1 ? "hidden sm:flex" : "flex"} items-center justify-center rounded-full bg-white text-indigo-600`} style={{ width: 13, height: 13 }}><Check className="h-2 w-2" /></span>}
                   {hotB(b) && <span className="absolute right-1 top-0.5" style={{ fontSize: 11 }}>🔥</span>}
                   {fullB(b) && <span className="absolute right-1 top-0.5" style={{ fontSize: 11 }}>⏳</span>}
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>{b.d.emoji}</span>
+                  <span style={{ fontSize: b.h === 1 ? 15 : 20, lineHeight: 1 }}>{b.d.emoji}</span>
                   <span className="mt-0.5 px-0.5 text-center font-semibold" style={{ fontSize: 9, lineHeight: 1.1 }}>{b.short}</span>
                 </button>
               );
@@ -1382,7 +1390,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
             </div>
             <div className="space-y-3 p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge kind={sel.kind === "club" ? "official" : "verified"} />
+                <Badge kind={sel.kind === "club" ? "official" : "verified"} team={sel.d.category === "Sports"} />
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Icon name="clock" className="h-3.5 w-3.5" /> ≈ {mins(sel)} min walk from the entrance</span>
               </div>
               {sel.kind === "club" ? (
@@ -1419,7 +1427,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
                 <span className="text-xl">{b.d.emoji}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-slate-900">{nameOf(b)}</span>
-                  <span className="block text-xs text-slate-500">{b.kind === "club" ? "Official club" : b.d.price > 0 ? `Event · ${b.d.price} AED` : "Event · Free"}</span>
+                  <span className="block text-xs text-slate-500">{b.kind === "club" ? (b.d.category === "Sports" ? "Official team" : "Official club") : b.d.price > 0 ? `Event · ${b.d.price} AED` : "Event · Free"}</span>
                 </span>
                 {hotB(b) && <span title="Few tickets left">🔥</span>}
                 {fullB(b) && <span title="Fully booked">⏳</span>}
@@ -2062,7 +2070,7 @@ export default function App() {
             <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
           </div>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
-            {[[clubs.length, "Official clubs", "clubs"], [parties.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
+            {[[clubs.length, "Teams & clubs", "clubs"], [parties.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
               <button key={l} onClick={() => jumpTo(t)} className="u-btn rounded-2xl p-3 text-left hover:border-white" style={glassChip}>
                 <p className="text-xl font-bold text-white">{n}</p>
                 <p className="text-xs text-slate-300">{l}</p>
@@ -2128,7 +2136,7 @@ export default function App() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold text-slate-900">{c.name}</h3>
-                        <Badge kind="official" />
+                        <Badge kind="official" team={c.category === "Sports"} />
                       </div>
                       <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
                     </div>
@@ -2136,7 +2144,7 @@ export default function App() {
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="min-w-0 space-y-1.5 text-xs text-slate-500">
                       <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{memberCount(c)} members</span></div>
-                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly sessions · {clubDays(c)}</p>
+                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly session{c.slots.length > 1 ? "s" : ""} · {clubDays(c)}</p>
                       <button onClick={() => showOnMap("club", c.id)} className="font-semibold text-indigo-600 hover:underline">Find booth on map →</button>
                     </div>
                     {clubBtn(c)}
