@@ -3,7 +3,8 @@
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
 // Unite admin moderation chat (TELEGRAM_CHAT_ID in Vercel overrides it without a code change).
-const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "8878768622").trim();
+// Stray spaces or quotes from pasting are ignored.
+const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim().replace(/^["']|["']$/g, "").trim() || "8878768622";
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
