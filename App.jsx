@@ -301,7 +301,7 @@ function Vibe({ v }) {
 
 const ShareBtn = ({ onClick }) => (
   <button onClick={onClick} aria-label="Share event" title="Share event"
-    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
+    className="u-keep flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
     style={{ background: "rgba(255,255,255,0.22)" }}>
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" />
@@ -394,7 +394,7 @@ function Ticket({ booking, justPaid, onClose, onDownload }) {
 
       <div className="-mt-8 px-5 pb-5">
         <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
-          <div className="flex items-center justify-between bg-slate-900 px-5 py-3">
+          <div className="u-keep flex items-center justify-between bg-slate-900 px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">U</span>
               <span className="text-sm font-bold text-white">Unite</span>
@@ -822,43 +822,62 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
           </div>
         </div>
 
-        <button onClick={() => startPay("Apple Pay")} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-black py-3.5 text-base font-semibold text-white hover:bg-slate-800">
-          <span aria-hidden="true">●</span> Apple Pay · {party.price} AED
-        </button>
-
-        <div className="my-4 flex items-center gap-3 text-xs text-slate-400">
-          <span className="h-px flex-1 bg-slate-200" /> or pay with card <span className="h-px flex-1 bg-slate-200" />
+        <p className="mt-5 text-sm font-semibold text-slate-900">Payment method</p>
+        <div className="mt-2 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
+          {[["Apple Pay", "📱", "Face ID"], ["Card", "💳", "Visa · Mastercard"]].map(([m, icon, sub]) => (
+            <button key={m} role="radio" aria-checked={method === m} onClick={() => { setMethod(m); setErrors({}); }}
+              className={`u-btn rounded-xl border-2 px-3 py-2.5 text-left ${method === m ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-white hover:border-slate-300"}`}>
+              <span className="block text-sm font-semibold text-slate-900">{icon} {m}</span>
+              <span className="block text-xs text-slate-500">{sub}</span>
+            </button>
+          ))}
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <label htmlFor="cc-number" className="text-sm font-medium text-slate-700">Card number</label>
-            <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="1234 5678 9012 3456" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} />
-            <Err k="number" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="cc-exp" className="text-sm font-medium text-slate-700">Expiry</label>
-              <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} />
-              <Err k="exp" />
+        <div key={method} className="u-fade mt-3">
+          {method === "Apple Pay" ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
+              <span className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg bg-black text-sm font-semibold text-white">Pay</span>
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold text-slate-900">Visa •••• 4242</p>
+                <p className="text-slate-500">Double-click to pay with Face ID</p>
+              </div>
             </div>
-            <div>
-              <label htmlFor="cc-cvc" className="text-sm font-medium text-slate-700">CVC</label>
-              <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} />
-              <Err k="cvc" />
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="cc-number" className="text-sm font-medium text-slate-700">Card number</label>
+                <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} />
+                <Err k="number" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="cc-exp" className="text-sm font-medium text-slate-700">Expiry</label>
+                  <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} />
+                  <Err k="exp" />
+                </div>
+                <div>
+                  <label htmlFor="cc-cvc" className="text-sm font-medium text-slate-700">CVC</label>
+                  <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} />
+                  <Err k="cvc" />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="cc-name" className="text-sm font-medium text-slate-700">Name on card</label>
+                <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} />
+                <Err k="name" />
+              </div>
             </div>
-          </div>
-          <div>
-            <label htmlFor="cc-name" className="text-sm font-medium text-slate-700">Name on card</label>
-            <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} />
-            <Err k="name" />
-          </div>
+          )}
         </div>
 
-        <button onClick={() => startPay("Card")} className="u-btn mt-4 w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-700">
-          Pay {party.price} AED
+        <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+          <span className="text-sm text-slate-500">Total due</span>
+          <span className="text-xl font-bold text-slate-900">{party.price} AED</span>
+        </div>
+        <button onClick={() => startPay(method)} className={`u-btn mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"}`}>
+          🔒 Confirm Payment · {party.price} AED
         </button>
-        <p className="mt-3 text-center text-xs text-slate-400">Demo mode: any valid-looking card works (try 4242 4242 4242 4242). No real charge is made.</p>
+        <p className="mt-3 text-center text-xs text-slate-400">Demo mode: no real charge is made. For card, any valid-looking number works (try 4242 4242 4242 4242).</p>
       </div>
     </Modal>
   );
@@ -935,6 +954,50 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
   );
 }
 
+function ClubDetail({ club: c, action, onMap, onClose }) {
+  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
+  return (
+    <Modal onClose={onClose} size="lg">
+      <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[c.category]}`}>
+        <span className="text-5xl">{c.emoji}</span>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
+          {c.joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
+        </div>
+        <h2 className="mt-2 text-2xl font-bold leading-tight">{c.name}</h2>
+        <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members} members · Free to join</p>
+      </div>
+
+      <div className="space-y-5 p-5">
+        <Badge kind="official" />
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">About the club</h3>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">{c.desc}</p>
+        </div>
+        <div className="space-y-4 text-sm">
+          <div className="flex gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">🗓</span>
+            <div><p className="font-semibold text-slate-900">{c.when}</p><p className="text-slate-500">Weekly sessions during semester</p></div>
+          </div>
+          <div className="flex gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">📍</span>
+            <div>
+              <p className="font-semibold text-slate-900">{c.where}</p>
+              <p className="text-slate-500">{UOWD_ADDRESS}</p>
+              <p className="mt-1 flex flex-wrap gap-x-4">
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
+                <button onClick={() => onMap(c)} className="font-semibold text-indigo-600 hover:underline">Find booth on campus map →</button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">{action}</div>
+    </Modal>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Floor map, waitlist modal, live ticker                             */
 /* ------------------------------------------------------------------ */
@@ -955,7 +1018,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
     <div className="grid gap-5 lg:grid-cols-5">
       {/* Map */}
       <div className="lg:col-span-3">
-        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
+        <div className="u-keep rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="rounded-md bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">GF</span>
@@ -1169,6 +1232,9 @@ export default function App() {
   const [waitlist, setWaitlist] = useState({});
   const [selBooth, setSelBooth] = useState(null);
   const [tickerOn, setTickerOn] = useState(true);
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem("unite-theme") !== "light"; } catch (e) { return true; }
+  });
   const toastTimer = useRef(null);
 
   useEffect(() => {
@@ -1178,6 +1244,12 @@ export default function App() {
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }
     } catch (e) { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
+    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#f8fafc";
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  }, [dark]);
 
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
@@ -1194,6 +1266,12 @@ export default function App() {
   };
 
   const changeTab = (t) => { setTab(t); setFilter("All"); };
+  const jumpTo = (t) => {
+    changeTab(t);
+    const el = document.getElementById("tabs");
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: "smooth" });
+  };
+  const goHome = () => { changeTab("clubs"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   const toggleClub = (c) =>
     requireAuth(`Sign in to join ${c.name}`, () =>
@@ -1251,8 +1329,7 @@ export default function App() {
   const showOnMap = (kind, ref) => {
     const b = BOOTHS.find((x) => x.kind === kind && x.ref === ref);
     setSelBooth(b ? b.id : null);
-    changeTab("map");
-    window.scrollTo({ top: 320, behavior: "smooth" });
+    jumpTo("map");
   };
 
   const handleDownload = (b) => {
@@ -1263,6 +1340,11 @@ export default function App() {
   const openDetail = (e, p) => {
     if (e.target.closest("button, a")) return;
     setModal({ type: "detail", id: p.id });
+  };
+
+  const openClub = (e, c) => {
+    if (e.target.closest("button, a")) return;
+    setModal({ type: "club", id: c.id });
   };
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
@@ -1296,30 +1378,36 @@ export default function App() {
   const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["tickets", "My Tickets", "Tickets"]];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif" }}>
+    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`} style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif" }}>
       <style>{CSS}</style>
 
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-slate-700" style={glassDark}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2.5">
+          <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white">U</div>
             <span className="text-lg font-bold tracking-tight text-white">Unite</span>
             <span className="hidden rounded-full px-2 py-0.5 text-xs font-medium text-indigo-200 sm:inline" style={glassChip}>for UOWD students</span>
-          </div>
+          </button>
+          <div className="flex items-center gap-2">
+          <button onClick={() => setDark((d) => !d)} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"}
+            className="u-keep u-btn flex h-8 w-8 items-center justify-center rounded-lg text-base text-slate-200 hover:text-white" style={glassChip}>
+            {dark ? "☀️" : "🌙"}
+          </button>
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
+              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
           )}
+          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
+      <section className="u-keep relative overflow-hidden bg-slate-900">
         <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600" style={{ filter: "blur(90px)", opacity: 0.45 }} />
         <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-fuchsia-600" style={{ filter: "blur(100px)", opacity: 0.3 }} />
         <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
@@ -1329,15 +1417,15 @@ export default function App() {
           <h1 className="mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Where UOWD comes together.</h1>
           <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One UOWD login, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={hostEvent} className="u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
-            <button onClick={() => changeTab("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
+            <button onClick={hostEvent} className="u-keep u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
+            <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
           </div>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
-            {[[clubs.length, "Official clubs"], [parties.length, "Upcoming events"], [totalMembers + "+", "Members"]].map(([n, l]) => (
-              <div key={l} className="rounded-2xl p-3" style={glassChip}>
+            {[[clubs.length, "Official clubs", "clubs"], [parties.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
+              <button key={l} onClick={() => jumpTo(t)} className="u-btn rounded-2xl p-3 text-left hover:border-white" style={glassChip}>
                 <p className="text-xl font-bold text-white">{n}</p>
                 <p className="text-xs text-slate-300">{l}</p>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -1345,7 +1433,7 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" role="tablist">
+        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" role="tablist">
           <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: "calc((100% - 12px) / 4)", transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
@@ -1376,7 +1464,8 @@ export default function App() {
             {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any clubs yet." : `You're in ${myClubs} club${myClubs > 1 ? "s" : ""}.`}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
-                <article key={c.id} className="u-card u-rise rounded-2xl border border-slate-200 bg-white p-5" style={{ animationDelay: `${i * 60}ms` }}>
+                <article key={c.id} tabIndex={0} onClick={(e) => openClub(e, c)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "club", id: c.id }); }}
+                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                   <div className="flex items-start gap-4">
                     <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
                     <div className="min-w-0 flex-1">
@@ -1571,6 +1660,14 @@ export default function App() {
           action={partyBtn(parties.find((x) => x.id === modal.id), "w-full")}
           onShare={shareEvent}
           onMap={(p) => { closeModal(); showOnMap("party", p.id); }}
+          onClose={closeModal}
+        />
+      )}
+      {modal && modal.type === "club" && clubs.find((x) => x.id === modal.id) && (
+        <ClubDetail
+          club={clubs.find((x) => x.id === modal.id)}
+          action={clubBtn(clubs.find((x) => x.id === modal.id), "w-full py-3")}
+          onMap={(c) => { closeModal(); showOnMap("club", c.id); }}
           onClose={closeModal}
         />
       )}
