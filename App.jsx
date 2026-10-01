@@ -19,12 +19,12 @@ const GRADIENTS = {
 };
 
 const CLUBS = [
-  { id: 1, name: "Basketball Club", emoji: "🏀", category: "Sports", desc: "Pickup games, weekly training and the inter-university league.", members: 86, when: "Tue & Thu · 7:00 PM", where: "Sports Hall" },
-  { id: 2, name: "Football Society", emoji: "⚽", category: "Sports", desc: "Competitive squads and casual kickabouts for every level.", members: 124, when: "Mon & Wed · 7:30 PM", where: "Pitch 2" },
-  { id: 3, name: "Robotics & AI Club", emoji: "🤖", category: "Tech", desc: "Build bots, train models and compete in regional hackathons.", members: 58, when: "Sun · 4:00 PM", where: "Lab B2.14" },
-  { id: 4, name: "Entrepreneurship Hub", emoji: "🚀", category: "Business", desc: "Pitch nights, founder talks and mentoring from local startups.", members: 97, when: "Thu · 5:00 PM", where: "Innovation Studio" },
-  { id: 5, name: "Finance Club", emoji: "💼", category: "Business", desc: "Market simulations, stock-pitch nights and networking with banking and fintech professionals.", members: 72, when: "Mon · 5:00 PM", where: "Room 2.11" },
-  { id: 6, name: "Photography Club", emoji: "📸", category: "Arts", desc: "Photo walks around Dubai, editing workshops and exhibitions.", members: 63, when: "Fri · 3:30 PM", where: "Campus Courtyard" },
+  { id: 1, name: "Basketball Club", emoji: "🏀", category: "Sports", desc: "Pickup games, weekly training and the inter-university league.", members: 86, when: "Tue & Thu · 7:00 PM", where: "Sports Hall", lead: { name: "Hamza Rauf", role: "Club captain", email: "basketball@uniteuow.com" }, note: "Bring court shoes; balls and bibs provided." },
+  { id: 2, name: "Football Society", emoji: "⚽", category: "Sports", desc: "Competitive squads and casual kickabouts for every level.", members: 124, when: "Mon & Wed · 7:30 PM", where: "Pitch 2", lead: { name: "Diego Fernandes", role: "President", email: "football@uniteuow.com" }, note: "Boots or turf shoes. Squads are mixed every session." },
+  { id: 3, name: "Robotics & AI Club", emoji: "🤖", category: "Tech", desc: "Build bots, train models and compete in regional hackathons.", members: 58, when: "Sun · 4:00 PM", where: "Lab B2.14", lead: { name: "Aisha Siddiqui", role: "President", email: "robotics@uniteuow.com" }, note: "Laptops recommended. Arduino kits on loan from the lab." },
+  { id: 4, name: "Entrepreneurship Hub", emoji: "🚀", category: "Business", desc: "Pitch nights, founder talks and mentoring from local startups.", members: 97, when: "Thu · 5:00 PM", where: "Innovation Studio", lead: { name: "Rahul Menon", role: "Founder & lead", email: "founders@uniteuow.com" }, note: "Pitch slots open every second Thursday." },
+  { id: 5, name: "Finance Club", emoji: "💼", category: "Business", desc: "Market simulations, stock-pitch nights and networking with banking and fintech professionals.", members: 72, when: "Mon · 5:00 PM", where: "Room 2.11", lead: { name: "Sara Al Hashimi", role: "President", email: "finance@uniteuow.com" }, note: "Smart casual for networking nights." },
+  { id: 6, name: "Photography Club", emoji: "📸", category: "Arts", desc: "Photo walks around Dubai, editing workshops and exhibitions.", members: 63, when: "Fri · 3:30 PM", where: "Campus Courtyard", lead: { name: "Lina Petrova", role: "Club lead", email: "photo@uniteuow.com" }, note: "Any camera works, phones included." },
 ];
 
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
@@ -255,9 +255,9 @@ const CSS = `
 .u-spin{animation:uSpin .8s linear infinite}
 .u-ping{animation:uPing 1.4s ease-out infinite}
 .u-card{transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease}
-.u-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -12px rgba(15,23,42,.25);border-color:#c7d2fe}
-.u-btn{transition:transform .15s ease, background-color .15s ease, box-shadow .15s ease}
-.u-btn:active{transform:scale(.97)}
+.u-card:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 28px -12px rgba(15,23,42,.18);border-color:#cbd5e1}
+.u-btn{transition:all .2s cubic-bezier(.2,.8,.2,1)}
+.u-btn:not(:disabled):active{transform:scale(.95)}
 @keyframes uSlide{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 @keyframes uDraw{to{stroke-dashoffset:0}}
 @keyframes uShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
@@ -277,6 +277,50 @@ const Check = ({ className = "h-3.5 w-3.5" }) => (
     <path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z" clipRule="evenodd" />
   </svg>
 );
+
+const ICONS = {
+  calendar: "M8 2.5v3M16 2.5v3M3.5 9.5h17M5 4.5h14A1.5 1.5 0 0120.5 6v13a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 19V6A1.5 1.5 0 015 4.5z",
+  pin: "M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5z",
+  users: "M16 20v-1.5a3.5 3.5 0 00-3.5-3.5h-5A3.5 3.5 0 004 18.5V20M10 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM20 20v-1.5a3.5 3.5 0 00-2.5-3.35M15.5 4.15a3.5 3.5 0 010 6.7",
+  clock: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2",
+  user: "M20 21v-1.5a4 4 0 00-4-4H8a4 4 0 00-4 4V21M12 11.5a4 4 0 100-8 4 4 0 000 8z",
+  lock: "M6.5 11h11a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 015 19.5v-7A1.5 1.5 0 016.5 11zM8 11V7.5a4 4 0 018 0V11",
+  shield: "M12 3l7.5 3v5.5c0 4.6-3.2 8.4-7.5 9.5-4.3-1.1-7.5-4.9-7.5-9.5V6L12 3zM9 12l2 2 4-4",
+  card: "M4.5 5h15A1.5 1.5 0 0121 6.5v11a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 17.5v-11A1.5 1.5 0 014.5 5zM3 10h18M7 15h3",
+  phone: "M8 2.5h8A1.5 1.5 0 0117.5 4v16a1.5 1.5 0 01-1.5 1.5H8A1.5 1.5 0 016.5 20V4A1.5 1.5 0 018 2.5zM11 18.5h2",
+  mail: "M4.5 5h15A1.5 1.5 0 0121 6.5v11a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 17.5v-11A1.5 1.5 0 014.5 5zM3.5 6.5l8.5 6.5 8.5-6.5",
+  sun: "M12 16a4 4 0 100-8 4 4 0 000 8zM12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4",
+  moon: "M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z",
+};
+const Icon = ({ name, className = "h-4 w-4" }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={ICONS[name]} />
+  </svg>
+);
+const InfoIcon = ({ name }) => (
+  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200/70"><Icon name={name} /></span>
+);
+const shortVenue = (where) => where.split(",")[0].replace(/^UOWD /, "");
+const VenueChip = ({ where }) => (
+  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70">
+    <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}
+  </span>
+);
+
+function ThemeToggle({ dark, onToggle }) {
+  return (
+    <button onClick={onToggle} role="switch" aria-checked={dark} aria-label="Dark mode" title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="u-keep u-btn relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-slate-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+      style={glassChip}>
+      <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
+        <Icon name="moon" className="h-[18px] w-[18px]" />
+      </span>
+      <span className="absolute inset-0 flex items-center justify-center text-amber-300" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "none" : "rotate(-90deg) scale(.5)", opacity: dark ? 1 : 0 }}>
+        <Icon name="sun" className="h-[18px] w-[18px]" />
+      </span>
+    </button>
+  );
+}
 
 const Badge = ({ kind }) =>
   kind === "official" ? (
@@ -301,7 +345,7 @@ function Vibe({ v }) {
 
 const ShareBtn = ({ onClick }) => (
   <button onClick={onClick} aria-label="Share event" title="Share event"
-    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
+    className="u-keep flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
     style={{ background: "rgba(255,255,255,0.22)" }}>
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" />
@@ -381,46 +425,59 @@ const AnimatedCheck = ({ className = "h-16 w-16" }) => (
   </svg>
 );
 
-function Ticket({ booking, justPaid, onClose, onDownload }) {
+function Ticket({ booking: b, justPaid, onClose, onDownload }) {
+  const rows = [["Date", fmtDate(b.date)], ["Time", b.time], ["Venue", shortVenue(b.where)], ["Admission", "General · 1 guest"]];
   return (
     <div className="bg-slate-100">
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 px-6 pb-14 pt-8 text-center text-white">
-        <div className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-emerald-500">
-          <Check className="h-7 w-7" />
+      <div className="u-keep relative overflow-hidden bg-slate-900 px-6 pb-16 pt-8 text-center text-white">
+        <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-indigo-600" style={{ filter: "blur(70px)", opacity: 0.55 }} />
+        <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-emerald-500" style={{ filter: "blur(80px)", opacity: 0.22 }} />
+        <div className="relative">
+          <div className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
+            <Check className="h-7 w-7" />
+          </div>
+          <h2 className="mt-3 text-lg font-semibold text-slate-200">{justPaid ? (b.paid ? "Payment Successful" : "You're in!") : "Your ticket"}</h2>
+          {b.paid && <p className="mt-0.5 text-3xl font-bold tabular-nums tracking-tight">{b.price.toFixed(2)} <span className="text-base font-semibold text-slate-400">AED</span></p>}
+          <p className="mt-1 text-sm text-slate-400">{b.paid ? `Paid via Ziina · ${b.method}` : "Free spot reserved"}</p>
         </div>
-        <h2 className="mt-3 text-xl font-bold">{justPaid ? (booking.paid ? "Payment Successful" : "You're in!") : "Your ticket"}</h2>
-        <p className="text-sm text-indigo-100">{booking.paid ? `${booking.price} AED paid via Ziina · ${booking.method}` : "Free spot reserved"}</p>
       </div>
 
-      <div className="-mt-8 px-5 pb-5">
-        <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
-          <div className="flex items-center justify-between bg-slate-900 px-5 py-3">
+      <div className="-mt-10 px-5 pb-5">
+        <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200/80">
+          <div className="u-keep flex items-center justify-between bg-slate-900 px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">U</span>
               <span className="text-sm font-bold text-white">Unite</span>
+              <span className="text-xs font-medium uppercase tracking-widest text-slate-400">· Admit one</span>
             </div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-300">Admit one</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white"><Check className="h-3 w-3" /> Confirmed</span>
           </div>
+
           <div className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{booking.emoji}</div>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-900">{booking.title}</p>
-                <p className="text-sm text-slate-500">{fmtDate(booking.date)} · {booking.time}</p>
-              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl ring-1 ring-inset ring-slate-200/70">{b.emoji}</div>
+              <p className="min-w-0 font-semibold leading-snug text-slate-900">{b.title}</p>
+            </div>
+            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              {rows.map(([k, v]) => (
+                <div key={k} className="min-w-0">
+                  <dt className="text-xs font-medium uppercase tracking-wider text-slate-400">{k}</dt>
+                  <dd className="truncate font-semibold text-slate-800">{v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div className="relative my-5 border-t-2 border-dashed border-slate-200">
+              <span className="absolute h-7 w-7 rounded-full bg-slate-100" style={{ left: -34, top: -15 }} />
+              <span className="absolute h-7 w-7 rounded-full bg-slate-100" style={{ right: -34, top: -15 }} />
             </div>
 
-            <div className="relative my-5 border-t border-dashed border-slate-300">
-              <span className="absolute h-6 w-6 rounded-full bg-slate-100" style={{ left: -32, top: -12 }} />
-              <span className="absolute h-6 w-6 rounded-full bg-slate-100" style={{ right: -32, top: -12 }} />
-            </div>
-
-            <div className="flex justify-center"><QRCode value={booking.id} /></div>
-            <p className="mt-3 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Booking ID</p>
-            <p className="text-center font-mono text-lg font-bold tracking-wider text-slate-900">{booking.id}</p>
+            <div className="mx-auto w-fit rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200/80"><QRCode value={b.id} className="h-36 w-36" /></div>
+            <p className="mt-3 text-center text-xs font-medium uppercase tracking-widest text-slate-400">Booking ID</p>
+            <p className="text-center font-mono text-lg font-bold tracking-wider text-slate-900">{b.id}</p>
 
             <dl className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm">
-              {[["Venue", booking.where], ["Attendee", booking.email], ["Amount", booking.paid ? `${booking.price} AED` : "Free"]].map(([k, v]) => (
+              {[["Attendee", b.email], ...(b.txn ? [["Ziina reference", b.txn]] : [])].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <dt className="text-slate-500">{k}</dt>
                   <dd className="truncate text-right font-medium text-slate-800">{v}</dd>
@@ -430,12 +487,12 @@ function Ticket({ booking, justPaid, onClose, onDownload }) {
           </div>
         </div>
 
-        <button onClick={() => onDownload(booking)} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700">
+        <button onClick={() => onDownload(b)} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
-          Download Ticket via Web
+          Download ticket
         </button>
-        <button onClick={onClose} className="mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-slate-600 hover:bg-white">Done</button>
-        <p className="mt-1 text-center text-xs text-slate-400">Show the QR code at the entrance. Keep your Booking ID handy.</p>
+        <button onClick={onClose} className="u-btn mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-slate-600 hover:bg-white">Done</button>
+        <p className="mt-1 text-center text-xs text-slate-400">Show the QR code at the entrance. Screenshots work too.</p>
       </div>
     </div>
   );
@@ -571,7 +628,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => onKey(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${otpError ? "border-rose-400 bg-rose-50" : d ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-white focus:border-indigo-500"}`}
+                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${otpError ? "border-rose-400 bg-rose-50" : d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/80 bg-white shadow-sm focus:border-indigo-500"}`}
                 />
               ))}
             </div>
@@ -730,6 +787,33 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   );
 }
 
+const cardBrand = (digits) => (/^4/.test(digits) ? "VISA" : /^(5[1-5]|2[2-7])/.test(digits) ? "Mastercard" : /^3[47]/.test(digits) ? "AMEX" : "");
+
+function PayCard({ number = "", name, exp, wallet }) {
+  const digits = number.replace(/\D/g, "");
+  const shown = wallet ? "•••• •••• •••• 4242" : (digits + "•".repeat(Math.max(0, 16 - digits.length))).slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+  const brand = wallet ? "VISA" : cardBrand(digits);
+  return (
+    <div className="u-keep relative mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl p-5 text-white shadow-lg"
+      style={{ aspectRatio: "1.586", background: "linear-gradient(135deg, #312e81 0%, #1e1b4b 50%, #0f172a 100%)" }}>
+      <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-indigo-400" style={{ filter: "blur(50px)", opacity: 0.35 }} />
+      <div className="relative flex h-full flex-col justify-between">
+        <div className="flex items-start justify-between">
+          <span className="text-xs font-semibold uppercase tracking-widest text-indigo-200">{wallet ? "Wallet" : "Debit / Credit"}</span>
+          <span className="text-lg font-extrabold italic leading-none tracking-tight">{brand}</span>
+        </div>
+        <div>
+          <div className="h-7 w-10 rounded-md" style={{ background: "linear-gradient(135deg, #fde68a, #d97706)" }} />
+          <p className="mt-3 font-mono text-base tracking-widest tabular-nums">{shown}</p>
+          <div className="mt-1.5 flex justify-between gap-3 text-xs uppercase tracking-wider text-indigo-200">
+            <span className="truncate">{name || "Card holder"}</span><span className="tabular-nums">{exp || "MM/YY"}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Checkout({ party, email, onPaid, onDownload, onClose }) {
   const [step, setStep] = useState("review");
   const [method, setMethod] = useState("Apple Pay");
@@ -737,21 +821,23 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
   const [booking, setBooking] = useState(null);
   const [card, setCard] = useState({ number: "", exp: "", cvc: "", name: "" });
   const [errors, setErrors] = useState({});
-  const stages = [method === "Apple Pay" ? "Confirming with Face ID…" : "Securing your card details…", "Authorizing via Ziina…", "Issuing your ticket…"];
+  const amount = party.price.toFixed(2);
+  const stages = [method === "Apple Pay" ? "Confirming with Face ID" : "Securing your card details", "Authorizing with your bank", "Issuing your ticket"];
+  const label = method === "Apple Pay" ? "Apple Pay · Visa •••• 4242" : `Card •••• ${card.number.replace(/\D/g, "").slice(-4)}`;
 
   useEffect(() => {
     if (step !== "processing") return;
     const timers = [
       setTimeout(() => setStage(1), 900),
       setTimeout(() => setStage(2), 1800),
-      setTimeout(() => { setBooking(onPaid(party, email, method)); setStep("done"); }, 2700),
+      setTimeout(() => { setBooking(onPaid(party, email, label)); setStep("done"); }, 2700),
     ];
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line
   }, [step]);
 
-  const startPay = (m) => {
-    if (m === "Card") {
+  const confirm = () => {
+    if (method === "Card") {
       const e = {};
       if (card.number.replace(/\s/g, "").length < 15) e.number = "Enter a valid card number.";
       const mm = card.exp.match(/^(\d{2})\/(\d{2})$/);
@@ -761,7 +847,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
       setErrors(e);
       if (Object.keys(e).length) return;
     }
-    setMethod(m); setStage(0); setStep("processing");
+    setStage(0); setStep("processing");
   };
 
   const upd = (k, fmt) => (e) => { setCard({ ...card, [k]: fmt(e.target.value) }); setErrors({ ...errors, [k]: undefined }); };
@@ -775,25 +861,30 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
   if (step === "processing")
     return (
       <Modal locked onClose={onClose}>
-        <div className="px-8 py-14 text-center">
-          <div className="u-spin mx-auto h-14 w-14 rounded-full border-4 border-indigo-100 border-t-indigo-600" />
-          <h2 className="mt-6 text-lg font-bold text-slate-900">Processing payment via Ziina</h2>
-          <p className="text-sm text-slate-500">{method} · {party.price} AED</p>
-          <ul className="mx-auto mt-6 max-w-xs space-y-2 text-left text-sm">
+        <div className="px-8 py-12 text-center">
+          <div className="relative mx-auto h-16 w-16">
+            <div className="absolute inset-0 rounded-full border-4 border-slate-100" />
+            <div className="u-spin absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600" />
+            <span className="absolute inset-0 flex items-center justify-center text-indigo-600"><Icon name={method === "Apple Pay" ? "phone" : "card"} className="h-6 w-6" /></span>
+          </div>
+          <p className="mt-6 text-3xl font-bold tabular-nums tracking-tight text-slate-900">{amount} <span className="text-base font-semibold text-slate-400">AED</span></p>
+          <p className="mt-1 text-sm text-slate-500">Processing securely with Ziina · {label}</p>
+          <ul className="mx-auto mt-7 max-w-xs space-y-3 text-left text-sm">
             {stages.map((t, i) => (
-              <li key={t} className={`flex items-center gap-2.5 ${i <= stage ? "text-slate-800" : "text-slate-300"}`}>
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-white ${i < stage ? "bg-emerald-500" : i === stage ? "bg-indigo-500" : "bg-slate-200"}`}>
-                  {i < stage ? <Check className="h-3 w-3" /> : ""}
-                </span>{t}
+              <li key={t} className={`flex items-center gap-3 ${i <= stage ? "text-slate-800" : "text-slate-400"}`}>
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${i < stage ? "bg-emerald-500" : i === stage ? "bg-indigo-500" : "bg-slate-200"}`}>
+                  {i < stage ? <Check className="h-3 w-3" /> : i === stage ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                </span>
+                {t}{i === stage && "…"}
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-xs text-slate-400">Please don't close this window.</p>
+          <p className="mt-7 text-xs text-slate-400">Please keep this window open.</p>
         </div>
       </Modal>
     );
 
-  const inp = (k) => `mt-1 w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
+  const inp = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
   const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
 
   return (
@@ -803,81 +894,77 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold tracking-tight text-slate-900">ziina</span>
-            <span className="text-xs font-medium text-slate-400">secure checkout</span>
+            <span className="text-xs font-medium text-slate-400">Secure checkout</span>
           </div>
-          <span className="mr-8 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">🔒 pay.ziina.com</span>
+          <span className="mr-9 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500"><Icon name="lock" className="h-3 w-3" /> pay.ziina.com</span>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${GRADIENTS[party.category]}`}>{party.emoji}</div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-slate-900">{party.title}</p>
-              <p className="text-sm text-slate-500">{fmtDate(party.date)} · {party.time}</p>
-            </div>
-            <p className="text-lg font-bold text-slate-900">{party.price} <span className="text-xs font-semibold text-slate-500">AED</span></p>
-          </div>
-          <div className="mt-3 flex justify-between border-t border-slate-200 pt-3 text-xs text-slate-500">
-            <span>Paying Unite · 1 × General admission</span><span>Service fee 0 AED</span>
+        <div className="mt-5 text-center">
+          <p className="text-xs font-medium uppercase tracking-widest text-slate-400">Paying Unite Events</p>
+          <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-slate-900">{amount}<span className="ml-1.5 text-lg font-semibold text-slate-400">AED</span></p>
+          <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-slate-100 py-1 pl-1 pr-3 text-sm text-slate-600">
+            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm ${GRADIENTS[party.category]}`}>{party.emoji}</span>
+            <span className="truncate">{party.title} · {fmtDate(party.date)}</span>
           </div>
         </div>
 
-        <p className="mt-5 text-sm font-semibold text-slate-900">Payment method</p>
-        <div className="mt-2 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Payment method">
-          {[["Apple Pay", "📱", "Face ID"], ["Card", "💳", "Visa · Mastercard"]].map(([m, icon, sub]) => (
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1" role="radiogroup" aria-label="Payment method">
+          {[["Apple Pay", "phone"], ["Card", "card"]].map(([m, icon]) => (
             <button key={m} role="radio" aria-checked={method === m} onClick={() => { setMethod(m); setErrors({}); }}
-              className={`u-btn rounded-xl border-2 px-3 py-2.5 text-left ${method === m ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-white hover:border-slate-300"}`}>
-              <span className="block text-sm font-semibold text-slate-900">{icon} {m}</span>
-              <span className="block text-xs text-slate-500">{sub}</span>
+              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold ${method === m ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              <Icon name={icon} className="h-4 w-4" /> {m}
             </button>
           ))}
         </div>
 
-        <div key={method} className="u-fade mt-3">
+        <div key={method} className="u-fade mt-4">
           {method === "Apple Pay" ? (
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
-              <span className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg bg-black text-sm font-semibold text-white">Pay</span>
-              <div className="min-w-0 text-sm">
-                <p className="font-semibold text-slate-900">Visa •••• 4242</p>
-                <p className="text-slate-500">Double-click to pay with Face ID</p>
-              </div>
-            </div>
+            <>
+              <PayCard wallet name={email.split("@")[0].replace(/[._]/g, " ")} exp="09/29" />
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Icon name="phone" className="h-3.5 w-3.5" /> Double-click the side button to confirm with Face ID</p>
+            </>
           ) : (
-            <div className="space-y-3">
-              <div>
-                <label htmlFor="cc-number" className="text-sm font-medium text-slate-700">Card number</label>
-                <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} />
-                <Err k="number" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            <>
+              <PayCard number={card.number} name={card.name} exp={card.exp} />
+              <div className="mt-4 space-y-3">
                 <div>
-                  <label htmlFor="cc-exp" className="text-sm font-medium text-slate-700">Expiry</label>
-                  <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} />
-                  <Err k="exp" />
+                  <label htmlFor="cc-number" className="text-sm font-medium text-slate-700">Card number</label>
+                  <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} />
+                  <Err k="number" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="cc-exp" className="text-sm font-medium text-slate-700">Expiry</label>
+                    <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} />
+                    <Err k="exp" />
+                  </div>
+                  <div>
+                    <label htmlFor="cc-cvc" className="text-sm font-medium text-slate-700">CVC</label>
+                    <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} />
+                    <Err k="cvc" />
+                  </div>
                 </div>
                 <div>
-                  <label htmlFor="cc-cvc" className="text-sm font-medium text-slate-700">CVC</label>
-                  <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} />
-                  <Err k="cvc" />
+                  <label htmlFor="cc-name" className="text-sm font-medium text-slate-700">Name on card</label>
+                  <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} />
+                  <Err k="name" />
                 </div>
               </div>
-              <div>
-                <label htmlFor="cc-name" className="text-sm font-medium text-slate-700">Name on card</label>
-                <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} />
-                <Err k="name" />
-              </div>
-            </div>
+            </>
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-          <span className="text-sm text-slate-500">Total due</span>
-          <span className="text-xl font-bold text-slate-900">{party.price} AED</span>
-        </div>
-        <button onClick={() => startPay(method)} className={`u-btn mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white ${method === "Apple Pay" ? "bg-black hover:bg-slate-800" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"}`}>
-          🔒 Confirm Payment · {party.price} AED
+        <dl className="mt-5 space-y-1.5 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-sm">
+          <div className="flex justify-between"><dt className="text-slate-500">General admission × 1</dt><dd className="tabular-nums text-slate-800">{amount} AED</dd></div>
+          <div className="flex justify-between"><dt className="text-slate-500">Service fee</dt><dd className="tabular-nums text-slate-800">0.00 AED</dd></div>
+          <div className="flex justify-between border-t border-slate-200/80 pt-2 font-semibold"><dt className="text-slate-900">Total</dt><dd className="tabular-nums text-slate-900">{amount} AED</dd></div>
+        </dl>
+
+        <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+          <Icon name="lock" className="h-4 w-4" /> Confirm Payment · {amount} AED
         </button>
-        <p className="mt-3 text-center text-xs text-slate-400">Demo mode: no real charge is made. For card, any valid-looking number works (try 4242 4242 4242 4242).</p>
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Icon name="shield" className="h-3.5 w-3.5 text-emerald-600" /> Secured by Ziina · PCI DSS · 256-bit TLS</p>
+        <p className="mt-1 text-center text-xs text-slate-400">Demo mode: no real charge. For card, try 4242 4242 4242 4242.</p>
       </div>
     </Modal>
   );
@@ -925,11 +1012,11 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
 
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">🗓</span>
+            <InfoIcon name="calendar" />
             <div><p className="font-semibold text-slate-900">{fmtDate(p.date)} · {p.time}</p><p className="text-slate-500">Doors open 30 minutes before</p></div>
           </div>
           <div className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">📍</span>
+            <InfoIcon name="pin" />
             <div>
               <p className="font-semibold text-slate-900">{p.where}</p>
               <p className="text-slate-500">{p.address}</p>
@@ -940,7 +1027,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
             </div>
           </div>
           <div className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">👤</span>
+            <InfoIcon name="user" />
             <div>
               <p className="font-semibold text-slate-900">{p.contact.name} <span className="font-normal text-slate-500">· {p.contact.role}</span></p>
               <a href={`mailto:${p.contact.email}?subject=${encodeURIComponent(p.title)}`} className="font-semibold text-indigo-600 hover:underline">{p.contact.email}</a>
@@ -949,7 +1036,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">{action}</div>
+      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -976,11 +1063,11 @@ function ClubDetail({ club: c, action, onMap, onClose }) {
         </div>
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">🗓</span>
-            <div><p className="font-semibold text-slate-900">{c.when}</p><p className="text-slate-500">Weekly sessions during semester</p></div>
+            <InfoIcon name="calendar" />
+            <div><p className="font-semibold text-slate-900">{c.when}</p><p className="text-slate-500">Weekly during semester · {c.note}</p></div>
           </div>
           <div className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100">📍</span>
+            <InfoIcon name="pin" />
             <div>
               <p className="font-semibold text-slate-900">{c.where}</p>
               <p className="text-slate-500">{UOWD_ADDRESS}</p>
@@ -990,10 +1077,17 @@ function ClubDetail({ club: c, action, onMap, onClose }) {
               </p>
             </div>
           </div>
+          <div className="flex gap-3">
+            <InfoIcon name="user" />
+            <div>
+              <p className="font-semibold text-slate-900">{c.lead.name} <span className="font-normal text-slate-500">· {c.lead.role}</span></p>
+              <a href={`mailto:${c.lead.email}?subject=${encodeURIComponent(c.name)}`} className="font-semibold text-indigo-600 hover:underline">{c.lead.email}</a>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">{action}</div>
+      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -1018,7 +1112,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
     <div className="grid gap-5 lg:grid-cols-5">
       {/* Map */}
       <div className="lg:col-span-3">
-        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
+        <div className="u-keep rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="rounded-md bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">GF</span>
@@ -1095,7 +1189,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
       {/* Detail + directory */}
       <div className="space-y-4 lg:col-span-2">
         {sel ? (
-          <div key={sel.id} className="u-fade overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <div key={sel.id} className="u-fade overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
             <div className={`flex items-center gap-3 bg-gradient-to-r px-4 py-4 text-white ${GRADIENTS[sel.d.category]}`}>
               <span className="text-3xl">{sel.d.emoji}</span>
               <div className="min-w-0 flex-1">
@@ -1107,17 +1201,17 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
             <div className="space-y-3 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge kind={sel.kind === "club" ? "official" : "verified"} />
-                <span className="text-xs text-slate-500">🚶 ≈ {mins(sel)} min from the entrance</span>
+                <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Icon name="clock" className="h-3.5 w-3.5" /> ≈ {mins(sel)} min walk from the entrance</span>
               </div>
               {sel.kind === "club" ? (
                 <>
                   <p className="text-sm text-slate-600">{sel.d.desc}</p>
-                  <p className="text-sm text-slate-500">🗓 {sel.d.when} · 👥 {sel.d.members} members</p>
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{sel.d.when}</span><span className="inline-flex items-center gap-1.5"><Icon name="users" className="h-3.5 w-3.5" />{sel.d.members} members</span></p>
                   {renderClub(sel.d)}
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-slate-500">🗓 {fmtDate(sel.d.date)} · {sel.d.time} · {sel.d.price > 0 ? `${sel.d.price} AED` : "Free"}</p>
+                  <p className="flex items-center gap-1.5 text-sm text-slate-500"><Icon name="calendar" className="h-3.5 w-3.5" />{fmtDate(sel.d.date)} · {sel.d.time} · {sel.d.price > 0 ? `${sel.d.price} AED` : "Free"}</p>
                   <Vibe v={sel.d.vibe} />
                   <Spots left={left(sel)} total={sel.d.spots} unit={sel.d.price > 0 ? "tickets" : "spots"} wait={sel.d.wait} />
                   {renderParty(sel.d)}
@@ -1133,7 +1227,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
           </div>
         )}
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-2">
+        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm p-2">
           <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Booth directory</p>
           <div className="overflow-y-auto" style={{ maxHeight: 340 }}>
             {items.map((b) => (
@@ -1232,6 +1326,9 @@ export default function App() {
   const [waitlist, setWaitlist] = useState({});
   const [selBooth, setSelBooth] = useState(null);
   const [tickerOn, setTickerOn] = useState(true);
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
+  });
   const toastTimer = useRef(null);
 
   useEffect(() => {
@@ -1241,6 +1338,12 @@ export default function App() {
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }
     } catch (e) { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
+    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#f8fafc";
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  }, [dark]);
 
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
@@ -1276,7 +1379,7 @@ export default function App() {
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email };
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, txn: p.price > 0 ? makeId("ZN", 8) : null };
     setBookings((bs) => [b, ...bs]);
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
     return b;
@@ -1369,32 +1472,33 @@ export default function App() {
   const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["tickets", "My Tickets", "Tickets"]];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif" }}>
+    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
       <style>{CSS}</style>
 
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-slate-700" style={glassDark}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <button onClick={goHome} aria-label="Unite home" className="flex items-center gap-2.5 rounded-lg">
+          <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white">U</div>
             <span className="text-lg font-bold tracking-tight text-white">Unite</span>
             <span className="hidden rounded-full px-2 py-0.5 text-xs font-medium text-indigo-200 sm:inline" style={glassChip}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
+          <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
+              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
           )}
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
+      <section className="u-keep relative overflow-hidden bg-slate-900">
         <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600" style={{ filter: "blur(90px)", opacity: 0.45 }} />
         <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-fuchsia-600" style={{ filter: "blur(100px)", opacity: 0.3 }} />
         <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
@@ -1404,7 +1508,7 @@ export default function App() {
           <h1 className="mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Where UOWD comes together.</h1>
           <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One UOWD login, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={hostEvent} className="u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
+            <button onClick={hostEvent} className="u-keep u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
             <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
           </div>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
@@ -1420,7 +1524,7 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm" role="tablist">
+        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
           <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: "calc((100% - 12px) / 4)", transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
@@ -1436,7 +1540,7 @@ export default function App() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
-                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`}>{f}</button>
+                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/80 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
               ))}
             </div>
             {tab === "parties" && (
@@ -1452,7 +1556,7 @@ export default function App() {
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
                 <article key={c.id} tabIndex={0} onClick={(e) => openClub(e, c)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "club", id: c.id }); }}
-                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                   <div className="flex items-start gap-4">
                     <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
                     <div className="min-w-0 flex-1">
@@ -1464,10 +1568,10 @@ export default function App() {
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-3">
-                    <div className="text-xs text-slate-500">
-                      <p>🗓 {c.when}</p>
-                      <p className="mt-0.5">📍 {c.where} · 👥 {c.members} members</p>
-                      <button onClick={() => showOnMap("club", c.id)} className="mt-1 font-semibold text-indigo-600 hover:underline">Find booth on map →</button>
+                    <div className="min-w-0 space-y-1.5 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{c.members} members</span></div>
+                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.when}</p>
+                      <button onClick={() => showOnMap("club", c.id)} className="font-semibold text-indigo-600 hover:underline">Find booth on map →</button>
                     </div>
                     {clubBtn(c)}
                   </div>
@@ -1500,7 +1604,7 @@ export default function App() {
                 const left = p.spots - p.taken;
                 return (
                   <article key={p.id} id={"event-" + p.id} tabIndex={0} onClick={(e) => openDetail(e, p)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "detail", id: p.id }); }}
-                    className="u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+                    className="u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                     <div className={`flex items-center justify-between gap-2 bg-gradient-to-r px-4 py-4 ${GRADIENTS[p.category]}`}>
                       <span className="text-3xl">{p.emoji}</span>
                       <div className="flex items-center gap-2">
@@ -1516,9 +1620,9 @@ export default function App() {
                       </div>
                       <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
                       <div className="mt-2.5"><Vibe v={p.vibe} /></div>
-                      <div className="mt-3 space-y-0.5 text-sm text-slate-600">
-                        <p>🗓 {fmtDate(p.date)} · {p.time}</p>
-                        <p>📍 {p.where} <button onClick={() => showOnMap("party", p.id)} className="ml-1 text-xs font-semibold text-indigo-600 hover:underline">Find on map →</button></p>
+                      <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+                        <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
+                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} />{p.address === UOWD_ADDRESS && <button onClick={() => showOnMap("party", p.id)} className="text-xs font-semibold text-indigo-600 hover:underline">Find on map →</button>}</p>
                       </div>
                       <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
                       <div className="mt-4 flex gap-2">{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></div>
@@ -1551,8 +1655,8 @@ export default function App() {
         {/* My tickets */}
         {tab === "tickets" &&
           (!user ? (
-            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl">🔒</div>
+            <div className="rounded-3xl border border-slate-200/80 bg-white shadow-sm px-6 py-14 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
               <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you verify with your UOWD email.</p>
               <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with UOWD Email</button>
@@ -1571,7 +1675,7 @@ export default function App() {
                 ) : (
                   <div className="grid gap-3 md:grid-cols-2">
                     {bookings.map((b) => (
-                      <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left">
+                      <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4 text-left">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold">{b.title}</p>
@@ -1591,7 +1695,7 @@ export default function App() {
                     {Object.entries(waitlist).map(([id, pos]) => {
                       const p = parties.find((x) => x.id === Number(id));
                       return p ? (
-                        <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 text-left">
+                        <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4 text-left">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{p.emoji}</div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate font-semibold">{p.title}</p>
@@ -1607,14 +1711,14 @@ export default function App() {
               <section>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Event applications</h3>
                 {submissions.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-500">
+                  <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 text-sm text-slate-500">
                     Events you submit for review will appear here with their status.
                     <button onClick={hostEvent} className="ml-1 font-semibold text-indigo-600 hover:underline">Host an event</button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {submissions.map((s) => (
-                      <div key={s.ref} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+                      <div key={s.ref} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4">
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{s.title}</p>
                           <p className="text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · <span className="font-mono">{s.ref}</span></p>
