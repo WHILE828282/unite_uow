@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  // Flat repo layout: App.jsx and main.jsx live at the root, not in src/.
+  content: ["./index.html", "./*.{js,jsx}"],
   theme: { extend: {} },
   plugins: [],
 };
