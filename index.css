@@ -90,6 +90,10 @@ body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: 
 .u-dark :where(.divide-slate-100:not(.u-keep)) > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.06); }
 .u-dark :where(.ring-indigo-100:not(.u-keep)) { --tw-ring-color: rgba(99, 102, 241, 0.25); }
 
+/* Pending/leave accents */
+.u-dark :where(.ring-rose-200:not(.u-keep)) { --tw-ring-color: rgba(251, 113, 133, 0.3); }
+.u-dark :where(.border-amber-400:not(.u-keep)) { border-color: rgba(251, 191, 36, 0.6); }
+
 /* Segmented control: the selected option sits above the track */
 .u-dark .u-seg-on { background-color: #334166; }
 

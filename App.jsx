@@ -1190,7 +1190,8 @@ function EventDetail({ party: p, action, onShare, onClose }) {
   );
 }
 
-function ClubDetail({ club: c, joined, action, onClose }) {
+function ClubDetail({ club: c, status, action, onClose }) {
+  const joined = status === "joined";
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
   return (
     <Modal onClose={onClose} size="lg">
@@ -1199,6 +1200,7 @@ function ClubDetail({ club: c, joined, action, onClose }) {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
+          {status === "pending" && <span className="u-keep rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Pending approval</span>}
         </div>
         <h2 className="mt-2 text-2xl font-bold leading-tight">{c.name}</h2>
         <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members + (joined ? 1 : 0)} members · Free to join</p>
@@ -1254,6 +1256,29 @@ function ClubDetail({ club: c, joined, action, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Waitlist modal, live ticker                                        */
 /* ------------------------------------------------------------------ */
+const PROCESSING_MS = 24 * 36e5; // Student Services turnaround for tryout forms
+
+function LeaveConfirm({ club: c, pending, onConfirm, onCancel }) {
+  const kind = c.category === "Sports" ? "team" : "club";
+  return (
+    <Modal onClose={onCancel} size="sm">
+      <div className="p-6 pt-8 text-center">
+        <span className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-2xl ring-1 ring-inset ring-rose-200">{c.emoji}</span>
+        <h2 className="mt-4 text-lg font-bold text-slate-900">Are you sure you want to leave this {kind}?</h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          {pending
+            ? <>Your pending tryout registration for <span className="font-semibold text-slate-900">{c.name}</span> will be cancelled and its sessions removed from My Schedule. To rejoin, you'd submit the UOWD form again.</>
+            : <>You'll leave <span className="font-semibold text-slate-900">{c.name}</span> and its weekly sessions ({scheduleLabel(c, true)}) will be removed from My Schedule.</>}
+        </p>
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <button onClick={onCancel} autoFocus className="u-btn rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+          <button onClick={onConfirm} className="u-btn rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-700">Yes, Leave</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
   return (
     <Modal onClose={onClose}>
@@ -1331,9 +1356,9 @@ function downloadCalendar(sessions, events) {
     if (rrule) out.push(rrule);
     out.push("END:VEVENT");
   };
-  sessions.forEach(({ club, slot }) => {
+  sessions.forEach(({ club, slot, pending }) => {
     const d = new Date(now); d.setDate(d.getDate() + ((slot.day - weekdayIdx(d) + 7) % 7));
-    ev(slot.id, stamp(d, slot.start), stamp(d, slot.end), `${club.name}: ${slot.title}`, slot.where, "RRULE:FREQ=WEEKLY;COUNT=12");
+    ev(slot.id, stamp(d, slot.start), stamp(d, slot.end), `${club.name}: ${slot.title}${pending ? " (pending approval)" : ""}`, slot.where, "RRULE:FREQ=WEEKLY;COUNT=12");
   });
   events.forEach((b) => {
     const d = new Date(b.date + "T00:00:00"), st = to24(b.time);
@@ -1452,7 +1477,10 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
             <button onClick={() => onOpenClub(nextSession.club)} className="mt-2 flex w-full items-center gap-3 text-left">
               <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${GRADIENTS[nextSession.club.category]}`}>{nextSession.club.emoji}</span>
               <span className="min-w-0">
-                <span className="block truncate font-semibold text-slate-900">{nextSession.club.name} · {nextSession.slot.title}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-semibold text-slate-900">{nextSession.club.name} · {nextSession.slot.title}</span>
+                  {nextSession.pending && <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Pending</span>}
+                </span>
                 <span className="block truncate text-sm text-slate-500">{whenLabel(nextSession.days)}, {fmtRange(nextSession.slot.start, nextSession.slot.end)} · {nextSession.slot.where}</span>
               </span>
             </button>
@@ -1464,7 +1492,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
           ) : <p className="mt-2 text-sm text-slate-500">Nothing coming up.</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions</p></div>
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions{sessions.some((x) => x.pending) ? <span className="text-amber-600"> · {sessions.filter((x) => x.pending).length} pending</span> : null}</p></div>
           <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{weekly % 1 ? weekly.toFixed(1) : weekly}</p><p className="text-xs text-slate-500">hours a week</p></div>
         </div>
       </div>
@@ -1543,8 +1571,9 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
                       const tall = height > 70;
                       const narrow = it.lanes > 1;
                       return it.kind === "session" ? (
-                        <button key={it.key} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title} · ${fmtRange(it.x.slot.start, it.x.slot.end)}`}
-                          className={`absolute overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left shadow-sm hover:z-10 hover:shadow-md ${CAT_TINT[it.x.club.category]}`} style={style}>
+                        <button key={it.key} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title} · ${fmtRange(it.x.slot.start, it.x.slot.end)}${it.x.pending ? " · pending approval" : ""}`}
+                          className={`absolute overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left shadow-sm hover:z-10 hover:opacity-100 hover:shadow-md ${CAT_TINT[it.x.club.category]} ${it.x.pending ? "u-pending border-dashed opacity-60" : ""}`} style={style}>
+                          {it.x.pending && <span className="block truncate text-xs font-bold text-amber-700">⏳ Pending</span>}
                           <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.x.slot.start, it.x.slot.end)}</span>
                           <span className="block truncate text-xs font-bold text-slate-900">{it.x.club.emoji} {it.x.club.name}</span>
                           {tall && !narrow && <span className="block truncate text-xs text-slate-500">{it.x.slot.title}</span>}
@@ -1575,6 +1604,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
             {[["Sports", "bg-emerald-500"], ["Tech", "bg-sky-500"], ["Business", "bg-violet-500"], ["Arts", "bg-pink-500"]].map(([k, c]) => (
               <span key={k} className="inline-flex items-center gap-1.5"><span className={`h-3 w-1 rounded-full ${c}`} /> {k}</span>
             ))}
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-amber-400 bg-amber-50 opacity-70" /> ⏳ Pending approval</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-rose-500" /> Now</span>
           </div>
@@ -1721,7 +1751,10 @@ export default function App() {
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
-  const [joinedClubs, setJoinedClubs] = useState({}); // clubId -> true; each club's fixed official schedule is added in full
+  // clubId -> { status: "pending" | "joined", at }. Sports tryout forms start as pending and are processed by
+  // Student Services within ~24h (never rejected); clubs without a form join straight away.
+  const [joinedClubs, setJoinedClubs] = useState({});
+  const [clock, setClock] = useState(Date.now());
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -1751,6 +1784,8 @@ export default function App() {
 
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
+  useEffect(() => { const t = setInterval(() => setClock(Date.now()), 60000); return () => clearInterval(t); }, []);
+
   const notify = (m, ms = 2400) => { setToast(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), ms); };
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
@@ -1772,16 +1807,26 @@ export default function App() {
   };
   const goHome = () => { changeTab("clubs"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-  const isJoined = (c) => !!(user && joinedClubs[c.id]);
-  const memberCount = (c) => c.members + (isJoined(c) ? 1 : 0);
-  const sessions = clubs.filter(isJoined).flatMap((c) => c.slots.map((slot) => ({ club: c, slot })));
+  const statusOf = (c) => {
+    const r = user && joinedClubs[c.id];
+    if (!r) return null;
+    return r.status === "pending" && clock - r.at >= PROCESSING_MS ? "joined" : r.status;
+  };
+  // clock ticks once a minute, so it can trail a just-made submission: clamp to the 24h window.
+  const pendingHours = (c) => Math.min(24, Math.max(1, Math.ceil((joinedClubs[c.id].at + PROCESSING_MS - clock) / 36e5)));
+  const isJoined = (c) => !!statusOf(c); // pending or registered: either way the sessions are on the schedule
+  const memberCount = (c) => c.members + (statusOf(c) === "joined" ? 1 : 0);
+  const sessions = clubs.filter(isJoined).flatMap((c) => c.slots.map((slot) => ({ club: c, slot, pending: statusOf(c) === "pending" })));
 
   // Each team/club has one fixed official schedule; registering adds all of its sessions.
-  const registerClub = (c) => {
+  const registerClub = (c, pending = false) => {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
-    setJoinedClubs((x) => ({ ...x, [c.id]: true }));
-    notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${clash ? ` Heads up: it overlaps with ${clash.club.name}.` : ""}`, 4200);
+    setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
+    const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
+    if (pending) notify(`Tryout form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
+    else notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
+  const askLeave = (c) => setModal({ type: "leave", id: c.id });
   // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
@@ -1789,9 +1834,10 @@ export default function App() {
     requireAuth(`Sign in to join ${c.name}`, () => registerClub(c));
   };
   const leaveClub = (c) => {
+    const wasPending = statusOf(c) === "pending";
     setJoinedClubs((x) => { const n = { ...x }; delete n[c.id]; return n; });
     setModal(null);
-    notify(`You left ${c.name}`);
+    notify(wasPending ? `Tryout registration for ${c.name} cancelled` : `You left ${c.name}`);
   };
 
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
@@ -1855,8 +1901,8 @@ export default function App() {
   };
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
-    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {isJoined(c) ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Join club"}
+    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${statusOf(c) === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : statusOf(c) === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
+      {statusOf(c) === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : statusOf(c) === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Join club"}
     </button>
   );
 
@@ -1878,6 +1924,7 @@ export default function App() {
   const filteredParties = parties.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
   const feedLangs = LANGUAGES.filter((l) => parties.some((p) => p.lang === l));
   const myClubs = clubs.filter(isJoined).length;
+  const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const hot = parties
     .filter((p) => p.spots - p.taken > 0 && p.spots - p.taken <= 5 && !bookingFor(p.id))
     .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
@@ -1987,7 +2034,7 @@ export default function App() {
         {/* Clubs */}
         {tab === "clubs" && (
           <>
-            {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any clubs yet." : `You're in ${myClubs} club${myClubs > 1 ? "s" : ""}.`}</p>}
+            {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any teams or clubs yet." : `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}${myPending ? ` · ${myPending} pending approval` : ""}.`}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
                 <article key={c.id} tabIndex={0} onClick={(e) => openClub(e, c)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "club", id: c.id }); }}
@@ -2213,14 +2260,41 @@ export default function App() {
       {modal && modal.type === "club" && clubs.find((x) => x.id === modal.id) && (
         <ClubDetail
           club={clubs.find((x) => x.id === modal.id)}
-          joined={isJoined(clubs.find((x) => x.id === modal.id))}
-          action={isJoined(clubs.find((x) => x.id === modal.id)) ? (
-            <div className="flex gap-2">
-              <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> Registered · in My Schedule</span>
-              <button onClick={() => leaveClub(clubs.find((x) => x.id === modal.id))} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Leave</button>
-            </div>
-          ) : clubBtn(clubs.find((x) => x.id === modal.id), "w-full py-3")}
+          status={statusOf(clubs.find((x) => x.id === modal.id))}
+          action={(() => {
+            const c = clubs.find((x) => x.id === modal.id);
+            const st = statusOf(c);
+            if (st === "pending")
+              return (
+                <div className="space-y-2.5">
+                  <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
+                    <span aria-hidden="true">⏳</span>
+                    <span>Student Services is processing your tryout form. This usually takes about 24 hours (~{pendingHours(c)}h left). Your sessions already show in My Schedule as pending.</span>
+                  </p>
+                  <div className="flex gap-2">
+                    <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 py-3 text-sm font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Pending approval</span>
+                    <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Cancel request</button>
+                  </div>
+                </div>
+              );
+            if (st === "joined")
+              return (
+                <div className="flex gap-2">
+                  <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> Registered · in My Schedule</span>
+                  <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Leave</button>
+                </div>
+              );
+            return clubBtn(c, "w-full py-3");
+          })()}
           onClose={closeModal}
+        />
+      )}
+      {modal && modal.type === "leave" && clubs.find((x) => x.id === modal.id) && (
+        <LeaveConfirm
+          club={clubs.find((x) => x.id === modal.id)}
+          pending={statusOf(clubs.find((x) => x.id === modal.id)) === "pending"}
+          onConfirm={() => leaveClub(clubs.find((x) => x.id === modal.id))}
+          onCancel={() => setModal({ type: "club", id: modal.id })}
         />
       )}
       {modal && modal.type === "tryout" && clubs.find((x) => x.id === modal.id) && (() => {
@@ -2228,7 +2302,7 @@ export default function App() {
         return (
           <TryoutModal
             club={c}
-            onSent={() => { closeModal(); registerClub(c); }}
+            onSent={() => { closeModal(); registerClub(c, true); }}
             onClose={closeModal}
           />
         );
