@@ -1752,6 +1752,95 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
   );
 }
 
+/* Official UOWD Sports tryouts registration (Jotform), embedded full-height. */
+const UOWD_TRYOUTS_URL = "https://uowd.jotform.com/251912229886062";
+const isSports = (c) => c.category === "Sports";
+
+function TryoutModal({ club: c, sent, onSent, onSessions, onClose }) {
+  const [loaded, setLoaded] = useState(false);
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 8000);
+    const h = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", h);
+    return () => { clearTimeout(t); window.removeEventListener("keydown", h); };
+  }, [onClose]);
+
+  return (
+    <div className="u-fade fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6" style={overlayStyle}
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div role="dialog" aria-modal="true" aria-label={`UOWD Sports tryouts registration for ${c.name}`}
+        className="u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl">
+
+        {/* Header */}
+        <div className="u-keep relative shrink-0 overflow-hidden bg-slate-900 px-4 pb-4 pt-3 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+          <div className={`absolute -right-16 -top-24 h-56 w-56 rounded-full bg-gradient-to-br ${GRADIENTS[c.category]}`} style={{ filter: "blur(60px)", opacity: 0.45 }} />
+          <div className="relative flex items-center justify-between gap-2">
+            <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-200 hover:text-white" style={glassChip}>
+              <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back to Feed
+            </button>
+            <div className="flex items-center gap-2">
+              <a href={UOWD_TRYOUTS_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-200 hover:text-white" style={glassChip}>
+                Open in new tab ↗
+              </a>
+              <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg text-slate-200 hover:text-white" style={glassChip}>✕</button>
+            </div>
+          </div>
+          <div className="relative mt-4 flex items-center gap-3">
+            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-emerald-300"><Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD form</p>
+              <h2 className="truncate text-lg font-bold leading-tight sm:text-xl">Sports Tryouts Registration</h2>
+              <p className="truncate text-sm text-slate-400">For {c.name} · run by UOWD Sports</p>
+            </div>
+          </div>
+          <p className="relative mt-3 rounded-xl px-3 py-2 text-xs leading-relaxed text-slate-300" style={glassChip}>
+            <span className="hidden sm:inline">You're filling in UOWD's official Jotform: name, student number, date of birth, medical conditions and so on. </span>Your answers go straight to UOWD Sports, not to Unite.
+          </p>
+        </div>
+
+        {/* Form */}
+        <div className="relative min-h-0 flex-1 bg-slate-50">
+          {!loaded && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+              <span className="u-spin h-9 w-9 rounded-full border-4 border-slate-200 border-t-indigo-600" />
+              <p className="text-sm font-medium text-slate-600">Loading the official UOWD form…</p>
+              {slow && (
+                <p className="text-xs text-slate-500">Taking a while? <a href={UOWD_TRYOUTS_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open it in a new tab ↗</a></p>
+              )}
+            </div>
+          )}
+          <iframe
+            title={`UOWD Sports Tryouts Registration form for ${c.name}`}
+            src={UOWD_TRYOUTS_URL}
+            onLoad={() => setLoaded(true)}
+            allow="fullscreen"
+            referrerPolicy="strict-origin-when-cross-origin"
+            className="absolute inset-0 h-full w-full border-0 bg-white"
+            style={{ opacity: loaded ? 1 : 0, transition: "opacity .3s ease" }}
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="flex shrink-0 flex-col gap-2 border-t border-slate-200/80 bg-white p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+          {sent ? (
+            <span className="u-pop inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-2.5 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200 sm:justify-start sm:px-3">
+              <Check className="h-4 w-4" /> Marked as submitted
+            </span>
+          ) : (
+            <button onClick={onSent} className="u-btn flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+              I've submitted the form
+            </button>
+          )}
+          <button onClick={onSessions} className="u-btn flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+            Pick weekly training sessions →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
@@ -1762,6 +1851,7 @@ export default function App() {
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
   const [clubSlots, setClubSlots] = useState({}); // clubId -> [slotId]
+  const [tryouts, setTryouts] = useState({}); // clubId -> true once the student says they sent the UOWD form
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -1819,6 +1909,9 @@ export default function App() {
   const sessions = clubs.flatMap((c) => c.slots.filter((sl) => (mySlots[c.id] || []).includes(sl.id)).map((slot) => ({ club: c, slot })));
 
   const openSlots = (c) => requireAuth(`Sign in to join ${c.name}`, () => setModal({ type: "slots", id: c.id }));
+  // Sports sections register through UOWD's official tryouts form.
+  const openJoin = (c) => (isSports(c) ? requireAuth(`Sign in to register for ${c.name} tryouts`, () => setModal({ type: "tryout", id: c.id })) : openSlots(c));
+  const tryoutSent = (c) => !!(user && tryouts[c.id]);
   const toggleSlot = (c, sl) => {
     const cur = clubSlots[c.id] || [];
     const on = cur.includes(sl.id);
@@ -1898,8 +1991,8 @@ export default function App() {
   };
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
-    <button onClick={() => openSlots(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {isJoined(c) ? `Registered ✓ · ${mySlots[c.id].length} session${mySlots[c.id].length > 1 ? "s" : ""}` : "Join · pick a time"}
+    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) || tryoutSent(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
+      {isJoined(c) ? `Registered ✓ · ${mySlots[c.id].length} session${mySlots[c.id].length > 1 ? "s" : ""}` : tryoutSent(c) ? "Tryout form sent ✓" : isSports(c) ? "Register · tryouts" : "Join · pick a time"}
     </button>
   );
 
@@ -2281,6 +2374,18 @@ export default function App() {
             onToggle={(sl) => toggleSlot(c, sl)}
             onLeave={() => leaveClub(c)}
             onViewSchedule={() => { closeModal(); jumpTo("schedule"); }}
+            onClose={closeModal}
+          />
+        );
+      })()}
+      {modal && modal.type === "tryout" && clubs.find((x) => x.id === modal.id) && (() => {
+        const c = clubs.find((x) => x.id === modal.id);
+        return (
+          <TryoutModal
+            club={c}
+            sent={tryoutSent(c)}
+            onSent={() => { setTryouts((t) => ({ ...t, [c.id]: true })); notify(`Thanks! ${c.name} tryout registration marked as sent. UOWD Sports will contact you by email.`, 3600); }}
+            onSessions={() => setModal({ type: "slots", id: c.id })}
             onClose={closeModal}
           />
         );

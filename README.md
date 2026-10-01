@@ -18,7 +18,8 @@ npm run dev
 ## Demo behaviour
 - Sign in: any valid email address (university, Gmail, iCloud…), optional Student ID, then any 4-digit code (e.g. **1234**).
 - Payments: simulated Ziina checkout, no real charge.
-- Clubs: joining opens a weekly time-slot picker; chosen sessions and booked events appear in **My Schedule** (exportable as an .ics calendar file).
+- Sports sections (Basketball, Football): 'Register · tryouts' opens UOWD's official Sports Tryouts Jotform (https://uowd.jotform.com/251912229886062) embedded in the app; answers go straight to UOWD.
+- Other clubs: joining opens a weekly time-slot picker; chosen sessions and booked events appear in **My Schedule** (exportable as an .ics calendar file).
 - Data (clubs, events, waitlists, tickets, schedules) lives in memory and resets on refresh.
 
 ## Before going live
