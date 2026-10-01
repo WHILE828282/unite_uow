@@ -43,51 +43,51 @@ const mapsLink = (query) => `https://maps.google.com/maps?${new URLSearchParams(
 
 const PARTIES = [
   { id: 1, lang: "English", title: "Rooftop Sunset Mixer", emoji: "🌇", category: "Social", date: "2026-10-09", time: "7:00 PM", where: "Rooftop Terrace, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 40, spots: 60, taken: 52, wait: 0, vibe: { score: 4.9, count: 42 }, host: "Layla Al Mansoori",
-    contact: { name: "Layla Al Mansoori", role: "Event lead", email: "sunset@uniteuow.com" },
+    contact: { name: "Layla Al Mansoori", role: "Event lead", email: "sunset@uniteuow.com", whatsapp: "+971 50 000 1001", telegram: "unite_sunset" },
     desc: "A golden-hour mixer on the Block 5 rooftop with a live DJ, a mocktail bar and skyline views. The easiest way to meet students from every faculty after a busy week.",
     perks: ["Live DJ", "Mocktail bar", "Skyline views"] },
   { id: 2, lang: "English", title: "UOWD Futsal Tournament", emoji: "⚽", category: "Sports", date: "2026-10-15", time: "7:30 PM", where: "UOWD Sports Hall", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 25, spots: 40, taken: 35, wait: 0, vibe: { score: 4.7, count: 58 }, host: "Omar Khalid",
-    contact: { name: "Omar Khalid", role: "Tournament organizer", email: "futsal@uniteuow.com" },
+    contact: { name: "Omar Khalid", role: "Tournament organizer", email: "futsal@uniteuow.com", whatsapp: "+971 50 000 1002", telegram: "unite_futsal" },
     desc: "Five-a-side knockout across eight teams, with referees, a trophy and pizza after the final. Register as a player and we balance the squads on the night, so you don't need a full team.",
     perks: ["Referees", "Trophy", "Pizza after"] },
   { id: 3, lang: "Arabic", title: "PS5 Tournament", emoji: "🎮", category: "Gaming", date: "2026-10-12", time: "6:00 PM", where: "Student Lounge, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 15, spots: 32, taken: 20, wait: 0, vibe: { score: 4.8, count: 37 }, host: "Karim Haddad",
-    contact: { name: "Karim Haddad", role: "Gaming lead", email: "ps5@uniteuow.com" },
+    contact: { name: "Karim Haddad", role: "Gaming lead", email: "ps5@uniteuow.com", whatsapp: "+971 50 000 1003", telegram: "unite_ps5" },
     desc: "1v1 football and fighting-game brackets on big screens in the Student Lounge. Controllers are provided, the final is shoutcasted live, and the winner takes home the prize pot.",
     perks: ["Big screens", "Live shoutcast", "Prize pot"] },
   { id: 4, lang: "Hindi", title: "Open Mic & Chai", emoji: "☕", category: "Music", date: "2026-10-17", time: "8:00 PM", where: "Courtyard Café", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 50, taken: 22, wait: 0, vibe: null, host: "Yusuf Ibrahim",
-    contact: { name: "Yusuf Ibrahim", role: "Host", email: "openmic@uniteuow.com" },
+    contact: { name: "Yusuf Ibrahim", role: "Host", email: "openmic@uniteuow.com", whatsapp: "+971 50 000 1004", telegram: "unite_openmic" },
     desc: "Sing, play, recite or just listen. Sign up for a five-minute slot on the night or come for the karak and the atmosphere. All talent levels welcome.",
     perks: ["5-min slots", "Free karak", "Acoustic setup"] },
   { id: 5, lang: "English", title: "Finance Society Networking Night", emoji: "💼", category: "Career", date: "2026-10-22", time: "6:00 PM", where: "Auditorium Foyer, Block 3", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 100, taken: 64, wait: 0, vibe: { score: 4.6, count: 73 }, host: "Finance & Entrepreneurship Society",
-    contact: { name: "Finance & Entrepreneurship Society", role: "Organizers", email: "finance@uniteuow.com" },
+    contact: { name: "Finance & Entrepreneurship Society", role: "Organizers", email: "finance@uniteuow.com", whatsapp: "+971 50 000 1005", telegram: "unite_finance" },
     desc: "Meet finance professionals, alumni and recruiters over canapés. A short panel on breaking into banking and fintech in the UAE is followed by open networking. Smart casual.",
     perks: ["Industry panel", "Alumni mentors", "Canapés"] },
   { id: 6, lang: "English", title: "Halloween Costume Party", emoji: "🎃", category: "Social", date: "2026-10-30", time: "8:30 PM", where: "Grand Ballroom, Dubai Knowledge Park", address: "Dubai Knowledge Park, Dubai, UAE", maps: "Dubai Knowledge Park", price: 75, spots: 120, taken: 120, wait: 4, vibe: { score: 4.9, count: 156 }, host: "Student Council",
-    contact: { name: "Student Council", role: "Organizers", email: "council@uniteuow.com" },
+    contact: { name: "Student Council", role: "Organizers", email: "council@uniteuow.com", whatsapp: "+971 50 000 1006", telegram: "unite_council" },
     desc: "The biggest night of the semester: costume contest, two dance floors and a haunted photo booth. It sold out fast, so join the waitlist in case a spot opens up.",
     perks: ["Costume contest", "2 dance floors", "Photo booth"] },
   { id: 7, lang: "English", title: "Post-Midterm Yacht Party", emoji: "🛥️", category: "Social", date: "2026-10-24", time: "5:00 PM", where: "Dubai Marina, Pier 7", address: "Dubai Marina, Dubai, UAE", maps: "Dubai Marina", price: 120, spots: 80, taken: 76, wait: 0, vibe: { score: 4.8, count: 31 }, host: "Class of 2027 Committee",
-    contact: { name: "Class of 2027 Committee", role: "Organizers", email: "yacht@uniteuow.com" },
+    contact: { name: "Class of 2027 Committee", role: "Organizers", email: "yacht@uniteuow.com", whatsapp: "+971 50 000 1007", telegram: "unite_yacht" },
     desc: "Three hours cruising the Marina skyline with a DJ, a buffet and a sunset deck. The boat leaves on time: arrive 20 minutes early with your ticket QR.",
     perks: ["Buffet", "DJ", "Sunset deck"] },
   { id: 8, lang: "Russian", title: "Russian Movie Night", emoji: "🎬", category: "Social", date: "2026-10-14", time: "7:00 PM", where: "Lecture Theatre 2, Block 2", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 40, taken: 18, wait: 0, vibe: { score: 4.8, count: 21 }, host: "Anastasia Volkova",
-    contact: { name: "Anastasia Volkova", role: "Host", email: "kino@uniteuow.com" },
+    contact: { name: "Anastasia Volkova", role: "Host", email: "kino@uniteuow.com", whatsapp: "+971 50 000 1008", telegram: "unite_kino" },
     desc: "A cosy screening of a Soviet comedy classic with English subtitles, followed by tea, pryaniki and a relaxed chat. Native speakers and learners are equally welcome.",
     perks: ["English subtitles", "Tea & pryaniki", "Post-film chat"] },
   { id: 9, lang: "Arabic", title: "Arabic Coffee & Conversation", emoji: "🫖", category: "Social", date: "2026-10-13", time: "4:30 PM", where: "Majlis Lounge, Block 2", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 25, taken: 19, wait: 0, vibe: { score: 4.9, count: 33 }, host: "Mariam Al Suwaidi",
-    contact: { name: "Mariam Al Suwaidi", role: "Host", email: "majlis@uniteuow.com" },
+    contact: { name: "Mariam Al Suwaidi", role: "Host", email: "majlis@uniteuow.com", whatsapp: "+971 50 000 1009", telegram: "unite_majlis" },
     desc: "Gahwa, dates and easy conversation in a traditional majlis setting. Practise your Arabic with native speakers from across the Gulf and the Levant, at any level.",
     perks: ["Gahwa & dates", "All levels", "Native speakers"] },
   { id: 10, lang: "Japanese", title: "Anime & Matcha Night", emoji: "🍵", category: "Social", date: "2026-10-20", time: "7:00 PM", where: "Student Lounge, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 20, spots: 30, taken: 12, wait: 0, vibe: null, host: "Yuki Tanaka",
-    contact: { name: "Yuki Tanaka", role: "Host", email: "anime@uniteuow.com" },
+    contact: { name: "Yuki Tanaka", role: "Host", email: "anime@uniteuow.com", whatsapp: "+971 50 000 1010", telegram: "unite_anime" },
     desc: "Back-to-back episodes on the big screen, freshly whisked matcha and mochi, and a short Japanese phrase corner between episodes. Your ticket covers drinks and snacks.",
     perks: ["Big screen", "Matcha & mochi", "Phrase corner"] },
   { id: 11, lang: "French", title: "Café Français Language Exchange", emoji: "🥐", category: "Social", date: "2026-10-19", time: "5:00 PM", where: "Courtyard Café", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 30, taken: 9, wait: 0, vibe: { score: 4.6, count: 14 }, host: "Camille Laurent",
-    contact: { name: "Camille Laurent", role: "Host", email: "francais@uniteuow.com" },
+    contact: { name: "Camille Laurent", role: "Host", email: "francais@uniteuow.com", whatsapp: "+971 50 000 1011", telegram: "unite_francais" },
     desc: "Half the hour in French, half in English. Rotate tables every 15 minutes and leave with a few new friends and much better pronunciation. Croissants on us.",
     perks: ["Table rotations", "All levels", "Croissants"] },
   { id: 12, lang: "Chinese", title: "Chinese Calligraphy Workshop", emoji: "🖌️", category: "Social", date: "2026-10-21", time: "6:00 PM", where: "Room 1.04, Block 1", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 10, spots: 20, taken: 11, wait: 0, vibe: { score: 4.9, count: 18 }, host: "Li Wei",
-    contact: { name: "Li Wei", role: "Workshop lead", email: "calligraphy@uniteuow.com" },
+    contact: { name: "Li Wei", role: "Workshop lead", email: "calligraphy@uniteuow.com", whatsapp: "+971 50 000 1012", telegram: "unite_calligraphy" },
     desc: "Learn brush basics and write your name in Chinese characters. Brushes, ink and rice paper are provided, and you take your finished piece home.",
     perks: ["Materials included", "Take-home piece", "Beginners welcome"] },
 ];
@@ -321,11 +321,46 @@ const InfoIcon = ({ name }) => (
   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200/70"><Icon name={name} /></span>
 );
 const shortVenue = (where) => where.split(",")[0].replace(/^UOWD /, "");
-const VenueChip = ({ where }) => (
-  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70">
-    <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}
-  </span>
-);
+const VenueChip = ({ where, href }) =>
+  href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" title={`Open ${shortVenue(where)} in Google Maps`}
+      className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70 hover:bg-indigo-50 hover:text-indigo-700 hover:ring-indigo-200">
+      <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}<span aria-hidden="true" className="text-slate-400">↗</span>
+    </a>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70">
+      <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}
+    </span>
+  );
+
+/* Organizer contact buttons: WhatsApp, Telegram, Email (whichever are provided). */
+function ContactButtons({ contact: c, subject }) {
+  const btn = "u-btn inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold ring-1 ring-inset";
+  return (
+    <div className="flex flex-wrap gap-2">
+      {c.whatsapp && (
+        <a href={`https://wa.me/${waDigits(c.whatsapp)}?text=${encodeURIComponent(`Hi! I'm interested in ${subject} (via Unite).`)}`} target="_blank" rel="noopener noreferrer"
+          className={`${btn} bg-emerald-50 text-emerald-700 ring-emerald-200 hover:bg-emerald-100`} aria-label={`WhatsApp ${c.whatsapp}`}>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.7 11.8 11.8 0 004.5 4c1.7.7 2.3.8 3.1.6a2.7 2.7 0 001.8-1.2 2.2 2.2 0 00.2-1.3c-.1-.1-.3-.2-.5-.3z" /></svg>
+          WhatsApp
+        </a>
+      )}
+      {c.telegram && (
+        <a href={`https://t.me/${tgHandle(c.telegram)}`} target="_blank" rel="noopener noreferrer"
+          className={`${btn} bg-sky-50 text-sky-700 ring-sky-200 hover:bg-sky-100`} aria-label={`Telegram @${tgHandle(c.telegram)}`}>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true"><path d="M21.9 4.3l-3.2 15.2c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.2-8.3c.4-.4-.1-.6-.6-.2L6.1 13.2l-4.9-1.5c-1.1-.3-1.1-1.1.2-1.6L20.5 2.8c.9-.3 1.7.2 1.4 1.5z" /></svg>
+          @{tgHandle(c.telegram)}
+        </a>
+      )}
+      {c.email && (
+        <a href={`mailto:${c.email}?subject=${encodeURIComponent(subject)}`}
+          className={`${btn} bg-white text-slate-700 ring-slate-200 hover:bg-slate-50`}>
+          <Icon name="mail" className="h-4 w-4" /> Email
+        </a>
+      )}
+    </div>
+  );
+}
 
 const LangBadge = ({ lang }) => (
   <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-200">
@@ -699,34 +734,70 @@ function AuthModal({ reason, onClose, onSignIn }) {
 
 const CREATE_TABS = [
   ["basics", "Basics", ["title", "desc"]],
-  ["when", "Time & place", ["date", "end", "venue", "spots", "price"]],
-  ["details", "Details", ["dress", "reqs", "email"]],
+  ["when", "Time & place", ["date", "end", "venueName", "mapsUrl", "spots", "price"]],
+  ["details", "Details", ["dress", "reqs"]],
+  ["contacts", "Contacts", ["whatsapp", "telegram", "email"]],
 ];
-const VENUE_SUGGESTIONS = ["Room 2.11, Block 2", "Lab B2.14, Block 2", "Lecture Theatre 2, Block 2", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Sports Hall, Court 1", "Pitch 2", "Innovation Studio", "Courtyard Café", "Auditorium, Block 3"];
+const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
 const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
+const REVIEW_MS = 2 * 36e5; // admin safety review for student parties
+
+/* Contact helpers shared by the form and the event details. */
+const waDigits = (v) => (v || "").replace(/\D/g, "");
+const tgHandle = (v) => (v || "").trim().replace(/^@/, "").replace(/^https?:\/\/t\.me\//i, "");
+const isGoogleMapsUrl = (u) => {
+  try {
+    const x = new URL(u);
+    return /^https?:$/.test(x.protocol) && (/(^|\.)google\.[a-z.]+$/i.test(x.hostname) && /maps/.test(x.hostname + x.pathname) || /^(maps\.app\.goo\.gl|goo\.gl)$/i.test(x.hostname));
+  } catch (e) { return false; }
+};
+/* Organizer-supplied Google Maps links are forced to English (short maps.app.goo.gl links can't carry params). */
+const englishMapsUrl = (u) => {
+  try {
+    const x = new URL(u);
+    if (/(^|\.)google\.[a-z.]+$/i.test(x.hostname)) { x.searchParams.set("hl", "en"); x.searchParams.set("gl", "ae"); }
+    return x.toString();
+  } catch (e) { return u; }
+};
+const fmtLeft = (ms) => { const m = Math.max(1, Math.ceil(ms / 6e4)); return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
+const TYPE_EMOJI = { Party: "🎉", Social: "🥂", "Academic Study": "📚", Networking: "🤝", Sports: "🏅", Gaming: "🎮", Music: "🎶", "Arts & Culture": "🎨" };
+/* An approved application becomes a regular feed event, with the organizer's contacts and map link. */
+const submissionToParty = (sub) => ({
+  id: sub.at, lang: sub.lang, title: sub.title, emoji: TYPE_EMOJI[sub.category] || "🎉", category: sub.category,
+  date: sub.date, time: fmtTime(sub.start), where: sub.room ? `${sub.venueName}, ${sub.room}` : sub.venueName,
+  address: sub.venueName, maps: sub.venueName, mapsUrl: sub.mapsUrl, price: sub.price, spots: sub.spots, taken: 0, wait: 0, vibe: null,
+  host: "you", own: true,
+  contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
+  desc: sub.desc || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
+  perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
+});
+const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venue: "", spots: 30, price: 0, dress: "", reqs: "", email: defaultEmail });
+  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail });
   const [errors, setErrors] = useState({});
   const [tab, setTab] = useState("basics");
-  const [step, setStep] = useState("form");
-  const [ref, setRef] = useState("");
-  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setErrors({ ...errors, [k]: undefined }); };
+  const [submitting, setSubmitting] = useState(false);
+  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setErrors({ ...errors, [k]: undefined, ...(k === "whatsapp" || k === "telegram" ? { whatsapp: undefined, telegram: undefined } : {}) }); };
 
   const validate = () => {
     const e = {};
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
     if (!f.date || f.date < TODAY) e.date = "Pick a date from today onwards.";
     if (f.time && f.end && toMin(f.end) <= toMin(f.time)) e.end = "End after the start time.";
-    if (f.venue.trim().length < 3) e.venue = "Add the exact venue or room number.";
+    if (f.venueName.trim().length < 3) e.venueName = "Add the venue name, e.g. Marina Rooftop Lounge.";
+    if (f.mapsUrl.trim() && !isGoogleMapsUrl(f.mapsUrl.trim())) e.mapsUrl = "Paste a Google Maps link (google.com/maps or maps.app.goo.gl).";
     if (!(Number(f.spots) >= 1)) e.spots = "At least 1 spot.";
     if (Number(f.price) < 0 || f.price === "") e.price = "Enter 0 for free events.";
+    const wa = waDigits(f.whatsapp), tg = tgHandle(f.telegram);
+    if (f.whatsapp.trim() && (wa.length < 8 || wa.length > 15)) e.whatsapp = "Use the full number with country code, e.g. +971 50 123 4567.";
+    if (f.telegram.trim() && !/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(tg)) e.telegram = "Telegram usernames are 5–32 letters, numbers or underscores.";
+    if (!wa && !tg && !e.whatsapp && !e.telegram) e.whatsapp = "Add a WhatsApp number or a Telegram username so guests can reach you.";
     if (!validEmail(f.email.trim())) e.email = "Enter a valid contact email.";
     return e;
   };
   const tabErrors = (k) => CREATE_TABS.find((t) => t[0] === k)[2].some((field) => errors[field]);
   const idx = CREATE_TABS.findIndex((t) => t[0] === tab);
-
   const next = () => {
     const e = validate();
     const fields = CREATE_TABS[idx][2];
@@ -739,8 +810,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     setErrors(e);
     const bad = CREATE_TABS.find((t) => t[2].some((k) => e[k]));
     if (bad) return setTab(bad[0]);
-    setStep("submitting");
-    setRef(makeId("REQ", 6));
+    setSubmitting(true);
   };
   const addReq = (r) => {
     if (f.reqs.includes(r)) return;
@@ -748,68 +818,38 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   };
 
   useEffect(() => {
-    if (step !== "submitting") return;
+    if (!submitting) return;
     const t = setTimeout(() => {
-      onSubmitted({ ref, title: f.title.trim(), category: f.category, lang: f.lang, date: f.date, start: f.time, end: f.end, venue: f.venue.trim(), dress: f.dress.trim(), reqs: f.reqs.trim(), email: f.email.trim() });
-      setStep("done");
-    }, 1400);
+      onSubmitted({
+        ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, desc: f.desc.trim(),
+        date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
+        spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
+        whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(),
+      });
+    }, 1100);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [step]);
-
-  if (step === "done") {
-    const rows = [
-      ["Reference", <span className="font-mono font-semibold">{ref}</span>],
-      ["Event", f.title.trim()],
-      ["Type", f.category],
-      ["When", `${fmtDate(f.date)} · ${fmtRange(f.time, f.end)}`],
-      ["Venue", f.venue.trim()],
-      ["Language", <LangBadge lang={f.lang} />],
-      ...(f.dress.trim() ? [["Dress code", f.dress.trim()]] : []),
-      ...(f.reqs.trim() ? [["Bring / requirements", f.reqs.trim()]] : []),
-      ["Status", <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Pending review</span>],
-    ];
-    return (
-      <Modal onClose={onClose}>
-        <div className="p-7 pt-9 text-center">
-          <div className="u-pop mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><Check className="h-8 w-8" /></div>
-          <h2 className="mt-4 text-xl font-bold text-slate-900">Application Submitted!</h2>
-          <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Our campus admin team will review your event. An approval notification and management link will be sent to <span className="font-semibold text-slate-900">{f.email.trim()}</span>.
-          </p>
-          <dl className="mt-5 space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-left text-sm">
-            {rows.map(([k, v]) => (
-              <div key={k} className="flex items-start justify-between gap-4">
-                <dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd>
-              </div>
-            ))}
-          </dl>
-          <p className="mt-3 text-xs text-slate-400">Reviews usually take 1 to 2 working days.</p>
-          <button onClick={onClose} className="u-btn mt-5 w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Back to campus</button>
-        </div>
-      </Modal>
-    );
-  }
+  }, [submitting]);
 
   const input = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
   const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
   const Hint = ({ children }) => <p className="mt-1 text-xs text-slate-400">{children}</p>;
   const lab = "text-sm font-medium text-slate-700";
-  const opt = <span className="font-normal text-slate-400">(if any)</span>;
+  const opt = (t = "(optional)") => <span className="font-normal text-slate-400">{t}</span>;
 
   return (
-    <Modal onClose={onClose} locked={step === "submitting"} size="lg">
+    <Modal onClose={onClose} locked={submitting} size="lg">
       <div className="p-6 pt-7">
-        <h2 className="text-xl font-bold text-slate-900">Host a student event</h2>
-        <p className="mt-1 text-sm text-slate-500">Every event is reviewed by the campus team before it goes live.</p>
+        <h2 className="text-xl font-bold text-slate-900">Host a student party or event</h2>
+        <p className="mt-1 text-sm text-slate-500">Every party is checked by the admin team for safety before it goes live, usually within 2 hours.</p>
 
-        <div className="mt-5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Event form sections">
+        <div className="mt-5 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Event form sections">
           {CREATE_TABS.map(([k, label], i) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-              className={`relative flex items-center justify-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold sm:text-sm ${tab === k ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
-              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${tab === k ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}>{i + 1}</span>
+              className={`relative flex items-center justify-center gap-1.5 rounded-lg px-1 py-2 text-xs font-semibold sm:text-sm ${tab === k ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              <span className={`hidden h-5 w-5 items-center justify-center rounded-full text-xs sm:flex ${tab === k ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}>{i + 1}</span>
               {label}
-              {tabErrors(k) && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" aria-label="has errors" />}
+              {tabErrors(k) && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" aria-label="has errors" />}
             </button>
           ))}
         </div>
@@ -819,7 +859,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
             <>
               <div>
                 <label className={lab} htmlFor="c-title">Event title</label>
-                <input id="c-title" className={input("title")} value={f.title} onChange={set("title")} placeholder="e.g. Midterm Study Jam" />
+                <input id="c-title" className={input("title")} value={f.title} onChange={set("title")} placeholder="e.g. Sunset Beach Social" />
                 <Err k="title" />
               </div>
               <div>
@@ -841,10 +881,9 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   </select>
                   <span className="pointer-events-none absolute inset-y-0 right-3 mt-1 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
                 </div>
-                <Hint>The main language spoken. It shows as a badge and a filter on the feed.</Hint>
               </div>
               <div>
-                <label className={lab} htmlFor="c-desc">Short description <span className="font-normal text-slate-400">(optional)</span></label>
+                <label className={lab} htmlFor="c-desc">Short description {opt()}</label>
                 <textarea id="c-desc" rows={3} className={`${input("desc")} resize-none`} value={f.desc} onChange={set("desc")} maxLength={280} placeholder="What will people do, and who is it for?" />
                 <Hint>{280 - f.desc.length} characters left</Hint>
               </div>
@@ -869,12 +908,26 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   <Err k="end" />
                 </div>
               </div>
-              <div>
-                <label className={lab} htmlFor="c-venue">Exact Venue / Room Number</label>
-                <input id="c-venue" list="c-venues" className={input("venue")} value={f.venue} onChange={set("venue")} placeholder="e.g. Room 2.11, Block 2" />
-                <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
-                <Err k="venue" />
-                {!errors.venue && <Hint>Building and room, or a precise meeting point, so guests don't get lost.</Hint>}
+              <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500"><Icon name="pin" className="h-3.5 w-3.5" /> Location</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className={lab} htmlFor="c-venue">Venue Name</label>
+                    <input id="c-venue" list="c-venues" className={input("venueName")} value={f.venueName} onChange={set("venueName")} placeholder="e.g. Marina Rooftop Lounge or JBR Beach" />
+                    <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
+                    <Err k="venueName" />
+                  </div>
+                  <div>
+                    <label className={lab} htmlFor="c-room">Room / meeting point {opt()}</label>
+                    <input id="c-room" className={input("room")} value={f.room} onChange={set("room")} placeholder="e.g. Level 3 terrace, or the lifeguard tower near Gate 4" />
+                  </div>
+                  <div>
+                    <label className={lab} htmlFor="c-maps">Google Maps URL {opt()}</label>
+                    <input id="c-maps" type="url" inputMode="url" className={input("mapsUrl")} value={f.mapsUrl} onChange={set("mapsUrl")} placeholder="https://google.com/maps/..." />
+                    <Err k="mapsUrl" />
+                    {!errors.mapsUrl && <Hint>Guests tap the venue name to open this link. Without it, we search Google Maps for the venue name.</Hint>}
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -895,7 +948,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           {tab === "details" && (
             <>
               <div>
-                <label className={lab} htmlFor="c-dress">Dress Code {opt}</label>
+                <label className={lab} htmlFor="c-dress">Dress Code {opt("(if any)")}</label>
                 <input id="c-dress" list="c-dresses" className={input("dress")} value={f.dress} onChange={set("dress")} placeholder="e.g. Smart casual" />
                 <datalist id="c-dresses">{DRESS_CODES.map((v) => <option key={v} value={v} />)}</datalist>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -906,7 +959,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                 </div>
               </div>
               <div>
-                <label className={lab} htmlFor="c-reqs">Requirements {opt}</label>
+                <label className={lab} htmlFor="c-reqs">Requirements {opt("(if any)")}</label>
                 <textarea id="c-reqs" rows={2} className={`${input("reqs")} resize-none`} value={f.reqs} onChange={set("reqs")} placeholder="e.g. Bring your own laptop / racket" />
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {REQ_CHIPS.map((r) => (
@@ -915,23 +968,45 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   ))}
                 </div>
               </div>
-              <div>
-                <label className={lab} htmlFor="c-email">Organizer contact email</label>
-                <input id="c-email" type="email" className={input("email")} value={f.email} onChange={set("email")} />
-                <Err k="email" />
-                {!errors.email && <Hint>Your approval notification and management link will be sent here.</Hint>}
-              </div>
             </>
+          )}
+
+          {tab === "contacts" && (
+            <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500"><Icon name="user" className="h-3.5 w-3.5" /> Organizer Contacts</p>
+              <p className="mt-1 text-xs text-slate-500">Shown on your event once it's approved. Add WhatsApp, Telegram or both.</p>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label className={lab} htmlFor="c-wa">WhatsApp Number</label>
+                  <input id="c-wa" type="tel" inputMode="tel" autoComplete="tel" className={input("whatsapp")} value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 123 4567" />
+                  <Err k="whatsapp" />
+                </div>
+                <div>
+                  <label className={lab} htmlFor="c-tg">Telegram Username</label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute inset-y-0 left-3 mt-1 flex items-center text-sm text-slate-400">@</span>
+                    <input id="c-tg" className={`${input("telegram")} pl-7`} value={f.telegram} onChange={set("telegram")} placeholder="username" autoCapitalize="off" autoCorrect="off" spellCheck="false" />
+                  </div>
+                  <Err k="telegram" />
+                </div>
+                <div>
+                  <label className={lab} htmlFor="c-email">Contact Email</label>
+                  <input id="c-email" type="email" className={input("email")} value={f.email} onChange={set("email")} />
+                  <Err k="email" />
+                  {!errors.email && <Hint>Your approval notification is sent here too.</Hint>}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
         <div className="mt-6 flex gap-2">
-          {idx > 0 && <button onClick={() => setTab(CREATE_TABS[idx - 1][0])} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>}
+          {idx > 0 && <button onClick={() => setTab(CREATE_TABS[idx - 1][0])} disabled={submitting} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>}
           {idx < CREATE_TABS.length - 1 ? (
             <button onClick={next} className="u-btn flex-1 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Next: {CREATE_TABS[idx + 1][1]} →</button>
           ) : (
-            <button onClick={submit} disabled={step === "submitting"} className="u-btn flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700 disabled:opacity-80">
-              {step === "submitting" ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Event"}
+            <button onClick={submit} disabled={submitting} className="u-btn flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700 disabled:opacity-80">
+              {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
             </button>
           )}
         </div>
@@ -1128,7 +1203,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 function EventDetail({ party: p, action, onShare, onClose }) {
   const left = p.spots - p.taken;
-  const mapsUrl = mapsLink(p.maps);
+  const mapsUrl = partyMapsUrl(p);
   return (
     <Modal onClose={onClose} size="lg">
       <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[p.category]}`}>
@@ -1171,8 +1246,8 @@ function EventDetail({ party: p, action, onShare, onClose }) {
           <div className="flex gap-3">
             <InfoIcon name="pin" />
             <div>
-              <p className="font-semibold text-slate-900">{p.where}</p>
-              <p className="text-slate-500">{p.address}</p>
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-indigo-600 hover:decoration-indigo-400">{p.where} ↗</a>
+              {p.address !== p.where && p.address !== shortVenue(p.where) && <p className="text-slate-500">{p.address}</p>}
               <p className="mt-1 flex flex-wrap gap-x-4">
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
               </p>
@@ -1180,9 +1255,10 @@ function EventDetail({ party: p, action, onShare, onClose }) {
           </div>
           <div className="flex gap-3">
             <InfoIcon name="user" />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900">{p.contact.name} <span className="font-normal text-slate-500">· {p.contact.role}</span></p>
-              <a href={`mailto:${p.contact.email}?subject=${encodeURIComponent(p.title)}`} className="font-semibold text-indigo-600 hover:underline">{p.contact.email}</a>
+              <p className="mb-2 mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><Check className="h-3 w-3" /> Verified organizer contacts</p>
+              <ContactButtons contact={p.contact} subject={p.title} />
             </div>
           </div>
         </div>
@@ -1259,6 +1335,44 @@ function ClubDetail({ club: c, status, action, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Waitlist modal, live ticker                                        */
 /* ------------------------------------------------------------------ */
+/* A submitted party while it waits for the admin safety review. */
+function ReviewModal({ sub: s, r, onClose }) {
+  const rows = [
+    ["Reference", <span className="font-mono font-semibold">{s.ref}</span>],
+    ["Type", s.category],
+    ["When", `${fmtDate(s.date)} · ${fmtRange(s.start, s.end)}`],
+    ["Venue", <a href={s.mapsUrl ? englishMapsUrl(s.mapsUrl) : mapsLink(s.venueName)} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">{s.venueName}{s.room ? `, ${s.room}` : ""} ↗</a>],
+    ["Language", <LangBadge lang={s.lang} />],
+    ["Spots · price", `${s.spots} · ${s.price > 0 ? s.price + " AED" : "Free"}`],
+    ...(s.dress ? [["Dress code", s.dress]] : []),
+    ...(s.reqs ? [["Requirements", s.reqs]] : []),
+  ];
+  return (
+    <Modal onClose={onClose}>
+      <div className={`bg-gradient-to-br px-6 pb-5 pt-7 text-white ${GRADIENTS[s.category] || GRADIENTS.Party}`}>
+        <span className="text-4xl">{TYPE_EMOJI[s.category] || "🎉"}</span>
+        <h2 className="mt-2 pr-8 text-xl font-bold leading-tight">{s.title}</h2>
+        <span className="u-keep mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Party Under Review · ~{r.left} left</span>
+      </div>
+      <div className="space-y-4 p-5">
+        <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
+          Our admin team is verifying your event's safety. Once approved (within 2 hours) it goes live on Student Parties and you'll be notified at <span className="font-semibold">{s.email}</span>.
+        </p>
+        <dl className="space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-sm">
+          {rows.map(([k, v]) => (
+            <div key={k} className="flex items-start justify-between gap-4"><dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd></div>
+          ))}
+        </dl>
+        <div>
+          <p className="mb-2 text-sm font-semibold text-slate-900">Organizer contacts</p>
+          <ContactButtons contact={{ whatsapp: s.whatsapp, telegram: s.telegram, email: s.email }} subject={s.title} />
+        </div>
+        <button onClick={onClose} className="u-btn w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Done</button>
+      </div>
+    </Modal>
+  );
+}
+
 const PROCESSING_MS = 24 * 36e5; // Student Services turnaround for tryout forms
 
 function LeaveConfirm({ club: c, pending, onConfirm, onCancel }) {
@@ -1410,7 +1524,14 @@ function layoutDay(items) {
   return sorted;
 }
 
-function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onExport }) {
+const ReviewBadge = ({ r }) =>
+  r.status === "approved" ? (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-3 w-3" /> Approved · Live</span>
+  ) : (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Party Under Review · ~{r.left}</span>
+  );
+
+function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, onOpenReview, onBrowse, onExport }) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const [anchor, setAnchor] = useState(() => mondayOf(today));
   const [now, setNow] = useState(new Date());
@@ -1434,6 +1555,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
     return layoutDay([
       ...sessions.filter((x) => x.slot.day === i).map((x) => ({ kind: "session", key: x.slot.id, s: toMin(x.slot.start), e: toMin(x.slot.end), x })),
       ...events.filter((b) => b.date === iso).map((b) => { const s = toMin(to24(b.time)); return { kind: "event", key: b.id, s, e: Math.min(s + 120, 24 * 60), b }; }),
+      ...reviews.filter((r) => r.date === iso).map((r) => ({ kind: "review", key: r.ref, s: toMin(r.start), e: toMin(r.end), r })),
     ]);
   });
   const all = dayItems.flat();
@@ -1454,7 +1576,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
     .sort((a, b) => a.days - b.days || toMin(a.slot.start) - toMin(b.slot.start))[0];
   const whenLabel = (n) => (n === 0 ? "Today" : n === 1 ? "Tomorrow" : DAYS[(weekdayIdx(today) + n) % 7]);
 
-  if (!sessions.length && !events.length)
+  if (!sessions.length && !events.length && !reviews.length)
     return (
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
@@ -1573,6 +1695,16 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
                       const style = { top: top + 1, height, left: `calc(${(it.lane / it.lanes) * 100}% + 3px)`, width: `calc(${100 / it.lanes}% - 6px)` };
                       const tall = height > 70;
                       const narrow = it.lanes > 1;
+                      if (it.kind === "review")
+                        return (
+                          <button key={it.key} onClick={() => onOpenReview(it.r)} title={`${it.r.title} · ${fmtRange(it.r.start, it.r.end)} · ${it.r.status === "approved" ? "approved, live" : "party under review"}`}
+                            className={`absolute overflow-hidden rounded-lg border-2 border-dashed px-2 py-1 text-left hover:z-10 hover:shadow-md ${it.r.status === "approved" ? "border-emerald-400 bg-emerald-50" : "u-review border-amber-400 bg-amber-50"}`} style={style}>
+                            <span className={`block truncate text-xs font-bold ${it.r.status === "approved" ? "text-emerald-700" : "text-amber-700"}`}>{it.r.status === "approved" ? "✓ Live · Hosting" : "⏳ Party Under Review"}</span>
+                            <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.r.start, it.r.end)}</span>
+                            <span className="block truncate text-xs font-bold text-slate-900">{TYPE_EMOJI[it.r.category] || "🎉"} {it.r.title}</span>
+                            {tall && <span className="block truncate text-xs text-slate-500">{it.r.venueName}</span>}
+                          </button>
+                        );
                       return it.kind === "session" ? (
                         <button key={it.key} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title} · ${fmtRange(it.x.slot.start, it.x.slot.end)}${it.x.pending ? " · pending approval" : ""}`}
                           className={`absolute overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left shadow-sm hover:z-10 hover:opacity-100 hover:shadow-md ${CAT_TINT[it.x.club.category]} ${it.x.pending ? "u-pending border-dashed opacity-60" : ""}`} style={style}>
@@ -1609,11 +1741,37 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
             ))}
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-amber-400 bg-amber-50 opacity-70" /> ⏳ Pending approval</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
+            {reviews.length > 0 && <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border-2 border-dashed border-amber-400 bg-amber-50" /> Party under review</span>}
             <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-rose-500" /> Now</span>
           </div>
           <span className="sm:hidden">Swipe sideways to see the whole week →</span>
         </div>
       </section>
+
+      {/* Party applications */}
+      {reviews.length > 0 && (
+        <section>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Your party applications</h3>
+          <div className="space-y-2">
+            {reviews.map((r) => {
+              const d = new Date(r.date + "T00:00:00");
+              return (
+                <button key={r.ref} onClick={() => onOpenReview(r)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
+                  <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-gradient-to-br text-white ${GRADIENTS[r.category] || GRADIENTS.Party}`}>
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: 0.85 }}>{d.toLocaleDateString("en-GB", { month: "short" })}</span>
+                    <span className="text-xl font-bold leading-none">{d.getDate()}</span>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold text-slate-900">{r.title}</span>
+                    <span className="block truncate text-sm text-slate-500">{DAYS[weekdayIdx(d)]} · {fmtRange(r.start, r.end)} · {r.venueName}</span>
+                  </span>
+                  <ReviewBadge r={r} />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Upcoming events list */}
       {upcoming.length > 0 && (
@@ -1760,7 +1918,7 @@ export default function App() {
   const [clock, setClock] = useState(Date.now());
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
+  const [submissions, setSubmissions] = useState([]); // party applications: under review for 2h, then published
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState({});
@@ -1788,6 +1946,14 @@ export default function App() {
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
   useEffect(() => { const t = setInterval(() => setClock(Date.now()), 60000); return () => clearInterval(t); }, []);
+  useEffect(() => {
+    const due = submissions.filter((sub) => !sub.live && clock - sub.at >= REVIEW_MS);
+    if (!due.length) return;
+    setParties((ps) => [...ps, ...due.map(submissionToParty)]);
+    setSubmissions((xs) => xs.map((sub) => (due.some((d) => d.ref === sub.ref) ? { ...sub, live: true } : sub)));
+    notify({ title: "Your party is approved 🎉", body: `"${due[0].title}" passed the safety review and is now live on Student Parties.` }, 5000);
+    // eslint-disable-next-line
+  }, [clock, submissions]);
 
   const notify = (m, ms = 2400) => { setToast(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), ms); };
   const closeModal = () => setModal(null);
@@ -1828,6 +1994,13 @@ export default function App() {
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
     if (pending) notify(`Tryout form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
     else notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
+  };
+  const reviewOf = (sub) => (clock - sub.at >= REVIEW_MS ? "approved" : "review");
+  const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
+  const submitParty = (sub) => {
+    setSubmissions((x) => [sub, ...x]);
+    setModal(null);
+    notify({ title: "Application Submitted!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
   };
   const askLeave = (c) => setModal({ type: "leave", id: c.id });
   // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
@@ -2117,7 +2290,7 @@ export default function App() {
                       <div className="mt-2.5"><Vibe v={p.vibe} /></div>
                       <div className="mt-3 space-y-1.5 text-sm text-slate-600">
                         <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
-                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} /><LangBadge lang={p.lang} /></p>
+                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
                       </div>
                       <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
                       <div className="mt-4 flex gap-2">{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></div>
@@ -2150,6 +2323,8 @@ export default function App() {
               sessions={sessions}
               events={bookings}
               onOpenClub={(c) => setModal({ type: "club", id: c.id })}
+              reviews={submissions.map((sub) => ({ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }))}
+              onOpenReview={(r) => (r.live ? setModal({ type: "detail", id: r.at }) : setModal({ type: "review", ref: r.ref }))}
               onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
               onBrowse={changeTab}
               onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}
@@ -2216,22 +2391,25 @@ export default function App() {
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Event applications</h3>
                 {submissions.length === 0 ? (
                   <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 text-sm text-slate-500">
-                    Events you submit for review will appear here with their status.
+                    Parties you submit appear here while the admin team reviews them (usually within 2 hours).
                     <button onClick={hostEvent} className="ml-1 font-semibold text-indigo-600 hover:underline">Host an event</button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {submissions.map((s) => (
-                      <div key={s.ref} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4">
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold">{s.title}</p>
-                          <p className="text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · {fmtRange(s.start, s.end)} · <span className="font-mono">{s.ref}</span></p>
-                          <p className="mt-1 flex flex-wrap items-center gap-1.5"><VenueChip where={s.venue} /><LangBadge lang={s.lang} />{s.dress && <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Dress: {s.dress}</span>}</p>
-                          {s.reqs && <p className="mt-1 truncate text-xs text-slate-500">Bring: {s.reqs}</p>}
-                        </div>
-                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending review</span>
-                      </div>
-                    ))}
+                    {submissions.map((s) => {
+                      const r = { ...s, status: reviewOf(s), left: reviewLeft(s) };
+                      return (
+                        <button key={s.ref} onClick={() => (s.live ? setModal({ type: "detail", id: s.at }) : setModal({ type: "review", ref: s.ref }))}
+                          className="u-card flex w-full flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                          <span className="min-w-0">
+                            <span className="block truncate font-semibold">{s.title}</span>
+                            <span className="block text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · {fmtRange(s.start, s.end)} · <span className="font-mono">{s.ref}</span></span>
+                            <span className="mt-1 flex flex-wrap items-center gap-1.5"><VenueChip where={s.venueName} /><LangBadge lang={s.lang} />{s.dress && <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Dress: {s.dress}</span>}</span>
+                          </span>
+                          <ReviewBadge r={r} />
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </section>
@@ -2248,7 +2426,7 @@ export default function App() {
       {/* Modals */}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} />}
       {modal && modal.type === "create" && (
-        <CreateModal email={modal.email} onClose={closeModal} onSubmitted={(s) => setSubmissions((x) => [s, ...x])} />
+        <CreateModal email={modal.email} onClose={closeModal} onSubmitted={submitParty} />
       )}
       {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} />}
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (
@@ -2291,6 +2469,10 @@ export default function App() {
           onClose={closeModal}
         />
       )}
+      {modal && modal.type === "review" && submissions.find((x) => x.ref === modal.ref) && (() => {
+        const sub = submissions.find((x) => x.ref === modal.ref);
+        return <ReviewModal sub={sub} r={{ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }} onClose={closeModal} />;
+      })()}
       {modal && modal.type === "leave" && clubs.find((x) => x.id === modal.id) && (
         <LeaveConfirm
           club={clubs.find((x) => x.id === modal.id)}
@@ -2316,9 +2498,9 @@ export default function App() {
 
       {toast && (
         <div className="pointer-events-none fixed inset-x-0 top-20 z-50 flex justify-center px-4">
-          <div key={toast} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>
+          <div key={typeof toast === "string" ? toast : toast.title + toast.body} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500"><Check className="h-3 w-3" /></span>
-            <span>{toast}</span>
+            {typeof toast === "string" ? <span>{toast}</span> : <span><span className="block font-bold">{toast.title}</span><span className="block font-normal text-slate-200">{toast.body}</span></span>}
           </div>
         </div>
       )}

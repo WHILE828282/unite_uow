@@ -94,6 +94,10 @@ body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: 
 .u-dark :where(.ring-rose-200:not(.u-keep)) { --tw-ring-color: rgba(251, 113, 133, 0.3); }
 .u-dark :where(.border-amber-400:not(.u-keep)) { border-color: rgba(251, 191, 36, 0.6); }
 
+/* Contact buttons */
+.u-dark :where(.hover\:bg-sky-100:not(.u-keep)):hover { background-color: rgba(14, 165, 233, 0.22); }
+.u-dark :where(.border-emerald-400:not(.u-keep)) { border-color: rgba(52, 211, 153, 0.6); }
+
 /* Segmented control: the selected option sits above the track */
 .u-dark .u-seg-on { background-color: #334166; }
 
