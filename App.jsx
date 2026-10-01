@@ -22,13 +22,13 @@ const GRADIENTS = {
 };
 
 const CLUBS = [
-  { id: 1, form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch" }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch" }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
-  { id: 2, form: ["Basketball"], name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
-  { id: 3, form: ["Volleyball"], name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
-  { id: 4, form: ["Cricket"], name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets" }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
-  { id: 5, form: ["Table Tennis", "Badminton"], name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall" }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall" }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
-  { id: 6, form: ["Padel", "Tennis"], name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts" }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
-  { id: 7, form: ["Chess"], name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge" }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
+  { id: 1, backgroundImage: "https://aau.ac.ae", form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch" }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch" }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
+  { id: 2, backgroundImage: "https://bathspa.ac.ae", form: ["Basketball"], name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
+  { id: 3, backgroundImage: "https://pepperdine-graphic.com", form: ["Volleyball"], name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
+  { id: 4, backgroundImage: "https://curtin.edu.sg", form: ["Cricket"], name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets" }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
+  { id: 5, backgroundImage: "https://shutterstock.com", form: ["Table Tennis", "Badminton"], name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall" }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall" }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
+  { id: 6, backgroundImage: "https://vecteezy.com", form: ["Padel", "Tennis"], name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts" }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
+  { id: 7, backgroundImage: "https://alamy.com", form: ["Chess"], name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge" }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
   { id: 11, form: ["Track", "Swimming"], name: "Track & Swimming", emoji: "🏃", category: "Sports", desc: "Sprint, distance and pool sessions for athletics and swimming meets between Dubai universities.", members: 34, slots: [{ id: "ts-fri", day: 4, start: "15:00", end: "17:00", title: "Track & pool training", level: "Squad & trialists", where: "Running Track & Pool" }], where: "Running Track & Pool", lead: { name: "UOWD Sports & Recreation", role: "Track & swimming coordinator", email: "athletics@uniteuow.com" }, note: "Bring running shoes, swimwear and a towel. Times are recorded at the first session." },
   { id: 8, name: "Tech & E-sports Club", emoji: "🎮", category: "Tech", desc: "Build projects, run hackathons and compete in campus e-sports leagues.", members: 72, slots: [{ id: "te-tue", day: 1, start: "16:00", end: "18:00", title: "Build night & e-sports scrims", level: "All levels", where: "Computer Lab" }], where: "Computer Lab", lead: { name: "Tech & E-sports committee", role: "Club committee", email: "tech@uniteuow.com" }, note: "Bring a laptop for build nights; consoles and PCs provided for scrims." },
   { id: 9, name: "Finance & Entrepreneurship Society", emoji: "💼", category: "Business", desc: "Market simulations, pitch practice and networking with founders and finance professionals.", members: 85, slots: [{ id: "fe-thu", day: 3, start: "15:00", end: "17:00", title: "Workshop & pitch session", level: "All levels", where: "Innovation Studio" }], where: "Innovation Studio", lead: { name: "Finance & Entrepreneurship committee", role: "Society committee", email: "finance@uniteuow.com" }, note: "Smart casual for networking events." },
@@ -2034,6 +2034,73 @@ function TryoutModal({ club: c, onSent, onClose }) {
   );
 }
 
+/* True once `src` has loaded as an image; cards only switch to the photo design then,
+   so a missing or non-image link keeps the standard card instead of a blank one. */
+function useImageReady(src) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(false);
+    if (!src) return;
+    let alive = true;
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => alive && img.naturalWidth > 0 && setReady(true);
+    img.onerror = () => {};
+    img.src = src;
+    return () => { alive = false; };
+  }, [src]);
+  return ready;
+}
+
+function ClubCard({ c, i, open, members, button }) {
+  const photo = useImageReady(c.backgroundImage);
+  const meta = (cls) => (
+    <div className={`min-w-0 space-y-1.5 text-xs ${cls}`}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {photo
+          ? <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 font-medium text-white ring-1 ring-inset ring-white/15 backdrop-blur-sm"><Icon name="pin" className="h-3 w-3" />{shortVenue(c.where)}</span>
+          : <VenueChip where={c.where} />}
+        <span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{members} members</span>
+      </div>
+      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly session{c.slots.length > 1 ? "s" : ""} · {clubDays(c)}</p>
+    </div>
+  );
+  if (photo)
+    return (
+      <article {...open} className="u-keep u-card u-rise group relative isolate flex min-h-[15rem] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl bg-slate-950 p-5 text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
+        style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <span className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/20 transition-opacity duration-300 group-hover:opacity-90" aria-hidden="true" />
+        <div>
+          <Badge kind="official" team={c.category === "Sports"} />
+          <h3 className="mt-2 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
+          <p className="mt-1 line-clamp-2 text-sm text-slate-200">{c.desc}</p>
+        </div>
+        <div className="mt-4 flex items-end justify-between gap-3">
+          {meta("text-slate-200")}
+          {button(true)}
+        </div>
+      </article>
+    );
+  return (
+    <article {...open} className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+      <div className="flex items-start gap-4">
+        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-semibold text-slate-900">{c.name}</h3>
+            <Badge kind="official" team={c.category === "Sports"} />
+          </div>
+          <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        {meta("text-slate-500")}
+        {button(false)}
+      </div>
+    </article>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
@@ -2221,11 +2288,17 @@ export default function App() {
     onKeyDown: (e) => { if (e.key === "Enter" && e.target === e.currentTarget) open(); },
   });
 
-  const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
-    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${statusOf(c) === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : statusOf(c) === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {statusOf(c) === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : statusOf(c) === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Register · join club"}
-    </button>
-  );
+  const clubBtn = (c, extra = "shrink-0 px-4 py-2", onPhoto = false) => {
+    const st = statusOf(c);
+    const tone = onPhoto
+      ? `u-keep ${st === "pending" ? "bg-amber-700 text-white hover:bg-amber-600" : st === "joined" ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-white text-slate-900 hover:bg-slate-100"}`
+      : st === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
+    return (
+      <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
+        {st === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : st === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Register · join club"}
+      </button>
+    );
+  };
 
   const partyBtn = (p, extra = "w-full") => {
     const mine = bookingFor(p.id);
@@ -2357,26 +2430,9 @@ export default function App() {
             {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any teams or clubs yet." : `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}${myPending ? ` · ${myPending} pending approval` : ""}.`}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
-                <article key={c.id} {...cardOpen(() => setModal({ type: "club", id: c.id }))}
-                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
-                  <div className="flex items-start gap-4">
-                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-slate-900">{c.name}</h3>
-                        <Badge kind="official" team={c.category === "Sports"} />
-                      </div>
-                      <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between gap-3">
-                    <div className="min-w-0 space-y-1.5 text-xs text-slate-500">
-                      <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{memberCount(c)} members</span></div>
-                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly session{c.slots.length > 1 ? "s" : ""} · {clubDays(c)}</p>
-                    </div>
-                    {clubBtn(c)}
-                  </div>
-                </article>
+                <ClubCard key={c.id} c={c} i={i} members={memberCount(c)}
+                  open={cardOpen(() => setModal({ type: "club", id: c.id }))}
+                  button={(onPhoto) => clubBtn(c, "shrink-0 px-4 py-2", onPhoto)} />
               ))}
             </div>
           </>
