@@ -37,6 +37,9 @@ const CLUBS = [
 
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
 const UOWD_MAPS = "University of Wollongong in Dubai";
+/* Google Maps link that always opens in English (hl=en) with UAE results (gl=ae); otherwise Google
+   localises the place name to the visitor's browser language. */
+const mapsLink = (query) => `https://maps.google.com/maps?${new URLSearchParams({ q: query, hl: "en", gl: "ae" })}`;
 
 const PARTIES = [
   { id: 1, lang: "English", title: "Rooftop Sunset Mixer", emoji: "🌇", category: "Social", date: "2026-10-09", time: "7:00 PM", where: "Rooftop Terrace, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 40, spots: 60, taken: 52, wait: 0, vibe: { score: 4.9, count: 42 }, host: "Layla Al Mansoori",
@@ -1125,7 +1128,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 function EventDetail({ party: p, action, onShare, onClose }) {
   const left = p.spots - p.taken;
-  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.maps);
+  const mapsUrl = mapsLink(p.maps);
   return (
     <Modal onClose={onClose} size="lg">
       <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[p.category]}`}>
@@ -1192,7 +1195,7 @@ function EventDetail({ party: p, action, onShare, onClose }) {
 
 function ClubDetail({ club: c, status, action, onClose }) {
   const joined = status === "joined";
-  const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
+  const mapsUrl = mapsLink(UOWD_MAPS);
   return (
     <Modal onClose={onClose} size="lg">
       <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[c.category]}`}>
