@@ -376,7 +376,7 @@ function ThemeToggle({ dark, onToggle }) {
       <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
         <Icon name="moon" className="h-[18px] w-[18px]" />
       </span>
-      <span className={`absolute inset-0 flex items-center justify-center ${dark ? "text-amber-300" : "text-amber-500"}`} style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "none" : "rotate(-90deg) scale(.5)", opacity: dark ? 1 : 0 }}>
+      <span className={`absolute inset-0 flex items-center justify-center ${dark ? "text-slate-200" : "text-crimson-600"}`} style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "none" : "rotate(-90deg) scale(.5)", opacity: dark ? 1 : 0 }}>
         <Icon name="sun" className="h-[18px] w-[18px]" />
       </span>
     </button>
@@ -385,7 +385,7 @@ function ThemeToggle({ dark, onToggle }) {
 
 const Badge = ({ kind, team }) =>
   kind === "official" ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+    <span className="inline-flex items-center gap-1 rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-semibold text-crimson-700 ring-1 ring-crimson-200">
       <Check /> Official UOWD {team ? "Team" : "Club"}
     </span>
   ) : (
@@ -809,7 +809,7 @@ function ArtworkDrop({ value, onChange, error }) {
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); coverRef.current && coverRef.current.click(); } }}
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); take(e.dataTransfer.files && e.dataTransfer.files[0], "cover"); }}
-        className={`u-keep group relative w-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60 ${value.cover ? "ring-1 ring-white/10" : `border border-dashed ${drag ? "border-gold-400 bg-gold-400/[0.06]" : msg ? "border-rose-400/70 bg-white/[0.02]" : "border-white/20 bg-white/[0.02] hover:border-gold-400/60 hover:bg-white/[0.04]"}`}`}
+        className={`u-keep group relative w-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400/60 ${value.cover ? "ring-1 ring-white/10" : `border border-dashed ${drag ? "border-crimson-400 bg-crimson-400/[0.06]" : msg ? "border-rose-400/70 bg-white/[0.02]" : "border-white/20 bg-white/[0.02] hover:border-crimson-400/60 hover:bg-white/[0.04]"}`}`}
         style={{ aspectRatio: "16 / 9" }}>
         {value.cover ? (
           <>
@@ -819,21 +819,21 @@ function ArtworkDrop({ value, onChange, error }) {
           </>
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-            <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ring-1 transition-colors ${drag ? "text-gold-300 ring-gold-400/50" : "text-slate-400 ring-white/10 group-hover:text-gold-300 group-hover:ring-gold-400/40"}`}><PhotoIcon className="h-7 w-7" /></span>
+            <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ring-1 transition-colors ${drag ? "text-crimson-300 ring-crimson-400/50" : "text-slate-400 ring-white/10 group-hover:text-crimson-300 group-hover:ring-crimson-400/40"}`}><PhotoIcon className="h-7 w-7" /></span>
             <span>
               <span className="block text-base font-semibold text-white">{drag ? "Drop to upload" : "Add a cover photo"}</span>
               <span className="mt-1 block text-sm text-slate-400">Drag a photo here, or click to browse</span>
             </span>
           </span>
         )}
-        {busy === "cover" && <span className="absolute inset-0 flex items-center justify-center bg-[#0a192f]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-gold-400 border-t-transparent" /></span>}
+        {busy === "cover" && <span className="absolute inset-0 flex items-center justify-center bg-[#0a192f]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
         {value.cover && (
           <button type="button" onClick={(e) => { e.stopPropagation(); logoRef.current && logoRef.current.click(); }}
             aria-label="Change logo" title="Change logo"
             className="u-keep absolute bottom-3 left-3 h-16 w-16 overflow-hidden rounded-2xl shadow-xl ring-2 ring-white/80 transition-transform active:scale-95">
             <img src={value.logo} alt="" draggable={false} className="h-full w-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wider text-white">Logo</span>
-            {busy === "logo" && <span className="absolute inset-0 flex items-center justify-center bg-black/50"><span className="u-spin h-5 w-5 rounded-full border-2 border-gold-400 border-t-transparent" /></span>}
+            {busy === "logo" && <span className="absolute inset-0 flex items-center justify-center bg-black/50"><span className="u-spin h-5 w-5 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
           </button>
         )}
       </div>
@@ -892,15 +892,15 @@ const FIELD_ORDER = ["art", "title", "pitch", "date", "end", "venueName", "mapsU
 /* Locked-dark form primitives (fixed colours; u-keep opts out of the theme remap). */
 const DK = {
   label: "block text-[13px] font-medium tracking-wide text-slate-300",
-  input: (bad) => `u-keep mt-2 w-full rounded-xl border bg-white/[0.03] px-4 py-3 text-[15px] text-white placeholder:text-slate-500 transition-colors focus:outline-none focus:ring-2 ${bad ? "border-rose-400/70 focus:ring-rose-400/20" : "border-white/10 hover:border-white/20 focus:border-gold-400/70 focus:ring-gold-400/15"}`,
-  chip: (on) => `u-keep rounded-full border px-4 py-2 text-sm transition-all duration-200 active:scale-95 ${on ? "border-gold-400 bg-gold-400 font-semibold text-[#0a192f] shadow-[0_0_0_3px_rgba(247,185,40,0.12)]" : "border-white/15 text-slate-300 hover:border-white/35 hover:text-white"}`,
+  input: (bad) => `u-keep mt-2 w-full rounded-xl border bg-white/[0.03] px-4 py-3 text-[15px] text-white placeholder:text-slate-500 transition-colors focus:outline-none focus:ring-2 ${bad ? "border-rose-400/70 focus:ring-rose-400/20" : "border-white/10 hover:border-white/20 focus:border-crimson-400/70 focus:ring-crimson-400/15"}`,
+  chip: (on) => `u-keep rounded-full border px-4 py-2 text-sm transition-all duration-200 active:scale-95 ${on ? "border-crimson-500 bg-crimson-700 font-semibold text-white shadow-[0_0_0_3px_rgba(196,90,104,0.18)]" : "border-white/15 text-slate-300 hover:border-white/35 hover:text-white"}`,
   err: "mt-2 text-sm text-rose-300",
   hint: "mt-2 text-xs text-slate-400",
 };
 const DkSection = ({ n, title, children }) => (
   <section className="space-y-6 border-t border-white/[0.06] pt-10 first:border-0 first:pt-0">
     <h3 className="flex items-baseline gap-3 text-lg font-semibold tracking-tight text-white">
-      <span className="text-xs font-semibold tabular-nums text-gold-400">{String(n).padStart(2, "0")}</span>{title}
+      <span className="text-xs font-semibold tabular-nums text-crimson-400">{String(n).padStart(2, "0")}</span>{title}
     </h3>
     {children}
   </section>
@@ -977,7 +977,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         <div className="u-keep shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, env(safe-area-inset-top))" }}>
           <button onClick={onClose} disabled={submitting} aria-label="Close"
             className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">✕</button>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">Unite · Student events</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events</p>
           <h2 id="host-title" className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Host an event</h2>
           <p className="mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours.</p>
         </div>
@@ -995,7 +995,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               <div>
                 <label className={DK.label} htmlFor="c-title">Event name</label>
                 <input id="c-title" value={f.title} onChange={set("title")} placeholder="Sunset Beach Social"
-                  className={`u-keep mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-2xl font-semibold tracking-tight text-white placeholder:text-slate-600 focus:outline-none focus:ring-0 ${errors.title ? "border-rose-400/70" : "border-white/10 focus:border-gold-400"}`} />
+                  className={`u-keep mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-2xl font-semibold tracking-tight text-white placeholder:text-slate-600 focus:outline-none focus:ring-0 ${errors.title ? "border-rose-400/70" : "border-white/10 focus:border-crimson-400"}`} />
                 <E k="title" />
               </div>
               <div>
@@ -1020,7 +1020,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   className={`${DK.input(!!errors.pitch)} resize-y leading-relaxed`} />
                 <div className="mt-2 flex items-start justify-between gap-4 text-xs">
                   {errors.pitch ? <span className="text-sm text-rose-300">{errors.pitch}</span> : <span className="text-slate-400">A thorough plan gets approved faster.</span>}
-                  <span className={`shrink-0 tabular-nums ${pitchLen >= PITCH_MIN ? "text-gold-300" : "text-slate-400"}`}>{pitchLen} / {PITCH_MIN}+</span>
+                  <span className={`shrink-0 tabular-nums ${pitchLen >= PITCH_MIN ? "text-crimson-300" : "text-slate-400"}`}>{pitchLen} / {PITCH_MIN}+</span>
                 </div>
               </div>
             </DkSection>
@@ -1123,8 +1123,8 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           {sendError && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
           {Object.values(errors).some(Boolean) && !sendError && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
           <button onClick={submit} disabled={submitting}
-            className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-gold-400 py-3.5 text-[15px] font-semibold text-[#0a192f] transition-all duration-200 hover:bg-gold-300 active:scale-[0.98] disabled:opacity-80">
-            {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-[#0a192f] border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
+            className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">
+            {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
           </button>
         </div>
       </div>
@@ -1982,7 +1982,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
           <div className="mt-4 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
             <div className="min-w-0">
-              <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-400/15 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-gold-400 ring-1 ring-inset ring-gold-400/30">
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-crimson-200 ring-1 ring-inset ring-crimson-400/40">
                 <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form
               </p>
               <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">{isSports(c) ? "Sports Tryouts Registration" : "Club Registration"}</h2>
@@ -1993,7 +1993,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
             {picks.length > 0 && (
               <span className="inline-flex items-center gap-1.5">
                 Sport{picks.length > 1 ? "s" : ""}:
-                {picks.map((o) => <span key={o} className="rounded-md bg-gold-400 px-2 py-0.5 font-semibold text-[#0a192f]">{o}</span>)}
+                {picks.map((o) => <span key={o} className="rounded-md bg-crimson-700 px-2 py-0.5 font-semibold text-white ring-1 ring-inset ring-crimson-400/40">{o}</span>)}
                 <span className="text-slate-400">· pre-selected, please check it's ticked</span>
               </span>
             )}
@@ -2005,9 +2005,9 @@ function TryoutModal({ club: c, onSent, onClose }) {
         <div className="u-keep relative min-h-0 flex-1 bg-[#06101f] sm:p-3">
           {!loaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-gold-400" />
+              <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-crimson-400" />
               <p className="text-sm font-medium text-slate-300">Loading the official UOWD form…</p>
-              {slow && <p className="text-xs text-slate-400">Taking a while? <a href={src} target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-400 hover:underline">Open it in a new tab ↗</a></p>}
+              {slow && <p className="text-xs text-slate-400">Taking a while? <a href={src} target="_blank" rel="noopener noreferrer" className="font-semibold text-crimson-400 hover:underline">Open it in a new tab ↗</a></p>}
             </div>
           )}
           <iframe
@@ -2024,9 +2024,9 @@ function TryoutModal({ club: c, onSent, onClose }) {
 
         {/* Footer: locked dark */}
         <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-gold-400 py-3 text-sm font-semibold text-[#0a192f] hover:bg-gold-300">
+          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
             I've submitted the form
-            <span className="ml-1.5 font-normal text-[#0a192f]/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
+            <span className="ml-1.5 font-normal text-white/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
           </button>
         </div>
       </div>
@@ -2261,9 +2261,9 @@ export default function App() {
       <header className={`u-keep sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
-            <div className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-gold-400 shadow-sm ring-1 ring-gold-400/40">U</div>
+            <div className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-white shadow-sm ring-1 ring-crimson-500/60"><span className="text-crimson-400">U</span></div>
             <span className={`text-lg font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>Unite</span>
-            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-gold-200" : "bg-gold-50 text-gold-800 ring-1 ring-gold-200"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
+            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-crimson-200" : "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
@@ -2289,7 +2289,7 @@ export default function App() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
           </span>
           <h1 className={`mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
-            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-gold-200 to-gold-400" : "from-indigo-800 via-indigo-600 to-gold-500"}`}>together.</span>
+            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-crimson-200 to-crimson-400" : "from-indigo-800 via-indigo-700 to-crimson-600"}`}>together.</span>
           </h1>
           <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -2311,10 +2311,10 @@ export default function App() {
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
         <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
-          <div className="u-tab-ind absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
+          <div className="u-keep absolute rounded-xl bg-crimson-700 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
-              className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "u-tab-on text-white" : "text-slate-500 hover:text-slate-800"}`}>
+              className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "text-white" : "text-slate-500 hover:text-slate-800"}`}>
               <span className="sm:hidden">{short}</span><span className="hidden sm:inline">{l}</span>
               {k === "tickets" && user && bookings.length > 0 && <span className="ml-1 rounded-full bg-indigo-500 px-1.5 py-0.5 text-xs text-white">{bookings.length}</span>}
               {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
