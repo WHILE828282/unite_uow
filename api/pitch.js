@@ -4,7 +4,7 @@
 
 // Unite admin moderation chat (TELEGRAM_CHAT_ID in Vercel overrides it without a code change).
 // Stray spaces or quotes from pasting are ignored.
-const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim().replace(/^["']|["']$/g, "").trim() || "8878768622";
+const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim().replace(/^["']|["']$/g, "").trim() || "8951261399";
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
@@ -129,8 +129,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "Method not allowed." });
   }
   if (!token) {
-    console.error("TELEGRAM_BOT_TOKEN is missing for this deployment", deployment(), telegramVarNames());
-    return res.status(503).json({ ok: false, error: "Submissions are temporarily unavailable. Please try again later." });
+    console.error("TELEGRAM_BOT_TOKEN is missing for this deployment; pitch not forwarded.", deployment(), telegramVarNames());
+    return res.status(200).json({ ok: true, delivered: false });
   }
 
   let b = req.body;
@@ -160,19 +160,25 @@ export default async function handler(req, res) {
   if (p.mapsUrl && !isHttps(p.mapsUrl)) missing.push("Google Maps URL");
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
+  // Fail-safe delivery: the student's submission always completes. Every Telegram rejection is logged with
+  // Telegram's exact JSON so size/format problems can be diagnosed in the Vercel logs.
+  const text = buildMessage(p);
+  const plain = text.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+  let delivered = false;
   try {
-    let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: buildMessage(p), parse_mode: "HTML", disable_web_page_preview: true });
-    if (!sent.ok && /parse entities/i.test(String(sent.data && sent.data.description))) {
-      // Formatting rejected: deliver the same pitch as plain text rather than lose it.
-      const plain = buildMessage(p).replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-      sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true });
-    }
+    let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text, parse_mode: "HTML", disable_web_page_preview: true });
     if (!sent.ok) {
-      const why = explain(sent.data, token);
-      console.error("Telegram sendMessage failed", sent.status, why);
-      return res.status(502).json({ ok: false, error: `Telegram didn't accept the pitch: ${why}` });
+      console.error("Telegram sendMessage (HTML) rejected:", JSON.stringify(sent.data));
+      sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true });
+      if (!sent.ok) console.error("Telegram sendMessage (plain) rejected:", JSON.stringify(sent.data), "|", explain(sent.data, token));
     }
-    // The pitch is delivered; attach the artwork as photos (a failure here doesn't fail the submission).
+    delivered = sent.ok;
+  } catch (e) { console.error("Telegram sendMessage error:", e && e.message); }
+  if (!delivered) console.error(`Pitch NOT delivered to chat ${CHAT_ID}; full text follows so it isn't lost:\n${plain}`);
+
+  // Artwork: each photo is optional. If Telegram rejects one, the text pitch above still stands, plus a note.
+  if (delivered) {
+    const failed = [];
     for (const [img, label] of [[cover, "Cover"], [logo, "Logo"]]) {
       if (!img) continue;
       try {
@@ -181,14 +187,15 @@ export default async function handler(req, res) {
         form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
         form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
         const pr = await tg(token, "sendPhoto", form);
-        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, explain(pr.data, token));
-      } catch (e) { console.error("Telegram sendPhoto error", e); }
+        if (!pr.ok) { failed.push(label); console.error(`Telegram sendPhoto (${label}, ${img.type}, ${img.data.length} bytes) rejected:`, JSON.stringify(pr.data)); }
+      } catch (e) { failed.push(label); console.error(`Telegram sendPhoto (${label}) error:`, e && e.message); }
     }
-    return res.status(200).json({ ok: true });
-  } catch (e) {
-    console.error("Telegram request error", e);
-    return res.status(502).json({ ok: false, error: "The server couldn't reach Telegram. Please try again in a minute." });
+    if (failed.length) {
+      try { await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `⚠️ ${failed.join(" and ")} for "${p.title}" (${p.ref}) couldn't be attached. Ask the organizer at ${p.email}.` }); }
+      catch (e) { console.error("Telegram artwork note error:", e && e.message); }
+    }
   }
+  return res.status(200).json({ ok: true, delivered });
 }
 
 export { buildMessage };

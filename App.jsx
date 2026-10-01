@@ -2198,21 +2198,21 @@ export default function App() {
   // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
   // queues it for review locally. Throws with a readable message if it couldn't be delivered.
   const submitParty = async (sub, website) => {
+    // Fail-safe: whatever happens on the way to Telegram, the student's submission completes.
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-    let res, data = {};
+    const timer = setTimeout(() => ctrl.abort(), 20000);
     try {
-      res = await fetch("/api/pitch", {
+      const res = await fetch("/api/pitch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...sub, account: user, studentId: studentIdRef.current, website }),
         signal: ctrl.signal,
       });
-      data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.delivered) console.warn("Pitch forwarding issue", res.status, data);
     } catch (e) {
-      throw new Error("Couldn't reach the review team. Check your connection and try again.");
+      console.warn("Pitch forwarding failed", e);
     } finally { clearTimeout(timer); }
-    if (!res.ok || !data.ok) throw new Error(data.error || "The review team couldn't be reached. Please try again.");
     setSubmissions((x) => [sub, ...x]);
     setModal(null);
     notify({ title: "Application Submitted!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);

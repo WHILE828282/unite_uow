@@ -27,13 +27,13 @@ npm run dev
 - Data (clubs, events, waitlists, tickets, schedules, party applications) lives in memory and resets on refresh.
 
 ## Telegram moderation (party pitches)
-"Submit Party Application" POSTs the pitch to `/api/pitch` (a Vercel serverless function in `api/pitch.js`), which formats it and sends it with the Telegram Bot API to the admin chat `8878768622`, followed by the cover and logo as photos. The form only closes once Telegram confirms delivery.
+"Submit Party Application" POSTs the pitch to `/api/pitch` (a Vercel serverless function in `api/pitch.js`), which formats it and sends it with the Telegram Bot API to the admin chat (`TELEGRAM_CHAT_ID`, default `8951261399`), followed by the cover and logo as photos. Delivery is fail-safe: the student always sees "Application Submitted!". If Telegram rejects a photo, the text pitch still goes through with a note; if the text itself is rejected, Telegram's exact error and the full pitch are written to the Vercel function logs.
 
 Setup (one time):
 1. In Vercel → Project → Settings → Environment Variables, add `TELEGRAM_BOT_TOKEN` (the token from @BotFather) for Production and Preview, then redeploy.
-2. From the admin Telegram account (chat id 8878768622), open the bot and press **Start** once; bots can't message a user who hasn't started them.
+2. From the admin Telegram account (the chat id in `TELEGRAM_CHAT_ID`), open the bot and press **Start** once; bots can't message a user who hasn't started them.
 
-**Check the setup:** open `https://<your-site>/api/pitch` in a browser. It reports whether the token is set and valid, the bot's username, and whether it can reach chat 8878768622 (it never shows the token). `"help": "All set: party pitches will be delivered."` means it's working.
+**Check the setup:** open `https://<your-site>/api/pitch` in a browser. It reports whether the token is set and valid, the bot's username, and whether it can reach the admin chat (it never shows the token). `"help": "All set: party pitches will be delivered."` means it's working.
 
 The token is read only on the server. Never put it in `App.jsx` or any frontend file: everything shipped to the browser is public.
 
