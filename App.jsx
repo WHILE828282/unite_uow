@@ -1960,10 +1960,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Hero: explicit light and dark palettes (u-keep opts out of the dark remap) */}
-      <section className={`u-keep relative overflow-hidden ${dark ? "bg-slate-900" : "border-b border-slate-200/70 bg-gradient-to-b from-white to-slate-50"}`}>
-        <div className={`absolute -left-24 -top-24 h-72 w-72 rounded-full ${dark ? "bg-indigo-600" : "bg-indigo-300"}`} style={{ filter: "blur(90px)", opacity: dark ? 0.45 : 0.35 }} />
-        <div className={`absolute -bottom-24 right-0 h-72 w-72 rounded-full ${dark ? "bg-fuchsia-600" : "bg-fuchsia-300"}`} style={{ filter: "blur(100px)", opacity: dark ? 0.3 : 0.25 }} />
+      {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
+      {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
+      <section className="u-keep relative">
         <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
           <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${dark ? "text-indigo-100" : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200"}`} style={dark ? glassChip : undefined}>
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
