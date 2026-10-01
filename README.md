@@ -33,6 +33,8 @@ Setup (one time):
 1. In Vercel → Project → Settings → Environment Variables, add `TELEGRAM_BOT_TOKEN` (the token from @BotFather) for Production and Preview, then redeploy.
 2. From the admin Telegram account (chat id 8878768622), open the bot and press **Start** once; bots can't message a user who hasn't started them.
 
+**Check the setup:** open `https://<your-site>/api/pitch` in a browser. It reports whether the token is set and valid, the bot's username, and whether it can reach chat 8878768622 (it never shows the token). `"help": "All set: party pitches will be delivered."` means it's working.
+
 The token is read only on the server. Never put it in `App.jsx` or any frontend file: everything shipped to the browser is public.
 
 ## Before going live

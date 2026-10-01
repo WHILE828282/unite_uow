@@ -55,13 +55,50 @@ function buildMessage(p) {
   return text;
 }
 
+// Trim stray spaces/newlines from a pasted token.
+const readToken = () => String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
+const tg = async (token, method, body) => {
+  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, body instanceof FormData
+    ? { method: "POST", body }
+    : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  const data = await r.json().catch(() => ({}));
+  return { ok: r.ok && data.ok, status: r.status, data };
+};
+// Plain-English explanation of a Telegram error (no secrets included).
+const explain = (d) => {
+  const m = String((d && d.description) || "");
+  if (/unauthorized|not found: 404/i.test(m) || (d && d.error_code === 401)) return "The bot token is invalid. Copy it again from @BotFather and update TELEGRAM_BOT_TOKEN in Vercel, then redeploy.";
+  if (/chat not found|bot can't initiate|user is deactivated/i.test(m)) return `The bot can't message chat ${CHAT_ID} yet. Open the bot in Telegram from that account and press Start.`;
+  if (/blocked by the user/i.test(m)) return "The admin account has blocked the bot. Unblock it in Telegram and press Start.";
+  return m || "Telegram rejected the request.";
+};
+
 export default async function handler(req, res) {
+  const token = readToken();
+  // GET /api/pitch: setup check for the admin (reports status only, never the token).
+  if (req.method === "GET") {
+    if (!token) return res.status(200).json({ configured: false, help: "TELEGRAM_BOT_TOKEN is not set for this deployment. Add it in Vercel → Settings → Environment Variables (Production), then redeploy." });
+    if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(token)) return res.status(200).json({ configured: true, tokenLooksValid: false, help: "TELEGRAM_BOT_TOKEN doesn't look like a bot token (expected 123456789:ABC…). Copy it again from @BotFather." });
+    try {
+      const me = await tg(token, "getMe");
+      if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data) });
+      const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
+      return res.status(200).json({
+        configured: true, tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
+        help: chat.ok ? "All set: party pitches will be delivered." : explain(chat.data),
+      });
+    } catch (e) {
+      return res.status(200).json({ configured: true, help: "Couldn't reach Telegram from the server. Try again in a minute." });
+    }
+  }
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
+    res.setHeader("Allow", "GET, POST");
     return res.status(405).json({ ok: false, error: "Method not allowed." });
   }
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return res.status(503).json({ ok: false, error: "The review service isn't configured yet." });
+  if (!token) {
+    console.error("TELEGRAM_BOT_TOKEN is missing for this deployment");
+    return res.status(503).json({ ok: false, error: "Submissions are temporarily unavailable. Please try again later." });
+  }
 
   let b = req.body;
   if (typeof b === "string") { try { b = JSON.parse(b); } catch (e) { b = null; } }
@@ -91,14 +128,9 @@ export default async function handler(req, res) {
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
   try {
-    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: CHAT_ID, text: buildMessage(p), parse_mode: "HTML", disable_web_page_preview: true }),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok || !data.ok) {
-      console.error("Telegram sendMessage failed", r.status, data && data.description);
+    const sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: buildMessage(p), parse_mode: "HTML", disable_web_page_preview: true });
+    if (!sent.ok) {
+      console.error("Telegram sendMessage failed", sent.status, explain(sent.data));
       return res.status(502).json({ ok: false, error: "The review team couldn't be reached. Please try again." });
     }
     // The pitch is delivered; attach the artwork as photos (a failure here doesn't fail the submission).
@@ -109,8 +141,8 @@ export default async function handler(req, res) {
         form.append("chat_id", CHAT_ID);
         form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
         form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
-        const pr = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: "POST", body: form });
-        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, await pr.text().catch(() => ""));
+        const pr = await tg(token, "sendPhoto", form);
+        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, explain(pr.data));
       } catch (e) { console.error("Telegram sendPhoto error", e); }
     }
     return res.status(200).json({ ok: true });
