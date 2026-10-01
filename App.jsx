@@ -96,35 +96,6 @@ const DRESS_CODES = ["Casual", "Smart casual", "Business formal", "Sportswear", 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const LANGUAGES = ["English", "Arabic", "Russian", "Chinese", "Japanese", "French", "Hindi", "Urdu", "Spanish", "Persian", "Mixed / Multilingual"];
 
-/* Ground-floor layout: 12 columns x 8 rows. c/r = start column/row, w/h = span. */
-const FLOOR_STATIC = [
-  { label: "Main Stage", emoji: "🎤", c: 1, r: 1, w: 4, h: 2 },
-  { label: "Café", emoji: "☕", c: 9, r: 1, w: 4, h: 2 },
-  { label: "Restrooms", emoji: "🚻", c: 1, r: 8, w: 3, h: 1 },
-  { label: "Entrance", emoji: "🚪", c: 5, r: 8, w: 4, h: 1, entrance: true },
-  { label: "Info Desk", emoji: "ℹ️", c: 10, r: 8, w: 3, h: 1 },
-];
-const BOOTHS = [
-  { id: "b1", kind: "club", ref: 1, short: "Football", c: 1, r: 3, w: 2, h: 1 },
-  { id: "b2", kind: "club", ref: 2, short: "Basketball", c: 3, r: 3, w: 2, h: 1 },
-  { id: "b3", kind: "club", ref: 3, short: "Volleyball", c: 5, r: 3, w: 2, h: 1 },
-  { id: "b4", kind: "club", ref: 4, short: "Cricket", c: 7, r: 3, w: 2, h: 1 },
-  { id: "b5", kind: "club", ref: 5, short: "Rackets", c: 9, r: 3, w: 2, h: 1 },
-  { id: "b6", kind: "club", ref: 6, short: "Padel", c: 11, r: 3, w: 2, h: 1 },
-  { id: "b14", kind: "club", ref: 7, short: "Chess", c: 1, r: 4, w: 2, h: 1 },
-  { id: "b18", kind: "club", ref: 11, short: "Track & Swim", c: 3, r: 4, w: 2, h: 1 },
-  { id: "b15", kind: "club", ref: 8, short: "Tech & E-sports", c: 5, r: 4, w: 3, h: 1 },
-  { id: "b16", kind: "club", ref: 9, short: "Finance", c: 8, r: 4, w: 2, h: 1 },
-  { id: "b17", kind: "club", ref: 10, short: "Music & Dance", c: 10, r: 4, w: 3, h: 1 },
-  { id: "b7", kind: "party", ref: 4, short: "Open Mic", c: 5, r: 1, w: 4, h: 2 },
-  { id: "b8", kind: "party", ref: 2, short: "Futsal", c: 1, r: 5, w: 2, h: 2 },
-  { id: "b9", kind: "party", ref: 3, short: "PS5 Cup", c: 3, r: 5, w: 2, h: 2 },
-  { id: "b10", kind: "party", ref: 1, short: "Rooftop Mixer", c: 5, r: 5, w: 2, h: 2 },
-  { id: "b11", kind: "party", ref: 7, short: "Yacht Party", c: 7, r: 5, w: 2, h: 2 },
-  { id: "b12", kind: "party", ref: 5, short: "Finance Night", c: 9, r: 5, w: 2, h: 2 },
-  { id: "b13", kind: "party", ref: 6, short: "Halloween", c: 11, r: 5, w: 2, h: 2 },
-];
-
 const FEED = [
   ["Sarah J.", "just registered for", "UOWD Futsal Tournament", "2 mins ago"],
   ["Omar K.", "just bought a ticket for", "Rooftop Sunset Mixer", "just now"],
@@ -358,17 +329,16 @@ const LangBadge = ({ lang }) => (
     <Icon name="globe" className="h-3 w-3" />{lang}
   </span>
 );
-const hasBooth = (kind, ref) => BOOTHS.some((b) => b.kind === kind && b.ref === ref);
 
 function ThemeToggle({ dark, onToggle }) {
   return (
     <button onClick={onToggle} role="switch" aria-checked={dark} aria-label="Dark mode" title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="u-keep u-btn relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-slate-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-      style={glassChip}>
+      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${dark ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
+      style={dark ? glassChip : undefined}>
       <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
         <Icon name="moon" className="h-[18px] w-[18px]" />
       </span>
-      <span className="absolute inset-0 flex items-center justify-center text-amber-300" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "none" : "rotate(-90deg) scale(.5)", opacity: dark ? 1 : 0 }}>
+      <span className={`absolute inset-0 flex items-center justify-center ${dark ? "text-amber-300" : "text-amber-500"}`} style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "none" : "rotate(-90deg) scale(.5)", opacity: dark ? 1 : 0 }}>
         <Icon name="sun" className="h-[18px] w-[18px]" />
       </span>
     </button>
@@ -1153,7 +1123,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Event details                                                      */
 /* ------------------------------------------------------------------ */
-function EventDetail({ party: p, action, onShare, onMap, onClose }) {
+function EventDetail({ party: p, action, onShare, onClose }) {
   const left = p.spots - p.taken;
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.maps);
   return (
@@ -1202,7 +1172,6 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
               <p className="text-slate-500">{p.address}</p>
               <p className="mt-1 flex flex-wrap gap-x-4">
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
-                {hasBooth("party", p.id) && <button onClick={() => onMap(p)} className="font-semibold text-indigo-600 hover:underline">Find on campus map →</button>}
               </p>
             </div>
           </div>
@@ -1221,7 +1190,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
   );
 }
 
-function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
+function ClubDetail({ club: c, joined, mine, action, onClose }) {
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
   return (
     <Modal onClose={onClose} size="lg">
@@ -1243,7 +1212,7 @@ function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
         </div>
         <div className="space-y-4 text-sm">
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-slate-900">Weekly sessions</h3>
+            <h3 className="mb-2 text-sm font-semibold text-slate-900">Official weekly schedule</h3>
             <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80">
               {c.slots.map((sl) => (
                 <li key={sl.id} className="flex items-center gap-3 px-3.5 py-2.5">
@@ -1265,7 +1234,6 @@ function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
               <p className="text-slate-500">{UOWD_ADDRESS}</p>
               <p className="mt-1 flex flex-wrap gap-x-4">
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
-                <button onClick={() => onMap(c)} className="font-semibold text-indigo-600 hover:underline">Find booth on campus map →</button>
               </p>
             </div>
           </div>
@@ -1285,163 +1253,8 @@ function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Floor map, waitlist modal, live ticker                             */
+/*  Waitlist modal, live ticker                                        */
 /* ------------------------------------------------------------------ */
-function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, onShare }) {
-  const items = BOOTHS.map((b, i) => ({
-    ...b,
-    n: i + 1,
-    d: b.kind === "club" ? clubs.find((c) => c.id === b.ref) : parties.find((p) => p.id === b.ref),
-  }));
-  const sel = items.find((b) => b.id === selId);
-  const left = (b) => b.d.spots - b.d.taken;
-  const nameOf = (b) => b.d.name || b.d.title;
-  const mins = (b) => Math.max(1, Math.round(Math.hypot(b.c + b.w / 2 - 6.5, b.r + b.h / 2 - 8.5) / 3));
-  const hotB = (b) => b.kind === "party" && left(b) > 0 && left(b) <= 5;
-  const fullB = (b) => b.kind === "party" && left(b) <= 0;
-
-  return (
-    <div className="grid gap-5 lg:grid-cols-5">
-      {/* Map */}
-      <div className="lg:col-span-3">
-        <div className="u-keep rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">GF</span>
-              <span className="text-sm font-semibold text-white">Ground Floor</span>
-            </div>
-            <span className="flex items-center gap-1.5 text-xs text-slate-300"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Live layout</span>
-          </div>
-
-          <div
-            className="rounded-2xl p-2"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
-              gridAutoRows: "clamp(36px, 7.6vw, 54px)",
-              gap: "6px",
-              backgroundColor: "rgba(255,255,255,0.03)",
-              backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
-            }}
-          >
-            {FLOOR_STATIC.map((t) => (
-              <div key={t.label}
-                className="flex flex-col items-center justify-center rounded-xl text-center"
-                style={{
-                  gridColumn: `${t.c} / span ${t.w}`, gridRow: `${t.r} / span ${t.h}`,
-                  background: t.entrance ? "rgba(16,185,129,0.18)" : "rgba(255,255,255,0.05)",
-                  border: t.entrance ? "1px solid rgba(52,211,153,0.7)" : "1px dashed rgba(255,255,255,0.18)",
-                  color: t.entrance ? "#6ee7b7" : "#94a3b8", fontSize: 10, lineHeight: 1.15,
-                }}>
-                <span style={{ fontSize: 15 }}>{t.emoji}</span>
-                <span className="font-medium">{t.label}</span>
-                {t.entrance && <span className="font-semibold text-emerald-300" style={{ fontSize: 9 }}>● You are here</span>}
-              </div>
-            ))}
-
-            {items.map((b) => {
-              const active = selId === b.id;
-              return (
-                <button
-                  key={b.id}
-                  onClick={() => onSelect(b.id)}
-                  aria-label={`${nameOf(b)}, booth ${b.n}`}
-                  title={nameOf(b)}
-                  className={`relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br text-white ${GRADIENTS[b.d.category]}`}
-                  style={{
-                    gridColumn: `${b.c} / span ${b.w}`, gridRow: `${b.r} / span ${b.h}`,
-                    opacity: selId && !active ? 0.4 : 1,
-                    transform: active ? "scale(1.06)" : "scale(1)",
-                    zIndex: active ? 5 : 1,
-                    boxShadow: active ? "0 0 0 3px #fff, 0 10px 28px rgba(99,102,241,0.55)" : "0 2px 6px rgba(0,0,0,0.3)",
-                    transition: "opacity .2s ease, transform .2s ease, box-shadow .2s ease",
-                  }}
-                >
-                  <span className={`absolute left-1 top-1 ${b.h === 1 ? "hidden sm:flex" : "flex"} items-center justify-center rounded-full font-bold`} style={{ width: 14, height: 14, fontSize: 8, background: "rgba(0,0,0,0.3)" }}>{b.n}</span>
-                  {b.kind === "club" && <span className={`absolute right-1 top-1 ${b.h === 1 ? "hidden sm:flex" : "flex"} items-center justify-center rounded-full bg-white text-indigo-600`} style={{ width: 13, height: 13 }}><Check className="h-2 w-2" /></span>}
-                  {hotB(b) && <span className="absolute right-1 top-0.5" style={{ fontSize: 11 }}>🔥</span>}
-                  {fullB(b) && <span className="absolute right-1 top-0.5" style={{ fontSize: 11 }}>⏳</span>}
-                  <span style={{ fontSize: b.h === 1 ? 15 : 20, lineHeight: 1 }}>{b.d.emoji}</span>
-                  <span className="mt-0.5 px-0.5 text-center font-semibold" style={{ fontSize: 9, lineHeight: 1.1 }}>{b.short}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-300">
-            <span className="inline-flex items-center gap-1.5"><span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-white text-indigo-600"><Check className="h-2 w-2" /></span> Official UOWD club</span>
-            <span>🔥 Few tickets left</span>
-            <span>⏳ Fully booked</span>
-          </div>
-        </div>
-        <p className="mt-2 text-center text-xs text-slate-400">Tap any booth to see who's there and how to join.</p>
-      </div>
-
-      {/* Detail + directory */}
-      <div className="space-y-4 lg:col-span-2">
-        {sel ? (
-          <div key={sel.id} className="u-fade overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className={`flex items-center gap-3 bg-gradient-to-r px-4 py-4 text-white ${GRADIENTS[sel.d.category]}`}>
-              <span className="text-3xl">{sel.d.emoji}</span>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium" style={{ opacity: 0.85 }}>Booth {sel.n} · Ground Floor</p>
-                <p className="truncate font-semibold">{nameOf(sel)}</p>
-              </div>
-              {sel.kind === "party" && <ShareBtn onClick={() => onShare(sel.d)} />}
-            </div>
-            <div className="space-y-3 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge kind={sel.kind === "club" ? "official" : "verified"} team={sel.d.category === "Sports"} />
-                <span className="inline-flex items-center gap-1 text-xs text-slate-500"><Icon name="clock" className="h-3.5 w-3.5" /> ≈ {mins(sel)} min walk from the entrance</span>
-              </div>
-              {sel.kind === "club" ? (
-                <>
-                  <p className="text-sm text-slate-600">{sel.d.desc}</p>
-                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{clubDays(sel.d)}</span><span className="inline-flex items-center gap-1.5"><Icon name="users" className="h-3.5 w-3.5" />{sel.d.members} members</span></p>
-                  {renderClub(sel.d)}
-                </>
-              ) : (
-                <>
-                  <p className="flex items-center gap-1.5 text-sm text-slate-500"><Icon name="calendar" className="h-3.5 w-3.5" />{fmtDate(sel.d.date)} · {sel.d.time} · {sel.d.price > 0 ? `${sel.d.price} AED` : "Free"}</p>
-                  <div className="flex flex-wrap items-center gap-2"><LangBadge lang={sel.d.lang} /><Vibe v={sel.d.vibe} /></div>
-                  <Spots left={left(sel)} total={sel.d.spots} unit={sel.d.price > 0 ? "tickets" : "spots"} wait={sel.d.wait} />
-                  {renderParty(sel.d)}
-                </>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center">
-            <div className="text-3xl">👆</div>
-            <p className="mt-2 font-semibold text-slate-900">Pick a booth</p>
-            <p className="text-sm text-slate-500">See what's on, how busy it is, and join straight from the map.</p>
-          </div>
-        )}
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm p-2">
-          <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Booth directory</p>
-          <div className="overflow-y-auto" style={{ maxHeight: 340 }}>
-            {items.map((b) => (
-              <button key={b.id} onClick={() => onSelect(b.id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-slate-50 ${selId === b.id ? "bg-indigo-50 ring-1 ring-indigo-200" : ""}`}>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">{b.n}</span>
-                <span className="text-xl">{b.d.emoji}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-slate-900">{nameOf(b)}</span>
-                  <span className="block text-xs text-slate-500">{b.kind === "club" ? (b.d.category === "Sports" ? "Official team" : "Official club") : b.d.price > 0 ? `Event · ${b.d.price} AED` : "Event · Free"}</span>
-                </span>
-                {hotB(b) && <span title="Few tickets left">🔥</span>}
-                {fullB(b) && <span title="Fully booked">⏳</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
   return (
     <Modal onClose={onClose}>
@@ -1507,82 +1320,6 @@ function Ticker({ onClose }) {
 /* ------------------------------------------------------------------ */
 const overlaps = (a, b) => a.day === b.day && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
 
-function SlotModal({ club: c, selected, others, onToggle, onLeave, onViewSchedule, onClose }) {
-  const [flash, setFlash] = useState(null);
-  const mine = c.slots.filter((s) => selected.includes(s.id));
-  const hours = mine.reduce((h, s) => h + slotHours(s), 0);
-  const tap = (s) => {
-    const adding = !selected.includes(s.id);
-    onToggle(s);
-    setFlash(adding ? s.id : null);
-  };
-  return (
-    <Modal onClose={onClose} size="lg">
-      <div className={`bg-gradient-to-br px-6 pb-5 pt-6 text-white ${GRADIENTS[c.category]}`}>
-        <div className="flex items-center gap-3 pr-10">
-          <span className="text-4xl">{c.emoji}</span>
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ opacity: 0.85 }}>Weekly sessions</p>
-            <h2 className="truncate text-xl font-bold leading-tight">{c.name}</h2>
-          </div>
-        </div>
-        <p className="mt-3 text-sm" style={{ opacity: 0.9 }}>Pick the sessions you'll attend. Tap again to cancel. You can come to more than one.</p>
-      </div>
-
-      <div className="space-y-2.5 p-5" role="list">
-        {c.slots.map((s) => {
-          const on = selected.includes(s.id);
-          const left = s.cap - s.taken - (on ? 1 : 0);
-          const full = !on && left <= 0;
-          const clash = !on && others.find((o) => overlaps(o.slot, s));
-          return (
-            <button key={s.id} role="listitem" onClick={() => !full && tap(s)} disabled={full} aria-pressed={on}
-              className={`u-btn flex w-full items-center gap-4 rounded-2xl border-2 p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-60 ${on ? "border-emerald-400 bg-emerald-50" : "border-slate-200/80 bg-white shadow-sm hover:border-indigo-300"}`}>
-              <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl ${on ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700"}`}>
-                <span className="text-xs font-semibold uppercase tracking-wider">{DAYS[s.day].slice(0, 3)}</span>
-                <span className="text-xs font-medium" style={{ opacity: 0.8 }}>{fmtTime(s.start).replace(/:00/, "")}</span>
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-semibold text-slate-900">{DAYS[s.day]}s · {fmtRange(s.start, s.end)}</span>
-                <span className="block truncate text-sm text-slate-500">{s.title} · {s.where}</span>
-                <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">{s.level}</span>
-                  {clash && <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">Clashes with {clash.club.name}</span>}
-                </span>
-              </span>
-              <span className="shrink-0 text-right">
-                {on ? (
-                  <span key={flash === s.id ? "pop" : "on"} className={`inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white ${flash === s.id ? "u-pop" : ""}`}>
-                    <Check className="h-3 w-3" /> Registered!
-                  </span>
-                ) : full ? (
-                  <span className="text-xs font-semibold text-slate-500">Full</span>
-                ) : (
-                  <span className="flex flex-col items-end gap-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-lg leading-none text-white">+</span>
-                    <span className={`text-xs ${left <= 3 ? "font-semibold text-amber-600" : "text-slate-500"}`}>{left} spot{left === 1 ? "" : "s"} left</span>
-                  </span>
-                )}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white p-4">
-        <div className="mb-3 flex items-center justify-between text-sm">
-          <span className="text-slate-500">{mine.length ? `${mine.length} session${mine.length > 1 ? "s" : ""} · ${hours % 1 ? hours.toFixed(1) : hours} hrs a week` : "No sessions picked yet"}</span>
-          {mine.length > 0 && <button onClick={onLeave} className="text-sm font-medium text-slate-500 hover:text-rose-600">Leave club</button>}
-        </div>
-        <div className="flex gap-2">
-          <button onClick={onClose} className="u-btn flex-1 rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Done</button>
-          <button onClick={onViewSchedule} disabled={!mine.length} className="u-btn flex-1 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40">View my schedule →</button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
 /* Builds an .ics file: weekly club sessions (12 weeks) plus booked one-off events. */
 function downloadCalendar(sessions, events) {
   const pad = (n) => String(n).padStart(2, "0");
@@ -1623,6 +1360,14 @@ const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); r
 const isoWeek = (d) => { const t = addDays(mondayOf(d), 3); const jan4 = new Date(t.getFullYear(), 0, 4); return 1 + Math.round((t - mondayOf(jan4)) / 6048e5); };
 const shortTime = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return `${((h + 11) % 12) + 1}${m ? ":" + String(m).padStart(2, "0") : ""}`; };
 const shortRange = (a, b) => `${shortTime(a)}–${shortTime(b)} ${+b.split(":")[0] < 12 ? "AM" : "PM"}`;
+/* "Mondays & Wednesdays · 5–7 PM", or per session when the times differ. */
+const scheduleLabel = (c, short = false) => {
+  const same = c.slots.every((x) => x.start === c.slots[0].start && x.end === c.slots[0].end);
+  const day = (d) => (short ? DAYS[d].slice(0, 3) : DAYS[d] + "s");
+  return same
+    ? `${c.slots.map((x) => day(x.day)).join(" & ")} · ${shortRange(c.slots[0].start, c.slots[0].end)}`
+    : c.slots.map((x) => `${DAYS[x.day].slice(0, 3)} ${shortRange(x.start, x.end)}`).join(" & ");
+};
 const hourLabel = (h) => `${((h + 11) % 12) + 1} ${h < 12 || h === 24 ? "AM" : "PM"}`;
 
 /* Side-by-side lanes for overlapping blocks within one day. */
@@ -1687,7 +1432,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
         <h3 className="mt-4 text-lg font-bold text-slate-900">Your week is wide open</h3>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Register for a team or club and pick its weekly sessions, or grab a ticket to an event. Everything you sign up for lands here automatically.</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Register for a team or club and its official weekly schedule appears here, along with any event tickets. Everything you sign up for lands here automatically.</p>
         <div className="mt-5 flex justify-center gap-2">
           <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse teams & clubs</button>
           <button onClick={() => onBrowse("parties")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Find events</button>
@@ -1881,7 +1626,7 @@ const tryoutUrl = (c) => {
 
 /* Always dark, whatever the site theme: only fixed dark colours are used here, none that the
    .u-dark palette remap touches, and every surface carries u-keep. */
-function TryoutModal({ club: c, sent, onSent, onSessions, onClose }) {
+function TryoutModal({ club: c, sent, onSent, onClose }) {
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
   const src = tryoutUrl(c);
@@ -1963,13 +1708,11 @@ function TryoutModal({ club: c, sent, onSent, onSessions, onClose }) {
               <Check className="h-4 w-4" /> Marked as submitted
             </span>
           ) : (
-            <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
+            <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
               I've submitted the form
+              <span className="ml-1.5 font-normal text-gray-900/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
             </button>
           )}
-          <button onClick={onSessions} className="u-keep u-btn flex-1 rounded-xl bg-white/10 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/20">
-            Pick weekly training sessions →
-          </button>
         </div>
       </div>
     </div>
@@ -1993,7 +1736,6 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState({});
-  const [selBooth, setSelBooth] = useState(null);
   const [tickerOn, setTickerOn] = useState(true);
   const [dark, setDark] = useState(() => {
     try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
@@ -2043,17 +1785,19 @@ export default function App() {
   const memberCount = (c) => c.members + (isJoined(c) ? 1 : 0);
   const sessions = clubs.flatMap((c) => c.slots.filter((sl) => (mySlots[c.id] || []).includes(sl.id)).map((slot) => ({ club: c, slot })));
 
-  const openSlots = (c) => requireAuth(`Sign in to join ${c.name}`, () => setModal({ type: "slots", id: c.id }));
-  // Sports sections register through UOWD's official tryouts form.
-  const openJoin = (c) => (isSports(c) ? requireAuth(`Sign in to register for ${c.name} tryouts`, () => setModal({ type: "tryout", id: c.id })) : openSlots(c));
-  const tryoutSent = (c) => !!(user && tryouts[c.id]);
-  const toggleSlot = (c, sl) => {
-    const cur = clubSlots[c.id] || [];
-    const on = cur.includes(sl.id);
-    setClubSlots({ ...clubSlots, [c.id]: on ? cur.filter((x) => x !== sl.id) : [...cur, sl.id] });
-    if (on) notify(`Cancelled ${DAYS[sl.day]} ${fmtTime(sl.start)} · ${c.name}`);
-    else notify(`${cur.length ? "Registered!" : `Welcome to ${c.name}! 🎉`} ${DAYS[sl.day]}s ${fmtTime(sl.start)} added to My Schedule`, 3000);
+  // Each team/club has one fixed official schedule; registering adds all of its sessions.
+  const registerClub = (c) => {
+    const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
+    setClubSlots((x) => ({ ...x, [c.id]: c.slots.map((sl) => sl.id) }));
+    notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${clash ? ` Heads up: it overlaps with ${clash.club.name}.` : ""}`, 4200);
   };
+  // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
+  const openJoin = (c) => {
+    if (isJoined(c)) return setModal({ type: "club", id: c.id });
+    if (isSports(c)) return requireAuth(`Sign in to register for ${c.name} tryouts`, () => setModal({ type: "tryout", id: c.id }));
+    requireAuth(`Sign in to join ${c.name}`, () => registerClub(c));
+  };
+  const tryoutSent = (c) => !!(user && tryouts[c.id]);
   const leaveClub = (c) => {
     setClubSlots((x) => { const n = { ...x }; delete n[c.id]; return n; });
     setModal(null);
@@ -2104,11 +1848,6 @@ export default function App() {
     );
   };
 
-  const showOnMap = (kind, ref) => {
-    const b = BOOTHS.find((x) => x.kind === kind && x.ref === ref);
-    setSelBooth(b ? b.id : null);
-    jumpTo("map");
-  };
 
   const handleDownload = (b) => {
     try { downloadTicket(b); notify(`Ticket saved as ${b.id}.png`, 3000); }
@@ -2126,8 +1865,8 @@ export default function App() {
   };
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
-    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) || tryoutSent(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {isJoined(c) ? `Registered ✓ · ${mySlots[c.id].length} session${mySlots[c.id].length > 1 ? "s" : ""}` : tryoutSent(c) ? "Tryout form sent ✓" : isSports(c) ? "Register · tryouts" : "Join · pick a time"}
+    <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
+      {isJoined(c) ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Join club"}
     </button>
   );
 
@@ -2154,53 +1893,58 @@ export default function App() {
     .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
 
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"]];
+  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"]];
 
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
       <style>{CSS}</style>
 
       {/* Nav */}
-      <header className="sticky top-0 z-30 border-b border-slate-700" style={glassDark}>
+      <header className={`u-keep sticky top-0 z-30 border-b ${dark ? "border-slate-700" : "border-slate-200/80 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white">U</div>
-            <span className="text-lg font-bold tracking-tight text-white">Unite</span>
-            <span className="hidden rounded-full px-2 py-0.5 text-xs font-medium text-indigo-200 sm:inline" style={glassChip}>for UOWD students</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-sm">U</div>
+            <span className={`text-lg font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>Unite</span>
+            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-indigo-200" : "bg-indigo-100/70 text-indigo-700"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={studentIdRef.current ? `${user} · ID ${studentIdRef.current}` : user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
+              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }}
+                className={`u-keep rounded-lg px-2.5 py-1.5 text-sm ${dark ? "text-slate-300 hover:bg-white/10 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })}
+              className={`u-keep u-btn rounded-lg px-3.5 py-1.5 text-sm font-semibold ${dark ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 text-white shadow-sm hover:bg-gray-800"}`}>Sign in</button>
           )}
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="u-keep relative overflow-hidden bg-slate-900">
-        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600" style={{ filter: "blur(90px)", opacity: 0.45 }} />
-        <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-fuchsia-600" style={{ filter: "blur(100px)", opacity: 0.3 }} />
+      {/* Hero: explicit light and dark palettes (u-keep opts out of the dark remap) */}
+      <section className={`u-keep relative overflow-hidden ${dark ? "bg-slate-900" : "border-b border-slate-200/70 bg-gradient-to-b from-white to-slate-50"}`}>
+        <div className={`absolute -left-24 -top-24 h-72 w-72 rounded-full ${dark ? "bg-indigo-600" : "bg-indigo-300"}`} style={{ filter: "blur(90px)", opacity: dark ? 0.45 : 0.35 }} />
+        <div className={`absolute -bottom-24 right-0 h-72 w-72 rounded-full ${dark ? "bg-fuchsia-600" : "bg-fuchsia-300"}`} style={{ filter: "blur(100px)", opacity: dark ? 0.3 : 0.25 }} />
         <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
-          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-indigo-100" style={glassChip}>
+          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${dark ? "text-indigo-100" : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200"}`} style={dark ? glassChip : undefined}>
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
           </span>
-          <h1 className="mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Where UOWD comes together.</h1>
-          <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
+          <h1 className={`mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
+            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-indigo-300 to-fuchsia-300" : "from-indigo-600 to-fuchsia-600"}`}>together.</span>
+          </h1>
+          <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={hostEvent} className="u-keep u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
-            <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
+            <button onClick={hostEvent} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 text-white shadow-sm hover:bg-gray-800"}`}>Host an event</button>
+            <button onClick={() => jumpTo("clubs")} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "text-white" : "bg-white text-gray-800 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"}`} style={dark ? glassChip : undefined}>Explore clubs</button>
           </div>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
             {[[clubs.length, "Teams & clubs", "clubs"], [parties.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
-              <button key={l} onClick={() => jumpTo(t)} className="u-btn rounded-2xl p-3 text-left hover:border-white" style={glassChip}>
-                <p className="text-xl font-bold text-white">{n}</p>
-                <p className="text-xs text-slate-300">{l}</p>
+              <button key={l} onClick={() => jumpTo(t)}
+                className={`u-keep u-btn rounded-2xl p-3 text-left ${dark ? "hover:border-white" : "bg-white/80 shadow-sm ring-1 ring-gray-200/80 hover:ring-indigo-200"}`} style={dark ? glassChip : undefined}>
+                <p className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-gray-900"}`}>{n}</p>
+                <p className={`text-xs ${dark ? "text-slate-300" : "text-gray-500"}`}>{l}</p>
               </button>
             ))}
           </div>
@@ -2209,7 +1953,7 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" className="relative mb-5 grid grid-cols-5 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
+        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
           <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
@@ -2272,7 +2016,6 @@ export default function App() {
                     <div className="min-w-0 space-y-1.5 text-xs text-slate-500">
                       <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{memberCount(c)} members</span></div>
                       <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly session{c.slots.length > 1 ? "s" : ""} · {clubDays(c)}</p>
-                      <button onClick={() => showOnMap("club", c.id)} className="font-semibold text-indigo-600 hover:underline">Find booth on map →</button>
                     </div>
                     {clubBtn(c)}
                   </div>
@@ -2335,7 +2078,7 @@ export default function App() {
                       <div className="mt-2.5"><Vibe v={p.vibe} /></div>
                       <div className="mt-3 space-y-1.5 text-sm text-slate-600">
                         <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
-                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} /><LangBadge lang={p.lang} />{hasBooth("party", p.id) && <button onClick={() => showOnMap("party", p.id)} className="text-xs font-semibold text-indigo-600 hover:underline">Find on map →</button>}</p>
+                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} /><LangBadge lang={p.lang} /></p>
                       </div>
                       <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
                       <div className="mt-4 flex gap-2">{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></div>
@@ -2354,17 +2097,6 @@ export default function App() {
           </>
         )}
 
-        {/* Campus map */}
-        {tab === "map" && (
-          <FloorMap
-            clubs={clubs} parties={parties} selId={selBooth}
-            onSelect={(id) => setSelBooth(id === selBooth ? null : id)}
-            renderClub={(c) => clubBtn(c, "w-full py-2.5")}
-            renderParty={(p) => partyBtn(p)}
-            onShare={shareEvent}
-          />
-        )}
-
         {/* My schedule */}
         {tab === "schedule" &&
           (!user ? (
@@ -2378,7 +2110,7 @@ export default function App() {
             <MySchedule
               sessions={sessions}
               events={bookings}
-              onOpenClub={(c) => setModal({ type: "slots", id: c.id })}
+              onOpenClub={(c) => setModal({ type: "club", id: c.id })}
               onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
               onBrowse={changeTab}
               onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}
@@ -2485,7 +2217,6 @@ export default function App() {
           party={parties.find((x) => x.id === modal.id)}
           action={partyBtn(parties.find((x) => x.id === modal.id), "w-full")}
           onShare={shareEvent}
-          onMap={(p) => { closeModal(); showOnMap("party", p.id); }}
           onClose={closeModal}
         />
       )}
@@ -2494,33 +2225,22 @@ export default function App() {
           club={clubs.find((x) => x.id === modal.id)}
           joined={isJoined(clubs.find((x) => x.id === modal.id))}
           mine={mySlots[modal.id] || []}
-          action={clubBtn(clubs.find((x) => x.id === modal.id), "w-full py-3")}
-          onMap={(c) => { closeModal(); showOnMap("club", c.id); }}
+          action={isJoined(clubs.find((x) => x.id === modal.id)) ? (
+            <div className="flex gap-2">
+              <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> Registered · in My Schedule</span>
+              <button onClick={() => leaveClub(clubs.find((x) => x.id === modal.id))} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Leave</button>
+            </div>
+          ) : clubBtn(clubs.find((x) => x.id === modal.id), "w-full py-3")}
           onClose={closeModal}
         />
       )}
-      {modal && modal.type === "slots" && clubs.find((x) => x.id === modal.id) && (() => {
-        const c = clubs.find((x) => x.id === modal.id);
-        return (
-          <SlotModal
-            club={c}
-            selected={mySlots[c.id] || []}
-            others={sessions.filter((x) => x.club.id !== c.id)}
-            onToggle={(sl) => toggleSlot(c, sl)}
-            onLeave={() => leaveClub(c)}
-            onViewSchedule={() => { closeModal(); jumpTo("schedule"); }}
-            onClose={closeModal}
-          />
-        );
-      })()}
       {modal && modal.type === "tryout" && clubs.find((x) => x.id === modal.id) && (() => {
         const c = clubs.find((x) => x.id === modal.id);
         return (
           <TryoutModal
             club={c}
             sent={tryoutSent(c)}
-            onSent={() => { setTryouts((t) => ({ ...t, [c.id]: true })); notify(`Thanks! ${c.name} tryout registration marked as sent. UOWD Sports will contact you by email.`, 3600); }}
-            onSessions={() => setModal({ type: "slots", id: c.id })}
+            onSent={() => { setTryouts((t) => ({ ...t, [c.id]: true })); closeModal(); registerClub(c); }}
             onClose={closeModal}
           />
         );
