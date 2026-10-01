@@ -2,7 +2,8 @@
    The bot token stays server-side (set TELEGRAM_BOT_TOKEN in the Vercel project settings); it must
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
-const CHAT_ID = "8878768622"; // Unite admin moderation chat
+// Unite admin moderation chat (TELEGRAM_CHAT_ID in Vercel overrides it without a code change).
+const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "8878768622").trim();
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
@@ -18,6 +19,13 @@ const parseImage = (v) => {
 };
 
 function buildMessage(p) {
+  const full = buildParts(p);
+  if (full.length <= MAX_MESSAGE) return full;
+  const over = full.length - MAX_MESSAGE + 20;
+  return buildParts({ ...p, pitch: p.pitch.slice(0, Math.max(0, p.pitch.length - over)) + " …(cut)" });
+}
+
+function buildParts(p) {
   const line = (label, value) => (value ? `<b>${label}:</b> ${esc(value)}` : null);
   const link = (label, url) => (url ? `<b>${label}:</b> <a href="${esc(url)}">${esc(url)}</a>` : null);
   const price = Number(p.price) > 0 ? `${Number(p.price)} AED` : "Free";
@@ -50,9 +58,7 @@ function buildMessage(p) {
     "",
     `<i>Ref ${esc(p.ref)} · submitted by ${esc(p.account || p.email)}</i>`,
   ].filter((x) => x !== null);
-  let text = parts.join("\n");
-  if (text.length > MAX_MESSAGE) text = text.slice(0, MAX_MESSAGE - 1) + "…";
-  return text;
+  return parts.join("\n");
 }
 
 // Trim stray spaces/newlines from a pasted token.
@@ -81,8 +87,10 @@ const tg = async (token, method, body) => {
   return { ok: r.ok && data.ok, status: r.status, data };
 };
 // Plain-English explanation of a Telegram error (no secrets included).
-const explain = (d) => {
+const explain = (d, token) => {
   const m = String((d && d.description) || "");
+  if (token && token.startsWith(`${CHAT_ID}:`)) return `${CHAT_ID} is the bot's own ID (the number at the start of its token), not your chat ID, and a bot can't message itself. Message @userinfobot in Telegram to get your personal ID, then add it in Vercel as TELEGRAM_CHAT_ID and redeploy.`;
+  if (/bots can't send messages to bots/i.test(m)) return `Chat ${CHAT_ID} belongs to a bot, and bots can't message other bots. Message @userinfobot in Telegram to get your personal ID, then add it in Vercel as TELEGRAM_CHAT_ID and redeploy.`;
   if (/unauthorized|not found: 404/i.test(m) || (d && d.error_code === 401)) return "The bot token is invalid. Copy it again from @BotFather and update TELEGRAM_BOT_TOKEN in Vercel, then redeploy.";
   if (/chat not found|bot can't initiate|user is deactivated/i.test(m)) return `The bot can't message chat ${CHAT_ID} yet. Open the bot in Telegram from that account and press Start.`;
   if (/blocked by the user/i.test(m)) return "The admin account has blocked the bot. Unblock it in Telegram and press Start.";
@@ -105,11 +113,11 @@ export default async function handler(req, res) {
     if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(token)) return res.status(200).json({ configured: true, variable: tokenVar(), tokenLooksValid: false, help: "TELEGRAM_BOT_TOKEN doesn't look like a bot token (expected 123456789:ABC…). Copy it again from @BotFather." });
     try {
       const me = await tg(token, "getMe");
-      if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data) });
+      if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data, token) });
       const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
       return res.status(200).json({
         configured: true, variable: tokenVar(), deployment: deployment(), tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
-        help: chat.ok ? "All set: party pitches will be delivered." : explain(chat.data),
+        help: chat.ok ? "All set: party pitches will be delivered." : explain(chat.data, token),
       });
     } catch (e) {
       return res.status(200).json({ configured: true, help: "Couldn't reach Telegram from the server. Try again in a minute." });
@@ -152,10 +160,16 @@ export default async function handler(req, res) {
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
   try {
-    const sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: buildMessage(p), parse_mode: "HTML", disable_web_page_preview: true });
+    let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: buildMessage(p), parse_mode: "HTML", disable_web_page_preview: true });
+    if (!sent.ok && /parse entities/i.test(String(sent.data && sent.data.description))) {
+      // Formatting rejected: deliver the same pitch as plain text rather than lose it.
+      const plain = buildMessage(p).replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true });
+    }
     if (!sent.ok) {
-      console.error("Telegram sendMessage failed", sent.status, explain(sent.data));
-      return res.status(502).json({ ok: false, error: "The review team couldn't be reached. Please try again." });
+      const why = explain(sent.data, token);
+      console.error("Telegram sendMessage failed", sent.status, why);
+      return res.status(502).json({ ok: false, error: `Telegram didn't accept the pitch: ${why}` });
     }
     // The pitch is delivered; attach the artwork as photos (a failure here doesn't fail the submission).
     for (const [img, label] of [[cover, "Cover"], [logo, "Logo"]]) {
@@ -166,13 +180,13 @@ export default async function handler(req, res) {
         form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
         form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
         const pr = await tg(token, "sendPhoto", form);
-        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, explain(pr.data));
+        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, explain(pr.data, token));
       } catch (e) { console.error("Telegram sendPhoto error", e); }
     }
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error("Telegram request error", e);
-    return res.status(502).json({ ok: false, error: "The review team couldn't be reached. Please try again." });
+    return res.status(502).json({ ok: false, error: "The server couldn't reach Telegram. Please try again in a minute." });
   }
 }
 
