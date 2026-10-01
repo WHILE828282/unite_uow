@@ -516,7 +516,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
 
           <div className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl ring-1 ring-inset ring-slate-200/70">{b.emoji}</div>
+              {b.logo ? <EventLogo p={b} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl ring-1 ring-inset ring-slate-200/70">{b.emoji}</div>}
               <p className="min-w-0 font-semibold leading-snug text-slate-900">{b.title}</p>
             </div>
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -732,6 +732,123 @@ function AuthModal({ reason, onClose, onSignIn }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Event artwork: covers and logos are normalised before they are stored */
+/* ------------------------------------------------------------------ */
+/* Covers: 16:9, encoded 1600x900. Logos: 1:1, encoded 512x512. Uploads are centre-cropped,
+   resized and re-encoded as WebP (JPEG where WebP encoding is unavailable); linked images must
+   load and meet the minimum resolution, and are displayed with the same aspect ratio. */
+const IMAGE_SPECS = {
+  cover: { w: 1600, h: 900, minW: 800, minH: 450, label: "cover" },
+  logo: { w: 512, h: 512, minW: 128, minH: 128, label: "logo" },
+};
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+
+const loadImage = (src, cors) => new Promise((resolve, reject) => {
+  const img = new Image();
+  if (cors) img.crossOrigin = "anonymous";
+  img.decoding = "async";
+  img.onload = () => resolve(img);
+  img.onerror = () => reject(new Error("load"));
+  img.src = src;
+});
+
+async function processImageFile(file, kind) {
+  const spec = IMAGE_SPECS[kind];
+  if (!IMAGE_TYPES.includes(file.type)) throw new Error("Use a JPG, PNG or WebP image.");
+  if (file.size > IMAGE_MAX_BYTES) throw new Error("That image is over 10 MB.");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+    if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Image too small: at least ${spec.minW}×${spec.minH}px.`);
+    // centre-crop to the target aspect ratio, then scale to the target size
+    const target = spec.w / spec.h, ratio = img.naturalWidth / img.naturalHeight;
+    const sw = ratio > target ? img.naturalHeight * target : img.naturalWidth;
+    const sh = ratio > target ? img.naturalHeight : img.naturalWidth / target;
+    const c = document.createElement("canvas");
+    c.width = spec.w; c.height = spec.h;
+    const g = c.getContext("2d");
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+    g.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, 0, 0, spec.w, spec.h);
+    let out = c.toDataURL("image/webp", 0.86);
+    if (!out.startsWith("data:image/webp")) out = c.toDataURL("image/jpeg", 0.88);
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function checkImageUrl(raw, kind) {
+  const spec = IMAGE_SPECS[kind];
+  let u;
+  try { u = new URL(raw.trim()); } catch (e) { throw new Error("Enter a full image link starting with https://"); }
+  if (u.protocol !== "https:") throw new Error("Image links must start with https://");
+  let img;
+  try { img = await loadImage(u.toString()); } catch (e) { throw new Error("That link doesn't open as an image."); }
+  if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Image too small: at least ${spec.minW}×${spec.minH}px.`);
+  return u.toString();
+}
+
+function ImageField({ kind, label, value, onChange }) {
+  const spec = IMAGE_SPECS[kind];
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [urlMode, setUrlMode] = useState(false);
+  const [url, setUrl] = useState("");
+  const [drag, setDrag] = useState(false);
+  const fileRef = useRef(null);
+  const take = async (fn) => {
+    setBusy(true); setErr("");
+    try { onChange(await fn()); setUrlMode(false); setUrl(""); }
+    catch (e) { setErr(e.message || "Couldn't use that image."); }
+    finally { setBusy(false); }
+  };
+  const onFile = (f) => f && take(() => processImageFile(f, kind));
+  const isCover = kind === "cover";
+  return (
+    <div>
+      <span className="text-sm font-medium text-slate-700">{label} <span className="font-normal text-slate-400">(optional)</span></span>
+      <div className={`mt-1.5 flex gap-3 ${isCover ? "flex-col" : "items-center"}`}>
+        <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={busy}
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
+          onDrop={(e) => { e.preventDefault(); setDrag(false); onFile(e.dataTransfer.files && e.dataTransfer.files[0]); }}
+          aria-label={`Upload ${label}`}
+          className={`group relative shrink-0 overflow-hidden border-2 border-dashed ${isCover ? "w-full rounded-2xl" : "h-20 w-20 rounded-2xl"} ${drag ? "border-indigo-500 bg-indigo-50" : value ? "border-transparent" : "border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50"}`}
+          style={isCover ? { aspectRatio: `${spec.w} / ${spec.h}` } : undefined}>
+          {value ? (
+            <img src={value} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: `${spec.w} / ${spec.h}` }} />
+          ) : (
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-slate-400 group-hover:text-indigo-500">
+              <svg viewBox="0 0 24 24" className={isCover ? "h-8 w-8" : "h-6 w-6"} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16l4.5-4.5a2 2 0 012.8 0L16 16m-2-2l1.5-1.5a2 2 0 012.8 0L20 14M14 8h.01M5 20h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
+              {isCover && <span className="text-xs font-semibold">Upload or drop an image</span>}
+            </span>
+          )}
+          {busy && <span className="absolute inset-0 flex items-center justify-center bg-white/70"><span className="u-spin h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent" /></span>}
+        </button>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={busy} className="u-btn rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">{value ? "Replace" : "Upload"}</button>
+          <button type="button" onClick={() => { setUrlMode((m) => !m); setErr(""); }} disabled={busy} className="u-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">{urlMode ? "Cancel link" : "Use image link"}</button>
+          {value && <button type="button" onClick={() => onChange("")} className="u-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-rose-600">Remove</button>}
+        </div>
+      </div>
+      <input ref={fileRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" onChange={(e) => { onFile(e.target.files && e.target.files[0]); e.target.value = ""; }} />
+      {urlMode && (
+        <div className="mt-2 flex gap-2">
+          <input type="url" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…/image.jpg" aria-label={`${label} link`}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), url.trim() && take(() => checkImageUrl(url, kind)))}
+            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+          <button type="button" onClick={() => url.trim() && take(() => checkImageUrl(url, kind))} disabled={busy || !url.trim()} className="u-btn rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40">Add</button>
+        </div>
+      )}
+      {err && <p className="mt-1 text-xs text-rose-600">{err}</p>}
+    </div>
+  );
+}
+
+/* Event artwork for headers/thumbnails: logo image or emoji fallback. */
+const EventLogo = ({ p, className = "h-12 w-12 text-2xl" }) =>
+  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
+    : <span className={`${className} flex shrink-0 items-center justify-center`}>{p.emoji}</span>;
+
 const CREATE_TABS = [
   ["basics", "Basics", ["title", "desc"]],
   ["when", "Time & place", ["date", "end", "venueName", "mapsUrl", "spots", "price"]],
@@ -766,7 +883,7 @@ const submissionToParty = (sub) => ({
   id: sub.at, lang: sub.lang, title: sub.title, emoji: TYPE_EMOJI[sub.category] || "🎉", category: sub.category,
   date: sub.date, time: fmtTime(sub.start), where: sub.room ? `${sub.venueName}, ${sub.room}` : sub.venueName,
   address: sub.venueName, maps: sub.venueName, mapsUrl: sub.mapsUrl, price: sub.price, spots: sub.spots, taken: 0, wait: 0, vibe: null,
-  host: "you", own: true,
+  host: "you", own: true, cover: sub.cover, logo: sub.logo,
   contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
   desc: sub.desc || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
   perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
@@ -774,7 +891,7 @@ const submissionToParty = (sub) => ({
 const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail });
+  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, cover: "", logo: "" });
   const [errors, setErrors] = useState({});
   const [tab, setTab] = useState("basics");
   const [submitting, setSubmitting] = useState(false);
@@ -824,7 +941,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, desc: f.desc.trim(),
         date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
         spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
-        whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(),
+        whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.cover, logo: f.logo,
       });
     }, 1100);
     return () => clearTimeout(t);
@@ -947,6 +1064,8 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
 
           {tab === "details" && (
             <>
+              <ImageField kind="cover" label="Event Cover Image / Background" value={f.cover} onChange={(v) => setF((x) => ({ ...x, cover: v }))} />
+              <ImageField kind="logo" label="Event Logo / Avatar" value={f.logo} onChange={(v) => setF((x) => ({ ...x, logo: v }))} />
               <div>
                 <label className={lab} htmlFor="c-dress">Dress Code {opt("(if any)")}</label>
                 <input id="c-dress" list="c-dresses" className={input("dress")} value={f.dress} onChange={set("dress")} placeholder="e.g. Smart casual" />
@@ -1206,17 +1325,23 @@ function EventDetail({ party: p, action, onShare, onClose }) {
   const mapsUrl = partyMapsUrl(p);
   return (
     <Modal onClose={onClose} size="lg">
-      <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[p.category]}`}>
-        <div className="flex items-start justify-between pr-10">
-          <span className="text-5xl">{p.emoji}</span>
+      <div className={`relative overflow-hidden px-6 pb-6 pt-7 text-white ${p.cover ? "bg-slate-900" : `bg-gradient-to-br ${GRADIENTS[p.category]}`}`}>
+        {p.cover && (
+          <>
+            <img src={p.cover} alt="" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: "16 / 9" }} />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" aria-hidden="true" />
+          </>
+        )}
+        <div className={`relative flex items-start justify-between pr-10 ${p.cover ? "pt-16" : ""}`}>
+          {p.logo ? <EventLogo p={p} className="h-16 w-16 ring-2 ring-white/80 shadow-xl" /> : <span className="text-5xl">{p.emoji}</span>}
           <ShareBtn onClick={() => onShare(p)} />
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
           <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
         </div>
-        <h2 className="mt-2 text-2xl font-bold leading-tight">{p.title}</h2>
-        <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>Hosted by {p.host}</p>
+        <h2 className="relative mt-2 text-2xl font-bold leading-tight">{p.title}</h2>
+        <p className="relative mt-0.5 text-sm" style={{ opacity: 0.9 }}>Hosted by {p.host}</p>
       </div>
 
       <div className="space-y-5 p-5">
@@ -1349,10 +1474,11 @@ function ReviewModal({ sub: s, r, onClose }) {
   ];
   return (
     <Modal onClose={onClose}>
-      <div className={`bg-gradient-to-br px-6 pb-5 pt-7 text-white ${GRADIENTS[s.category] || GRADIENTS.Party}`}>
-        <span className="text-4xl">{TYPE_EMOJI[s.category] || "🎉"}</span>
-        <h2 className="mt-2 pr-8 text-xl font-bold leading-tight">{s.title}</h2>
-        <span className="u-keep mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Party Under Review · ~{r.left} left</span>
+      <div className={`relative overflow-hidden px-6 pb-5 pt-7 text-white ${s.cover ? "bg-slate-900" : `bg-gradient-to-br ${GRADIENTS[s.category] || GRADIENTS.Party}`}`}>
+        {s.cover && (<><img src={s.cover} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: "16 / 9" }} /><span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" aria-hidden="true" /></>)}
+        <span className={`relative block ${s.cover ? "pt-12" : ""}`}>{s.logo ? <EventLogo p={s} className="h-14 w-14 ring-2 ring-white/80 shadow-lg" /> : <span className="text-4xl">{TYPE_EMOJI[s.category] || "🎉"}</span>}</span>
+        <h2 className="relative mt-2 pr-8 text-xl font-bold leading-tight">{s.title}</h2>
+        <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Party Under Review · ~{r.left} left</span>
       </div>
       <div className="space-y-4 p-5">
         <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
@@ -1757,6 +1883,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
               const d = new Date(r.date + "T00:00:00");
               return (
                 <button key={r.ref} onClick={() => onOpenReview(r)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
+                  {r.logo && <EventLogo p={r} className="h-14 w-14 ring-1 ring-slate-200/70" />}
                   <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-gradient-to-br text-white ${GRADIENTS[r.category] || GRADIENTS.Party}`}>
                     <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: 0.85 }}>{d.toLocaleDateString("en-GB", { month: "short" })}</span>
                     <span className="text-xl font-bold leading-none">{d.getDate()}</span>
@@ -1831,7 +1958,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
   return (
     <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/75 backdrop-blur-md sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-modal="true" aria-label={`UOWD Sports tryouts registration for ${c.name}`}
+      <div role="dialog" aria-modal="true" aria-label={`UOWD registration for ${c.name}`}
         className="u-keep u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-gray-950 text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
         style={{ colorScheme: "dark" }}>
 
@@ -1854,8 +1981,8 @@ function TryoutModal({ club: c, onSent, onClose }) {
               <p className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
                 <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form
               </p>
-              <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">Sports Tryouts Registration</h2>
-              <p className="truncate text-sm text-gray-400">For {c.name} · run by UOWD Sports</p>
+              <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">{isSports(c) ? "Sports Tryouts Registration" : "Club Registration"}</h2>
+              <p className="truncate text-sm text-gray-400">For {c.name} · processed by UOWD Student Services</p>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-300">
@@ -1866,7 +1993,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
                 <span className="text-gray-400">· pre-selected, please check it's ticked</span>
               </span>
             )}
-            <span className="hidden text-gray-400 sm:inline">Answers go straight to UOWD Sports, not to Unite.</span>
+            <span className="hidden text-gray-400 sm:inline">Answers go straight to UOWD, not to Unite.</span>
           </div>
         </div>
 
@@ -1881,7 +2008,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
           )}
           <iframe
             key={src}
-            title={`UOWD Sports Tryouts Registration form for ${c.name}`}
+            title={`UOWD registration form for ${c.name}`}
             src={src}
             onLoad={() => setLoaded(true)}
             allow="fullscreen"
@@ -1992,7 +2119,7 @@ export default function App() {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
     setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
-    if (pending) notify(`Tryout form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
+    if (pending) notify(`Registration form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
     else notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
   const reviewOf = (sub) => (clock - sub.at >= REVIEW_MS ? "approved" : "review");
@@ -2004,10 +2131,11 @@ export default function App() {
   };
   const askLeave = (c) => setModal({ type: "leave", id: c.id });
   // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
+  // Every team and club registers through the official UOWD form; status changes only after
+  // "I've submitted the form" (pending, then registered once Student Services processes it).
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
-    if (isSports(c)) return requireAuth(`Sign in to register for ${c.name} tryouts`, () => setModal({ type: "tryout", id: c.id }));
-    requireAuth(`Sign in to join ${c.name}`, () => registerClub(c));
+    requireAuth(`Sign in to register for ${c.name}`, () => setModal({ type: "tryout", id: c.id }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
@@ -2019,7 +2147,7 @@ export default function App() {
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
     setBookings((bs) => [b, ...bs]);
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
     return b;
@@ -2053,11 +2181,9 @@ export default function App() {
   };
 
   const shareEvent = async (p) => {
-    const ok = await copyText(`https://uniteuow.com/events/${p.id}`);
-    notify(
-      ok ? "Link copied to clipboard! Share it with your squad via WhatsApp." : "Couldn't copy automatically. Copy the page link from your address bar instead.",
-      3600
-    );
+    const url = `${window.location.origin}/events/${p.id}`;
+    const ok = await copyText(url);
+    notify(ok ? "Link copied to clipboard! Share it with your squad." : `Copy this link to share: ${url}`, ok ? 3000 : 6000);
   };
 
 
@@ -2066,19 +2192,17 @@ export default function App() {
     catch (e) { notify("Couldn't create the download. Take a screenshot of your ticket instead.", 3600); }
   };
 
-  const openDetail = (e, p) => {
-    if (e.target.closest("button, a")) return;
-    setModal({ type: "detail", id: p.id });
-  };
-
-  const openClub = (e, c) => {
-    if (e.target.closest("button, a")) return;
-    setModal({ type: "club", id: c.id });
-  };
+  // Card click / Enter opens details, unless the event came from a control inside the card
+  // (join, buy, share, venue link), which handle themselves.
+  const cardOpen = (open) => ({
+    tabIndex: 0,
+    onClick: (e) => { if (!e.target.closest("button, a")) open(); },
+    onKeyDown: (e) => { if (e.key === "Enter" && e.target === e.currentTarget) open(); },
+  });
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
     <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${statusOf(c) === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : statusOf(c) === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {statusOf(c) === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : statusOf(c) === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Join club"}
+      {statusOf(c) === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : statusOf(c) === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Register · join club"}
     </button>
   );
 
@@ -2212,7 +2336,7 @@ export default function App() {
             {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any teams or clubs yet." : `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}${myPending ? ` · ${myPending} pending approval` : ""}.`}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
-                <article key={c.id} tabIndex={0} onClick={(e) => openClub(e, c)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "club", id: c.id }); }}
+                <article key={c.id} {...cardOpen(() => setModal({ type: "club", id: c.id }))}
                   className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                   <div className="flex items-start gap-4">
                     <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
@@ -2271,11 +2395,17 @@ export default function App() {
               {filteredParties.map((p, i) => {
                 const left = p.spots - p.taken;
                 return (
-                  <article key={p.id} id={"event-" + p.id} tabIndex={0} onClick={(e) => openDetail(e, p)} onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) setModal({ type: "detail", id: p.id }); }}
-                    className="u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
-                    <div className={`flex items-center justify-between gap-2 bg-gradient-to-r px-4 py-4 ${GRADIENTS[p.category]}`}>
-                      <span className="text-3xl">{p.emoji}</span>
-                      <div className="flex items-center gap-2">
+                  <article key={p.id} id={"event-" + p.id} {...cardOpen(() => setModal({ type: "detail", id: p.id }))}
+                    className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+                    <div className={`relative flex justify-between gap-2 overflow-hidden px-4 ${p.cover ? "h-40 items-end bg-slate-900 pb-3" : `items-center bg-gradient-to-r py-4 ${GRADIENTS[p.category]}`}`}>
+                      {p.cover && (
+                        <>
+                          <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" style={{ aspectRatio: "16 / 9" }} />
+                          <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" aria-hidden="true" />
+                        </>
+                      )}
+                      <span className="relative">{p.logo ? <EventLogo p={p} className="h-12 w-12 ring-2 ring-white/80 shadow-lg" /> : <span className="text-3xl">{p.emoji}</span>}</span>
+                      <div className="relative flex items-center gap-2">
                         <ShareBtn onClick={() => shareEvent(p)} />
                         <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
                         <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
