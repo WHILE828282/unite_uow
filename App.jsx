@@ -301,7 +301,7 @@ function Vibe({ v }) {
 
 const ShareBtn = ({ onClick }) => (
   <button onClick={onClick} aria-label="Share event" title="Share event"
-    className="u-keep flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
+    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
     style={{ background: "rgba(255,255,255,0.22)" }}>
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" />
@@ -394,7 +394,7 @@ function Ticket({ booking, justPaid, onClose, onDownload }) {
 
       <div className="-mt-8 px-5 pb-5">
         <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
-          <div className="u-keep flex items-center justify-between bg-slate-900 px-5 py-3">
+          <div className="flex items-center justify-between bg-slate-900 px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">U</span>
               <span className="text-sm font-bold text-white">Unite</span>
@@ -874,7 +874,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
           <span className="text-sm text-slate-500">Total due</span>
           <span className="text-xl font-bold text-slate-900">{party.price} AED</span>
         </div>
-        <button onClick={() => startPay(method)} className={`u-btn mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"}`}>
+        <button onClick={() => startPay(method)} className={`u-btn mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white ${method === "Apple Pay" ? "bg-black hover:bg-slate-800" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"}`}>
           🔒 Confirm Payment · {party.price} AED
         </button>
         <p className="mt-3 text-center text-xs text-slate-400">Demo mode: no real charge is made. For card, any valid-looking number works (try 4242 4242 4242 4242).</p>
@@ -1018,7 +1018,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
     <div className="grid gap-5 lg:grid-cols-5">
       {/* Map */}
       <div className="lg:col-span-3">
-        <div className="u-keep rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
+        <div className="rounded-3xl border border-slate-700 bg-slate-900 p-3 shadow-xl sm:p-4">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="rounded-md bg-indigo-500 px-2 py-0.5 text-xs font-bold text-white">GF</span>
@@ -1232,9 +1232,6 @@ export default function App() {
   const [waitlist, setWaitlist] = useState({});
   const [selBooth, setSelBooth] = useState(null);
   const [tickerOn, setTickerOn] = useState(true);
-  const [dark, setDark] = useState(() => {
-    try { return localStorage.getItem("unite-theme") !== "light"; } catch (e) { return true; }
-  });
   const toastTimer = useRef(null);
 
   useEffect(() => {
@@ -1244,12 +1241,6 @@ export default function App() {
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }
     } catch (e) { /* ignore */ }
   }, []);
-
-  useEffect(() => {
-    try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
-    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#f8fafc";
-    document.documentElement.style.colorScheme = dark ? "dark" : "light";
-  }, [dark]);
 
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
@@ -1378,36 +1369,32 @@ export default function App() {
   const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["tickets", "My Tickets", "Tickets"]];
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`} style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif" }}>
+    <div className="min-h-screen bg-slate-50 text-slate-900" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif" }}>
       <style>{CSS}</style>
 
       {/* Nav */}
       <header className="sticky top-0 z-30 border-b border-slate-700" style={glassDark}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
+          <button onClick={goHome} aria-label="Unite home" className="flex items-center gap-2.5 rounded-lg">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white">U</div>
             <span className="text-lg font-bold tracking-tight text-white">Unite</span>
             <span className="hidden rounded-full px-2 py-0.5 text-xs font-medium text-indigo-200 sm:inline" style={glassChip}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
-          <button onClick={() => setDark((d) => !d)} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} title={dark ? "Light theme" : "Dark theme"}
-            className="u-keep u-btn flex h-8 w-8 items-center justify-center rounded-lg text-base text-slate-200 hover:text-white" style={glassChip}>
-            {dark ? "☀️" : "🌙"}
-          </button>
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
+              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
           )}
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="u-keep relative overflow-hidden bg-slate-900">
+      <section className="relative overflow-hidden bg-slate-900">
         <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-indigo-600" style={{ filter: "blur(90px)", opacity: 0.45 }} />
         <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-fuchsia-600" style={{ filter: "blur(100px)", opacity: 0.3 }} />
         <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
@@ -1417,7 +1404,7 @@ export default function App() {
           <h1 className="mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Where UOWD comes together.</h1>
           <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One UOWD login, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={hostEvent} className="u-keep u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
+            <button onClick={hostEvent} className="u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
             <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
           </div>
           <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
