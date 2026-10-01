@@ -15,15 +15,19 @@ const GRADIENTS = {
   Social: "from-fuchsia-500 to-violet-600",
   Music: "from-rose-500 to-orange-500",
   Career: "from-blue-500 to-cyan-600",
+  Party: "from-fuchsia-500 to-pink-600",
+  "Academic Study": "from-sky-500 to-blue-600",
+  Networking: "from-blue-500 to-cyan-600",
+  "Arts & Culture": "from-amber-500 to-rose-500",
 };
 
 const CLUBS = [
-  { id: 1, name: "Basketball Club", emoji: "🏀", category: "Sports", desc: "Pickup games, weekly training and the inter-university league.", members: 86, when: "Tue & Thu · 7:00 PM", where: "Sports Hall", lead: { name: "Hamza Rauf", role: "Club captain", email: "basketball@uniteuow.com" }, note: "Bring court shoes; balls and bibs provided." },
-  { id: 2, name: "Football Society", emoji: "⚽", category: "Sports", desc: "Competitive squads and casual kickabouts for every level.", members: 124, when: "Mon & Wed · 7:30 PM", where: "Pitch 2", lead: { name: "Diego Fernandes", role: "President", email: "football@uniteuow.com" }, note: "Boots or turf shoes. Squads are mixed every session." },
-  { id: 3, name: "Robotics & AI Club", emoji: "🤖", category: "Tech", desc: "Build bots, train models and compete in regional hackathons.", members: 58, when: "Sun · 4:00 PM", where: "Lab B2.14", lead: { name: "Aisha Siddiqui", role: "President", email: "robotics@uniteuow.com" }, note: "Laptops recommended. Arduino kits on loan from the lab." },
-  { id: 4, name: "Entrepreneurship Hub", emoji: "🚀", category: "Business", desc: "Pitch nights, founder talks and mentoring from local startups.", members: 97, when: "Thu · 5:00 PM", where: "Innovation Studio", lead: { name: "Rahul Menon", role: "Founder & lead", email: "founders@uniteuow.com" }, note: "Pitch slots open every second Thursday." },
-  { id: 5, name: "Finance Club", emoji: "💼", category: "Business", desc: "Market simulations, stock-pitch nights and networking with banking and fintech professionals.", members: 72, when: "Mon · 5:00 PM", where: "Room 2.11", lead: { name: "Sara Al Hashimi", role: "President", email: "finance@uniteuow.com" }, note: "Smart casual for networking nights." },
-  { id: 6, name: "Photography Club", emoji: "📸", category: "Arts", desc: "Photo walks around Dubai, editing workshops and exhibitions.", members: 63, when: "Fri · 3:30 PM", where: "Campus Courtyard", lead: { name: "Lina Petrova", role: "Club lead", email: "photo@uniteuow.com" }, note: "Any camera works, phones included." },
+  { id: 1, name: "Basketball Club", emoji: "🏀", category: "Sports", desc: "Pickup games, weekly training and the inter-university league.", members: 86, slots: [{ id: "bb-mon", day: 0, start: "18:00", end: "20:00", title: "Open training", level: "All levels", where: "Sports Hall · Court 1", cap: 24, taken: 15 }, { id: "bb-wed", day: 2, start: "19:00", end: "21:00", title: "Skills & drills", level: "Beginners", where: "Sports Hall · Court 2", cap: 20, taken: 17 }, { id: "bb-sat", day: 5, start: "10:00", end: "12:00", title: "Scrimmage", level: "Intermediate+", where: "Sports Hall · Court 1", cap: 20, taken: 9 }], where: "Sports Hall", lead: { name: "Hamza Rauf", role: "Club captain", email: "basketball@uniteuow.com" }, note: "Bring court shoes; balls and bibs provided." },
+  { id: 2, name: "Football Society", emoji: "⚽", category: "Sports", desc: "Competitive squads and casual kickabouts for every level.", members: 124, slots: [{ id: "fb-mon", day: 0, start: "19:30", end: "21:00", title: "Five-a-side", level: "All levels", where: "Pitch 2", cap: 30, taken: 22 }, { id: "fb-wed", day: 2, start: "19:30", end: "21:00", title: "Squad training", level: "Competitive", where: "Pitch 2", cap: 22, taken: 20 }, { id: "fb-fri", day: 4, start: "17:00", end: "18:30", title: "Casual kickabout", level: "All levels", where: "Pitch 1", cap: 30, taken: 11 }], where: "Pitch 2", lead: { name: "Diego Fernandes", role: "President", email: "football@uniteuow.com" }, note: "Boots or turf shoes. Squads are mixed every session." },
+  { id: 3, name: "Robotics & AI Club", emoji: "🤖", category: "Tech", desc: "Build bots, train models and compete in regional hackathons.", members: 58, slots: [{ id: "rb-tue", day: 1, start: "17:00", end: "19:00", title: "ML study group", level: "All levels", where: "Lab B2.14", cap: 25, taken: 14 }, { id: "rb-sun", day: 6, start: "16:00", end: "18:00", title: "Build session", level: "All levels", where: "Lab B2.14", cap: 20, taken: 16 }], where: "Lab B2.14", lead: { name: "Aisha Siddiqui", role: "President", email: "robotics@uniteuow.com" }, note: "Laptops recommended. Arduino kits on loan from the lab." },
+  { id: 4, name: "Entrepreneurship Hub", emoji: "🚀", category: "Business", desc: "Pitch nights, founder talks and mentoring from local startups.", members: 97, slots: [{ id: "eh-tue", day: 1, start: "13:00", end: "14:00", title: "Founder office hours", level: "Open", where: "Room 3.02, Block 3", cap: 12, taken: 7 }, { id: "eh-thu", day: 3, start: "17:00", end: "18:30", title: "Pitch night", level: "All levels", where: "Innovation Studio", cap: 40, taken: 26 }], where: "Innovation Studio", lead: { name: "Rahul Menon", role: "Founder & lead", email: "founders@uniteuow.com" }, note: "Pitch slots open every second Thursday." },
+  { id: 5, name: "Finance Club", emoji: "💼", category: "Business", desc: "Market simulations, stock-pitch nights and networking with banking and fintech professionals.", members: 72, slots: [{ id: "fc-mon", day: 0, start: "17:00", end: "18:00", title: "Markets briefing", level: "All levels", where: "Room 2.11, Block 2", cap: 35, taken: 21 }, { id: "fc-thu", day: 3, start: "18:00", end: "19:30", title: "Stock-pitch workshop", level: "Intermediate", where: "Room 2.11, Block 2", cap: 24, taken: 18 }], where: "Room 2.11", lead: { name: "Sara Al Hashimi", role: "President", email: "finance@uniteuow.com" }, note: "Smart casual for networking nights." },
+  { id: 6, name: "Photography Club", emoji: "📸", category: "Arts", desc: "Photo walks around Dubai, editing workshops and exhibitions.", members: 63, slots: [{ id: "ph-wed", day: 2, start: "13:00", end: "14:00", title: "Editing clinic", level: "All levels", where: "Media Lab, Block 4", cap: 16, taken: 10 }, { id: "ph-fri", day: 4, start: "15:30", end: "17:30", title: "Photo walk", level: "All levels", where: "Meet at Campus Courtyard", cap: 20, taken: 8 }], where: "Campus Courtyard", lead: { name: "Lina Petrova", role: "Club lead", email: "photo@uniteuow.com" }, note: "Any camera works, phones included." },
 ];
 
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
@@ -82,6 +86,9 @@ const PARTIES = [
 
 const CLUB_FILTERS = ["All", "Sports", "Tech", "Business", "Culture", "Arts"];
 const PARTY_FILTERS = ["All", "Social", "Music", "Sports", "Gaming", "Career"];
+const EVENT_TYPES = ["Party", "Social", "Academic Study", "Networking", "Sports", "Gaming", "Music", "Arts & Culture"];
+const DRESS_CODES = ["Casual", "Smart casual", "Business formal", "Sportswear", "Costume / themed", "Traditional wear"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const LANGUAGES = ["English", "Arabic", "Russian", "Chinese", "Japanese", "French", "Hindi", "Urdu", "Spanish", "Persian", "Mixed / Multilingual"];
 
 /* Ground-floor layout: 12 columns x 8 rows. c/r = start column/row, w/h = span. */
@@ -124,6 +131,15 @@ const FEED = [
 /* ------------------------------------------------------------------ */
 const fmtDate = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+const fmtTime = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+const fmtRange = (a, b) => `${fmtTime(a)} – ${fmtTime(b)}`;
+/* "7:00 PM" -> "19:00" */
+const to24 = (t) => { const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i); if (!m) return "00:00"; let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12; return `${String(h).padStart(2, "0")}:${m[2]}`; };
+const weekdayIdx = (d) => (d.getDay() + 6) % 7; // Monday = 0
+const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const clubDays = (c) => [...new Set(c.slots.map((s) => s.day))].sort().map((d) => DAYS[d].slice(0, 3)).join(" · ");
+const slotHours = (s) => (toMin(s.end) - toMin(s.start)) / 60;
 const initials = (email) => (email || "??").slice(0, 2).toUpperCase();
 const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const makeId = (prefix, n = 6) =>
@@ -698,38 +714,78 @@ function AuthModal({ reason, onClose, onSignIn }) {
   );
 }
 
+const CREATE_TABS = [
+  ["basics", "Basics", ["title", "desc"]],
+  ["when", "Time & place", ["date", "end", "venue", "spots", "price"]],
+  ["details", "Details", ["dress", "reqs", "email"]],
+];
+const VENUE_SUGGESTIONS = ["Room 2.11, Block 2", "Lab B2.14, Block 2", "Lecture Theatre 2, Block 2", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Sports Hall, Court 1", "Pitch 2", "Innovation Studio", "Courtyard Café", "Auditorium, Block 3"];
+const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
+
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Social", date: "", time: "20:00", spots: 30, price: 0, where: "", lang: "English", email: defaultEmail });
+  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venue: "", spots: 30, price: 0, dress: "", reqs: "", email: defaultEmail });
   const [errors, setErrors] = useState({});
+  const [tab, setTab] = useState("basics");
   const [step, setStep] = useState("form");
   const [ref, setRef] = useState("");
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setErrors({ ...errors, [k]: undefined }); };
 
-  const submit = () => {
+  const validate = () => {
     const e = {};
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
     if (!f.date || f.date < TODAY) e.date = "Pick a date from today onwards.";
+    if (f.time && f.end && toMin(f.end) <= toMin(f.time)) e.end = "End after the start time.";
+    if (f.venue.trim().length < 3) e.venue = "Add the exact venue or room number.";
     if (!(Number(f.spots) >= 1)) e.spots = "At least 1 spot.";
     if (Number(f.price) < 0 || f.price === "") e.price = "Enter 0 for free events.";
-    if (f.where.trim().length < 3) e.where = "Tell guests where to go.";
     if (!validEmail(f.email.trim())) e.email = "Enter a valid contact email.";
+    return e;
+  };
+  const tabErrors = (k) => CREATE_TABS.find((t) => t[0] === k)[2].some((field) => errors[field]);
+  const idx = CREATE_TABS.findIndex((t) => t[0] === tab);
+
+  const next = () => {
+    const e = validate();
+    const fields = CREATE_TABS[idx][2];
+    const here = Object.fromEntries(Object.entries(e).filter(([k]) => fields.includes(k)));
+    setErrors({ ...errors, ...here });
+    if (!Object.keys(here).length) setTab(CREATE_TABS[idx + 1][0]);
+  };
+  const submit = () => {
+    const e = validate();
     setErrors(e);
-    if (Object.keys(e).length) return;
+    const bad = CREATE_TABS.find((t) => t[2].some((k) => e[k]));
+    if (bad) return setTab(bad[0]);
     setStep("submitting");
     setRef(makeId("REQ", 6));
+  };
+  const addReq = (r) => {
+    if (f.reqs.includes(r)) return;
+    setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r });
   };
 
   useEffect(() => {
     if (step !== "submitting") return;
     const t = setTimeout(() => {
-      onSubmitted({ ref, title: f.title.trim(), category: f.category, lang: f.lang, date: f.date, email: f.email.trim() });
+      onSubmitted({ ref, title: f.title.trim(), category: f.category, lang: f.lang, date: f.date, start: f.time, end: f.end, venue: f.venue.trim(), dress: f.dress.trim(), reqs: f.reqs.trim(), email: f.email.trim() });
       setStep("done");
     }, 1400);
     return () => clearTimeout(t);
     // eslint-disable-next-line
   }, [step]);
 
-  if (step === "done")
+  if (step === "done") {
+    const rows = [
+      ["Reference", <span className="font-mono font-semibold">{ref}</span>],
+      ["Event", f.title.trim()],
+      ["Type", f.category],
+      ["When", `${fmtDate(f.date)} · ${fmtRange(f.time, f.end)}`],
+      ["Venue", f.venue.trim()],
+      ["Language", <LangBadge lang={f.lang} />],
+      ...(f.dress.trim() ? [["Dress code", f.dress.trim()]] : []),
+      ...(f.reqs.trim() ? [["Bring / requirements", f.reqs.trim()]] : []),
+      ["Status", <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Pending review</span>],
+    ];
     return (
       <Modal onClose={onClose}>
         <div className="p-7 pt-9 text-center">
@@ -738,92 +794,164 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
             Our campus admin team will review your event. An approval notification and management link will be sent to <span className="font-semibold text-slate-900">{f.email.trim()}</span>.
           </p>
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-sm">
-            <div className="flex justify-between"><span className="text-slate-500">Reference</span><span className="font-mono font-semibold">{ref}</span></div>
-            <div className="mt-2 flex justify-between"><span className="text-slate-500">Event</span><span className="truncate pl-4 font-medium">{f.title.trim()}</span></div>
-            <div className="mt-2 flex justify-between"><span className="text-slate-500">Language</span><LangBadge lang={f.lang} /></div>
-            <div className="mt-2 flex justify-between"><span className="text-slate-500">Status</span><span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Pending review</span></div>
-          </div>
+          <dl className="mt-5 space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-left text-sm">
+            {rows.map(([k, v]) => (
+              <div key={k} className="flex items-start justify-between gap-4">
+                <dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd>
+              </div>
+            ))}
+          </dl>
           <p className="mt-3 text-xs text-slate-400">Reviews usually take 1 to 2 working days.</p>
           <button onClick={onClose} className="u-btn mt-5 w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Back to campus</button>
         </div>
       </Modal>
     );
+  }
 
-  const input = (k) => `mt-1 w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
+  const input = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
   const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
+  const Hint = ({ children }) => <p className="mt-1 text-xs text-slate-400">{children}</p>;
   const lab = "text-sm font-medium text-slate-700";
+  const opt = <span className="font-normal text-slate-400">(if any)</span>;
 
   return (
-    <Modal onClose={onClose} locked={step === "submitting"}>
+    <Modal onClose={onClose} locked={step === "submitting"} size="lg">
       <div className="p-6 pt-7">
         <h2 className="text-xl font-bold text-slate-900">Host a student event</h2>
         <p className="mt-1 text-sm text-slate-500">Every event is reviewed by the campus team before it goes live.</p>
 
-        <div className="mt-5 space-y-3.5">
-          <div>
-            <label className={lab} htmlFor="c-title">Event title</label>
-            <input id="c-title" className={input("title")} value={f.title} onChange={set("title")} placeholder="e.g. Rooftop Sunset Mixer" />
-            <Err k="title" />
-          </div>
-          <div>
-            <span className={lab}>Category</span>
-            <div className="mt-1.5 flex flex-wrap gap-2">
-              {PARTY_FILTERS.slice(1).map((c) => (
-                <button key={c} type="button" onClick={() => setF({ ...f, category: c })}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium ${f.category === c ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{c}</button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className={lab} htmlFor="c-lang">Event Language</label>
-            <div className="relative">
-              <select id="c-lang" className={`${input("lang")} appearance-none bg-white pr-10 shadow-sm`} value={f.lang} onChange={set("lang")}>
-                {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <span className="pointer-events-none absolute inset-y-0 right-3 mt-1 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
-            </div>
-            <p className="mt-1 text-xs text-slate-400">The main language spoken at your event. It shows as a badge and a filter on the feed.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={lab} htmlFor="c-date">Date</label>
-              <input id="c-date" type="date" min={TODAY} className={input("date")} value={f.date} onChange={set("date")} />
-              <Err k="date" />
-            </div>
-            <div>
-              <label className={lab} htmlFor="c-time">Start time</label>
-              <input id="c-time" type="time" className={input("time")} value={f.time} onChange={set("time")} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={lab} htmlFor="c-spots">Max spots</label>
-              <input id="c-spots" type="number" min="1" className={input("spots")} value={f.spots} onChange={set("spots")} />
-              <Err k="spots" />
-            </div>
-            <div>
-              <label className={lab} htmlFor="c-price">Ticket price (AED)</label>
-              <input id="c-price" type="number" min="0" className={input("price")} value={f.price} onChange={set("price")} />
-              <Err k="price" />
-            </div>
-          </div>
-          <div>
-            <label className={lab} htmlFor="c-where">Location details</label>
-            <input id="c-where" className={input("where")} value={f.where} onChange={set("where")} placeholder="Building, room or address and any entry notes" />
-            <Err k="where" />
-          </div>
-          <div>
-            <label className={lab} htmlFor="c-email">Organizer contact email</label>
-            <input id="c-email" type="email" className={input("email")} value={f.email} onChange={set("email")} />
-            <Err k="email" />
-            <p className="mt-1 text-xs text-slate-400">Your approval notification and management link will be sent here.</p>
-          </div>
+        <div className="mt-5 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Event form sections">
+          {CREATE_TABS.map(([k, label], i) => (
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+              className={`relative flex items-center justify-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold sm:text-sm ${tab === k ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-xs ${tab === k ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}>{i + 1}</span>
+              {label}
+              {tabErrors(k) && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" aria-label="has errors" />}
+            </button>
+          ))}
         </div>
 
-        <button onClick={submit} disabled={step === "submitting"} className="u-btn mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700 disabled:opacity-80">
-          {step === "submitting" ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Event"}
-        </button>
+        <div key={tab} className="u-fade mt-5 space-y-4">
+          {tab === "basics" && (
+            <>
+              <div>
+                <label className={lab} htmlFor="c-title">Event title</label>
+                <input id="c-title" className={input("title")} value={f.title} onChange={set("title")} placeholder="e.g. Midterm Study Jam" />
+                <Err k="title" />
+              </div>
+              <div>
+                <span className={lab}>Event type</span>
+                <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {EVENT_TYPES.map((c) => (
+                    <button key={c} type="button" onClick={() => setF({ ...f, category: c })} aria-pressed={f.category === c}
+                      className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs font-semibold ${f.category === c ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200/80 bg-white text-slate-600 shadow-sm hover:border-slate-300"}`}>
+                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br ${GRADIENTS[c]}`} />{c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={lab} htmlFor="c-lang">Event Language</label>
+                <div className="relative">
+                  <select id="c-lang" className={`${input("lang")} appearance-none pr-10`} value={f.lang} onChange={set("lang")}>
+                    {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                  <span className="pointer-events-none absolute inset-y-0 right-3 mt-1 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
+                </div>
+                <Hint>The main language spoken. It shows as a badge and a filter on the feed.</Hint>
+              </div>
+              <div>
+                <label className={lab} htmlFor="c-desc">Short description <span className="font-normal text-slate-400">(optional)</span></label>
+                <textarea id="c-desc" rows={3} className={`${input("desc")} resize-none`} value={f.desc} onChange={set("desc")} maxLength={280} placeholder="What will people do, and who is it for?" />
+                <Hint>{280 - f.desc.length} characters left</Hint>
+              </div>
+            </>
+          )}
+
+          {tab === "when" && (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-3 sm:col-span-1">
+                  <label className={lab} htmlFor="c-date">Date</label>
+                  <input id="c-date" type="date" min={TODAY} className={input("date")} value={f.date} onChange={set("date")} />
+                  <Err k="date" />
+                </div>
+                <div>
+                  <label className={lab} htmlFor="c-time">Starts</label>
+                  <input id="c-time" type="time" className={input("time")} value={f.time} onChange={set("time")} />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className={lab} htmlFor="c-end">Ends</label>
+                  <input id="c-end" type="time" className={input("end")} value={f.end} onChange={set("end")} />
+                  <Err k="end" />
+                </div>
+              </div>
+              <div>
+                <label className={lab} htmlFor="c-venue">Exact Venue / Room Number</label>
+                <input id="c-venue" list="c-venues" className={input("venue")} value={f.venue} onChange={set("venue")} placeholder="e.g. Room 2.11, Block 2" />
+                <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
+                <Err k="venue" />
+                {!errors.venue && <Hint>Building and room, or a precise meeting point, so guests don't get lost.</Hint>}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={lab} htmlFor="c-spots">Max spots</label>
+                  <input id="c-spots" type="number" min="1" className={input("spots")} value={f.spots} onChange={set("spots")} />
+                  <Err k="spots" />
+                </div>
+                <div>
+                  <label className={lab} htmlFor="c-price">Ticket price (AED)</label>
+                  <input id="c-price" type="number" min="0" className={input("price")} value={f.price} onChange={set("price")} />
+                  <Err k="price" />
+                  {!errors.price && <Hint>{Number(f.price) > 0 ? "Paid securely via Ziina." : "0 = free entry."}</Hint>}
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === "details" && (
+            <>
+              <div>
+                <label className={lab} htmlFor="c-dress">Dress Code {opt}</label>
+                <input id="c-dress" list="c-dresses" className={input("dress")} value={f.dress} onChange={set("dress")} placeholder="e.g. Smart casual" />
+                <datalist id="c-dresses">{DRESS_CODES.map((v) => <option key={v} value={v} />)}</datalist>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {DRESS_CODES.map((d) => (
+                    <button key={d} type="button" onClick={() => setF({ ...f, dress: f.dress === d ? "" : d })}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${f.dress === d ? "bg-slate-900 text-white ring-slate-900" : "bg-white text-slate-600 ring-slate-200/80 hover:bg-slate-50"}`}>{d}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={lab} htmlFor="c-reqs">Requirements {opt}</label>
+                <textarea id="c-reqs" rows={2} className={`${input("reqs")} resize-none`} value={f.reqs} onChange={set("reqs")} placeholder="e.g. Bring your own laptop / racket" />
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {REQ_CHIPS.map((r) => (
+                    <button key={r} type="button" onClick={() => addReq(r)} disabled={f.reqs.includes(r)}
+                      className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/80 hover:bg-slate-50 disabled:opacity-40">+ {r}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={lab} htmlFor="c-email">Organizer contact email</label>
+                <input id="c-email" type="email" className={input("email")} value={f.email} onChange={set("email")} />
+                <Err k="email" />
+                {!errors.email && <Hint>Your approval notification and management link will be sent here.</Hint>}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="mt-6 flex gap-2">
+          {idx > 0 && <button onClick={() => setTab(CREATE_TABS[idx - 1][0])} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>}
+          {idx < CREATE_TABS.length - 1 ? (
+            <button onClick={next} className="u-btn flex-1 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Next: {CREATE_TABS[idx + 1][1]} →</button>
+          ) : (
+            <button onClick={submit} disabled={step === "submitting"} className="u-btn flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700 disabled:opacity-80">
+              {step === "submitting" ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Event"}
+            </button>
+          )}
+        </div>
       </div>
     </Modal>
   );
@@ -1083,7 +1211,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
   );
 }
 
-function ClubDetail({ club: c, action, onMap, onClose }) {
+function ClubDetail({ club: c, joined, mine, action, onMap, onClose }) {
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
   return (
     <Modal onClose={onClose} size="lg">
@@ -1091,10 +1219,10 @@ function ClubDetail({ club: c, action, onMap, onClose }) {
         <span className="text-5xl">{c.emoji}</span>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
-          {c.joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
+          {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
         </div>
         <h2 className="mt-2 text-2xl font-bold leading-tight">{c.name}</h2>
-        <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members} members · Free to join</p>
+        <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members + (joined ? 1 : 0)} members · Free to join</p>
       </div>
 
       <div className="space-y-5 p-5">
@@ -1104,9 +1232,21 @@ function ClubDetail({ club: c, action, onMap, onClose }) {
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{c.desc}</p>
         </div>
         <div className="space-y-4 text-sm">
-          <div className="flex gap-3">
-            <InfoIcon name="calendar" />
-            <div><p className="font-semibold text-slate-900">{c.when}</p><p className="text-slate-500">Weekly during semester · {c.note}</p></div>
+          <div>
+            <h3 className="mb-2 text-sm font-semibold text-slate-900">Weekly sessions</h3>
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80">
+              {c.slots.map((sl) => (
+                <li key={sl.id} className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="w-10 shrink-0 text-xs font-semibold uppercase tracking-wider text-slate-400">{DAYS[sl.day].slice(0, 3)}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-slate-900">{fmtRange(sl.start, sl.end)}</span>
+                    <span className="block truncate text-xs text-slate-500">{sl.title} · {sl.where} · {sl.level}</span>
+                  </span>
+                  {mine.includes(sl.id) && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-3 w-3" /> Registered</span>}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-slate-500">{c.note}</p>
           </div>
           <div className="flex gap-3">
             <InfoIcon name="pin" />
@@ -1248,7 +1388,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
               {sel.kind === "club" ? (
                 <>
                   <p className="text-sm text-slate-600">{sel.d.desc}</p>
-                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{sel.d.when}</span><span className="inline-flex items-center gap-1.5"><Icon name="users" className="h-3.5 w-3.5" />{sel.d.members} members</span></p>
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{clubDays(sel.d)}</span><span className="inline-flex items-center gap-1.5"><Icon name="users" className="h-3.5 w-3.5" />{sel.d.members} members</span></p>
                   {renderClub(sel.d)}
                 </>
               ) : (
@@ -1353,6 +1493,266 @@ function Ticker({ onClose }) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Club sessions, schedule and calendar export                        */
+/* ------------------------------------------------------------------ */
+const overlaps = (a, b) => a.day === b.day && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
+
+function SlotModal({ club: c, selected, others, onToggle, onLeave, onViewSchedule, onClose }) {
+  const [flash, setFlash] = useState(null);
+  const mine = c.slots.filter((s) => selected.includes(s.id));
+  const hours = mine.reduce((h, s) => h + slotHours(s), 0);
+  const tap = (s) => {
+    const adding = !selected.includes(s.id);
+    onToggle(s);
+    setFlash(adding ? s.id : null);
+  };
+  return (
+    <Modal onClose={onClose} size="lg">
+      <div className={`bg-gradient-to-br px-6 pb-5 pt-6 text-white ${GRADIENTS[c.category]}`}>
+        <div className="flex items-center gap-3 pr-10">
+          <span className="text-4xl">{c.emoji}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ opacity: 0.85 }}>Weekly sessions</p>
+            <h2 className="truncate text-xl font-bold leading-tight">{c.name}</h2>
+          </div>
+        </div>
+        <p className="mt-3 text-sm" style={{ opacity: 0.9 }}>Pick the sessions you'll attend. Tap again to cancel. You can come to more than one.</p>
+      </div>
+
+      <div className="space-y-2.5 p-5" role="list">
+        {c.slots.map((s) => {
+          const on = selected.includes(s.id);
+          const left = s.cap - s.taken - (on ? 1 : 0);
+          const full = !on && left <= 0;
+          const clash = !on && others.find((o) => overlaps(o.slot, s));
+          return (
+            <button key={s.id} role="listitem" onClick={() => !full && tap(s)} disabled={full} aria-pressed={on}
+              className={`u-btn flex w-full items-center gap-4 rounded-2xl border-2 p-3.5 text-left disabled:cursor-not-allowed disabled:opacity-60 ${on ? "border-emerald-400 bg-emerald-50" : "border-slate-200/80 bg-white shadow-sm hover:border-indigo-300"}`}>
+              <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl ${on ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-700"}`}>
+                <span className="text-xs font-semibold uppercase tracking-wider">{DAYS[s.day].slice(0, 3)}</span>
+                <span className="text-xs font-medium" style={{ opacity: 0.8 }}>{fmtTime(s.start).replace(/:00/, "")}</span>
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-semibold text-slate-900">{DAYS[s.day]}s · {fmtRange(s.start, s.end)}</span>
+                <span className="block truncate text-sm text-slate-500">{s.title} · {s.where}</span>
+                <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                  <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">{s.level}</span>
+                  {clash && <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-200">Clashes with {clash.club.name}</span>}
+                </span>
+              </span>
+              <span className="shrink-0 text-right">
+                {on ? (
+                  <span key={flash === s.id ? "pop" : "on"} className={`inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white ${flash === s.id ? "u-pop" : ""}`}>
+                    <Check className="h-3 w-3" /> Registered!
+                  </span>
+                ) : full ? (
+                  <span className="text-xs font-semibold text-slate-500">Full</span>
+                ) : (
+                  <span className="flex flex-col items-end gap-1">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-lg leading-none text-white">+</span>
+                    <span className={`text-xs ${left <= 3 ? "font-semibold text-amber-600" : "text-slate-500"}`}>{left} spot{left === 1 ? "" : "s"} left</span>
+                  </span>
+                )}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white p-4">
+        <div className="mb-3 flex items-center justify-between text-sm">
+          <span className="text-slate-500">{mine.length ? `${mine.length} session${mine.length > 1 ? "s" : ""} · ${hours % 1 ? hours.toFixed(1) : hours} hrs a week` : "No sessions picked yet"}</span>
+          {mine.length > 0 && <button onClick={onLeave} className="text-sm font-medium text-slate-500 hover:text-rose-600">Leave club</button>}
+        </div>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="u-btn flex-1 rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Done</button>
+          <button onClick={onViewSchedule} disabled={!mine.length} className="u-btn flex-1 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40">View my schedule →</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+/* Builds an .ics file: weekly club sessions (12 weeks) plus booked one-off events. */
+function downloadCalendar(sessions, events) {
+  const pad = (n) => String(n).padStart(2, "0");
+  const stamp = (d, hhmm) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${hhmm.replace(":", "")}00`;
+  const esc = (t) => String(t).replace(/[,;\\]/g, (m) => "\\" + m);
+  const now = new Date();
+  const out = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Unite//UOWD//EN", "CALSCALE:GREGORIAN"];
+  const ev = (uid, start, end, title, where, rrule) => {
+    out.push("BEGIN:VEVENT", `UID:${uid}@uniteuow.com`, `DTSTAMP:${stamp(now, "00:00")}`, `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:${esc(title)}`, `LOCATION:${esc(where)}`);
+    if (rrule) out.push(rrule);
+    out.push("END:VEVENT");
+  };
+  sessions.forEach(({ club, slot }) => {
+    const d = new Date(now); d.setDate(d.getDate() + ((slot.day - weekdayIdx(d) + 7) % 7));
+    ev(slot.id, stamp(d, slot.start), stamp(d, slot.end), `${club.name}: ${slot.title}`, slot.where, "RRULE:FREQ=WEEKLY;COUNT=12");
+  });
+  events.forEach((b) => {
+    const d = new Date(b.date + "T00:00:00"), st = to24(b.time);
+    const endMin = toMin(st) + 120, et = `${pad(Math.min(23, Math.floor(endMin / 60)))}:${pad(endMin % 60)}`;
+    ev(b.id, stamp(d, st), stamp(d, et), b.title, b.where);
+  });
+  out.push("END:VCALENDAR");
+  const url = URL.createObjectURL(new Blob([out.join("\r\n")], { type: "text/calendar" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = "unite-schedule.ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+const CAT_TINT = {
+  Sports: "border-emerald-500 bg-emerald-50", Tech: "border-sky-500 bg-sky-50", Business: "border-violet-500 bg-violet-50",
+  Arts: "border-pink-500 bg-pink-50", Culture: "border-amber-500 bg-amber-50",
+};
+
+function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onExport }) {
+  const [week, setWeek] = useState(0);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const monday = new Date(today); monday.setDate(today.getDate() - weekdayIdx(today) + week * 7);
+  const days = DAYS.map((_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
+  const range = `${days[0].toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${days[6].toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+  const upcoming = events.filter((b) => b.date >= isoDay(today)).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
+  const hours = sessions.reduce((h, x) => h + slotHours(x.slot), 0);
+
+  // Next thing on the calendar, from now.
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const nextSession = sessions
+    .map((x) => { const ahead = (x.slot.day - weekdayIdx(today) + 7) % 7; const days = ahead === 0 && toMin(x.slot.start) <= nowMin ? 7 : ahead; return { ...x, days }; })
+    .sort((a, b) => a.days - b.days || toMin(a.slot.start) - toMin(b.slot.start))[0];
+  const whenLabel = (n) => (n === 0 ? "Today" : n === 1 ? "Tomorrow" : DAYS[(weekdayIdx(today) + n) % 7]);
+
+  if (!sessions.length && !events.length)
+    return (
+      <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
+        <h3 className="mt-4 text-lg font-bold text-slate-900">Your week is wide open</h3>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Join a club and pick its weekly sessions, or grab a ticket to an event. Everything you sign up for lands here automatically.</p>
+        <div className="mt-5 flex justify-center gap-2">
+          <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse clubs</button>
+          <button onClick={() => onBrowse("parties")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Find events</button>
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="space-y-6">
+      {/* Summary */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:col-span-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Next up</p>
+          {nextSession ? (
+            <button onClick={() => onOpenClub(nextSession.club)} className="mt-2 flex w-full items-center gap-3 text-left">
+              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${GRADIENTS[nextSession.club.category]}`}>{nextSession.club.emoji}</span>
+              <span className="min-w-0">
+                <span className="block truncate font-semibold text-slate-900">{nextSession.club.name} · {nextSession.slot.title}</span>
+                <span className="block text-sm text-slate-500">{whenLabel(nextSession.days)}, {fmtRange(nextSession.slot.start, nextSession.slot.end)} · {nextSession.slot.where}</span>
+              </span>
+            </button>
+          ) : upcoming[0] ? (
+            <button onClick={() => onOpenTicket(upcoming[0])} className="mt-2 flex w-full items-center gap-3 text-left">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{upcoming[0].emoji}</span>
+              <span className="min-w-0"><span className="block truncate font-semibold text-slate-900">{upcoming[0].title}</span><span className="block text-sm text-slate-500">{fmtDate(upcoming[0].date)} · {upcoming[0].time}</span></span>
+            </button>
+          ) : <p className="mt-2 text-sm text-slate-500">Nothing coming up.</p>}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions</p></div>
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{hours % 1 ? hours.toFixed(1) : hours}</p><p className="text-xs text-slate-500">hours a week</p></div>
+        </div>
+      </div>
+
+      {/* Week calendar */}
+      <section>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setWeek((w) => Math.max(0, w - 1))} disabled={week === 0} aria-label="Previous week" className="u-btn flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40"><Icon name="chevron" className="h-4 w-4 rotate-90" /></button>
+            <button onClick={() => setWeek((w) => Math.min(11, w + 1))} disabled={week === 11} aria-label="Next week" className="u-btn flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40"><Icon name="chevron" className="h-4 w-4 -rotate-90" /></button>
+            <div className="ml-1">
+              <p className="font-semibold text-slate-900">{week === 0 ? "This week" : week === 1 ? "Next week" : `In ${week} weeks`}</p>
+              <p className="text-xs text-slate-500">{range}</p>
+            </div>
+            {week > 0 && <button onClick={() => setWeek(0)} className="ml-1 rounded-lg px-2 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Today</button>}
+          </div>
+          <button onClick={onExport} className="u-btn inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+            <Icon name="calendar" className="h-4 w-4" /> Add to my calendar
+          </button>
+        </div>
+
+        <div key={week} className="u-fade grid gap-2 md:grid-cols-7">
+          {days.map((d, i) => {
+            const iso = isoDay(d);
+            const items = [
+              ...sessions.filter((x) => x.slot.day === i).map((x) => ({ kind: "session", t: x.slot.start, x })),
+              ...events.filter((b) => b.date === iso).map((b) => ({ kind: "event", t: to24(b.time), b })),
+            ].sort((a, b) => a.t.localeCompare(b.t));
+            const isToday = iso === isoDay(today);
+            const past = d < today;
+            return (
+              <div key={i} className={`${items.length ? "flex" : "hidden md:flex"} flex-col rounded-2xl border bg-white p-2 shadow-sm md:min-h-[200px] ${isToday ? "border-indigo-400 ring-2 ring-indigo-100" : "border-slate-200/80"} ${past ? "opacity-60" : ""}`}>
+                <div className="mb-2 flex items-baseline justify-between px-1 md:block">
+                  <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-indigo-600" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
+                  <p className={`text-sm font-bold md:text-lg ${isToday ? "text-indigo-600" : "text-slate-900"}`}>{d.getDate()} {isToday && <span className="align-middle text-xs font-semibold">· Today</span>}</p>
+                </div>
+                <div className="space-y-1.5">
+                  {items.map((it) =>
+                    it.kind === "session" ? (
+                      <button key={it.x.slot.id} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title}`}
+                        className={`block w-full rounded-lg border-l-4 px-2 py-1.5 text-left ${CAT_TINT[it.x.club.category]}`}>
+                        <span className="block text-xs font-semibold tabular-nums text-slate-500">{fmtTime(it.x.slot.start)}</span>
+                        <span className="block truncate text-xs font-semibold text-slate-900">{it.x.club.emoji} {it.x.club.name}</span>
+                        <span className="block truncate text-xs text-slate-500">{it.x.slot.title}</span>
+                      </button>
+                    ) : (
+                      <button key={it.b.id} onClick={() => onOpenTicket(it.b)} title={it.b.title}
+                        className="block w-full rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-2 py-1.5 text-left">
+                        <span className="block text-xs font-semibold tabular-nums text-indigo-600">{it.b.time} · Event</span>
+                        <span className="block truncate text-xs font-semibold text-slate-900">{it.b.emoji} {it.b.title}</span>
+                      </button>
+                    )
+                  )}
+                  {!items.length && <p className="px-1 text-xs text-slate-400" style={{ opacity: 0.6 }}>Free</p>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-1 text-xs text-slate-500">
+          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-1 rounded-full bg-emerald-500" /> Weekly club session</span>
+          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
+        </div>
+      </section>
+
+      {/* Upcoming events list */}
+      {upcoming.length > 0 && (
+        <section>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Upcoming events</h3>
+          <div className="space-y-2">
+            {upcoming.map((b) => {
+              const d = new Date(b.date + "T00:00:00");
+              return (
+                <button key={b.id} onClick={() => onOpenTicket(b)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
+                  <span className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-900 text-white">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">{d.toLocaleDateString("en-GB", { month: "short" })}</span>
+                    <span className="text-xl font-bold leading-none">{d.getDate()}</span>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold text-slate-900">{b.title}</span>
+                    <span className="block text-sm text-slate-500">{DAYS[weekdayIdx(d)]} · {b.time} · {shortVenue(b.where)}</span>
+                  </span>
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">Ticket</span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
 export default function App() {
@@ -1360,7 +1760,8 @@ export default function App() {
   const [tab, setTab] = useState("clubs");
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
-  const [clubs, setClubs] = useState(CLUBS.map((c) => ({ ...c, joined: false })));
+  const clubs = CLUBS;
+  const [clubSlots, setClubSlots] = useState({}); // clubId -> [slotId]
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -1412,14 +1813,24 @@ export default function App() {
   };
   const goHome = () => { changeTab("clubs"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-  const toggleClub = (c) =>
-    requireAuth(`Sign in to join ${c.name}`, () =>
-      setClubs((cs) => cs.map((x) => {
-        if (x.id !== c.id) return x;
-        notify(x.joined ? `You left ${x.name}` : `Welcome to ${x.name}! 🎉`);
-        return { ...x, joined: !x.joined, members: x.members + (x.joined ? -1 : 1) };
-      }))
-    );
+  const mySlots = user ? clubSlots : {};
+  const isJoined = (c) => (mySlots[c.id] || []).length > 0;
+  const memberCount = (c) => c.members + (isJoined(c) ? 1 : 0);
+  const sessions = clubs.flatMap((c) => c.slots.filter((sl) => (mySlots[c.id] || []).includes(sl.id)).map((slot) => ({ club: c, slot })));
+
+  const openSlots = (c) => requireAuth(`Sign in to join ${c.name}`, () => setModal({ type: "slots", id: c.id }));
+  const toggleSlot = (c, sl) => {
+    const cur = clubSlots[c.id] || [];
+    const on = cur.includes(sl.id);
+    setClubSlots({ ...clubSlots, [c.id]: on ? cur.filter((x) => x !== sl.id) : [...cur, sl.id] });
+    if (on) notify(`Cancelled ${DAYS[sl.day]} ${fmtTime(sl.start)} · ${c.name}`);
+    else notify(`${cur.length ? "Registered!" : `Welcome to ${c.name}! 🎉`} ${DAYS[sl.day]}s ${fmtTime(sl.start)} added to My Schedule`, 3000);
+  };
+  const leaveClub = (c) => {
+    setClubSlots((x) => { const n = { ...x }; delete n[c.id]; return n; });
+    setModal(null);
+    notify(`You left ${c.name}`);
+  };
 
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
@@ -1487,8 +1898,8 @@ export default function App() {
   };
 
   const clubBtn = (c, extra = "shrink-0 px-4 py-2") => (
-    <button onClick={() => toggleClub(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${c.joined ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
-      {c.joined ? "Joined ✓" : "Join club"}
+    <button onClick={() => openSlots(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${isJoined(c) ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800"}`}>
+      {isJoined(c) ? `Registered ✓ · ${mySlots[c.id].length} session${mySlots[c.id].length > 1 ? "s" : ""}` : "Join · pick a time"}
     </button>
   );
 
@@ -1509,13 +1920,13 @@ export default function App() {
   const filteredClubs = clubs.filter((c) => filter === "All" || c.category === filter);
   const filteredParties = parties.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
   const feedLangs = LANGUAGES.filter((l) => parties.some((p) => p.lang === l));
-  const myClubs = clubs.filter((c) => c.joined).length;
+  const myClubs = clubs.filter(isJoined).length;
   const hot = parties
     .filter((p) => p.spots - p.taken > 0 && p.spots - p.taken <= 5 && !bookingFor(p.id))
     .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
-  const totalMembers = clubs.reduce((s, c) => s + c.members, 0);
+  const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
 
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["tickets", "My Tickets", "Tickets"]];
+  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["map", "Campus Map", "Map"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"]];
 
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
@@ -1570,13 +1981,14 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
-          <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: "calc((100% - 12px) / 4)", transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
+        <div id="tabs" className="relative mb-5 grid grid-cols-5 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
+          <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
               className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "text-white" : "text-slate-500 hover:text-slate-800"}`}>
               <span className="sm:hidden">{short}</span><span className="hidden sm:inline">{l}</span>
               {k === "tickets" && user && bookings.length > 0 && <span className="ml-1 rounded-full bg-indigo-500 px-1.5 py-0.5 text-xs text-white">{bookings.length}</span>}
+              {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
             </button>
           ))}
         </div>
@@ -1630,8 +2042,8 @@ export default function App() {
                   </div>
                   <div className="mt-4 flex items-center justify-between gap-3">
                     <div className="min-w-0 space-y-1.5 text-xs text-slate-500">
-                      <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{c.members} members</span></div>
-                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.when}</p>
+                      <div className="flex flex-wrap items-center gap-1.5"><VenueChip where={c.where} /><span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{memberCount(c)} members</span></div>
+                      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly sessions · {clubDays(c)}</p>
                       <button onClick={() => showOnMap("club", c.id)} className="font-semibold text-indigo-600 hover:underline">Find booth on map →</button>
                     </div>
                     {clubBtn(c)}
@@ -1725,6 +2137,26 @@ export default function App() {
           />
         )}
 
+        {/* My schedule */}
+        {tab === "schedule" &&
+          (!user ? (
+            <div className="rounded-3xl border border-slate-200/80 bg-white px-6 py-14 text-center shadow-sm">
+              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
+              <h3 className="mt-4 text-lg font-bold">Your campus week, in one place</h3>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Sign in, pick club sessions and book events. They show up here as a weekly calendar you can export.</p>
+              <button onClick={() => setModal({ type: "auth", reason: "Sign in to see your schedule." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with your email</button>
+            </div>
+          ) : (
+            <MySchedule
+              sessions={sessions}
+              events={bookings}
+              onOpenClub={(c) => setModal({ type: "slots", id: c.id })}
+              onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
+              onBrowse={changeTab}
+              onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}
+            />
+          ))}
+
         {/* My tickets */}
         {tab === "tickets" &&
           (!user ? (
@@ -1794,7 +2226,9 @@ export default function App() {
                       <div key={s.ref} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4">
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{s.title}</p>
-                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500"><span>{s.category} · {fmtDate(s.date)} · <span className="font-mono">{s.ref}</span></span><LangBadge lang={s.lang} /></p>
+                          <p className="text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · {fmtRange(s.start, s.end)} · <span className="font-mono">{s.ref}</span></p>
+                          <p className="mt-1 flex flex-wrap items-center gap-1.5"><VenueChip where={s.venue} /><LangBadge lang={s.lang} />{s.dress && <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Dress: {s.dress}</span>}</p>
+                          {s.reqs && <p className="mt-1 truncate text-xs text-slate-500">Bring: {s.reqs}</p>}
                         </div>
                         <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending review</span>
                       </div>
@@ -1830,11 +2264,27 @@ export default function App() {
       {modal && modal.type === "club" && clubs.find((x) => x.id === modal.id) && (
         <ClubDetail
           club={clubs.find((x) => x.id === modal.id)}
+          joined={isJoined(clubs.find((x) => x.id === modal.id))}
+          mine={mySlots[modal.id] || []}
           action={clubBtn(clubs.find((x) => x.id === modal.id), "w-full py-3")}
           onMap={(c) => { closeModal(); showOnMap("club", c.id); }}
           onClose={closeModal}
         />
       )}
+      {modal && modal.type === "slots" && clubs.find((x) => x.id === modal.id) && (() => {
+        const c = clubs.find((x) => x.id === modal.id);
+        return (
+          <SlotModal
+            club={c}
+            selected={mySlots[c.id] || []}
+            others={sessions.filter((x) => x.club.id !== c.id)}
+            onToggle={(sl) => toggleSlot(c, sl)}
+            onLeave={() => leaveClub(c)}
+            onViewSchedule={() => { closeModal(); jumpTo("schedule"); }}
+            onClose={closeModal}
+          />
+        );
+      })()}
       {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={modal.booking} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} /></Modal>}
       {modal && modal.type === "waitlist" && (
         <WaitlistModal party={modal.party} pos={modal.pos} email={modal.email} fresh={modal.fresh} onClose={closeModal} onLeave={() => leaveWaitlist(modal.party)} />
