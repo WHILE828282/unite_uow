@@ -79,6 +79,11 @@ body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: 
 .u-dark :where(.text-amber-950:not(.u-keep)) { color: #fef3c7; }
 .u-dark :where(.text-rose-600:not(.u-keep)) { color: #fb7185; }
 
+/* Language badges and filters */
+.u-dark :where(.bg-sky-50:not(.u-keep)) { background-color: rgba(14, 165, 233, 0.14); }
+.u-dark :where(.text-sky-700:not(.u-keep)) { color: #7dd3fc; }
+.u-dark :where(.ring-sky-200:not(.u-keep)) { --tw-ring-color: rgba(56, 189, 248, 0.3); }
+
 /* Segmented control: the selected option sits above the track */
 .u-dark .u-seg-on { background-color: #334166; }
 

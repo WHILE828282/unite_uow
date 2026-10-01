@@ -30,38 +30,59 @@ const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, D
 const UOWD_MAPS = "University of Wollongong in Dubai";
 
 const PARTIES = [
-  { id: 1, title: "Rooftop Sunset Mixer", emoji: "🌇", category: "Social", date: "2026-10-09", time: "7:00 PM", where: "Rooftop Terrace, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 40, spots: 60, taken: 52, wait: 0, vibe: { score: 4.9, count: 42 }, host: "Layla Al Mansoori",
+  { id: 1, lang: "English", title: "Rooftop Sunset Mixer", emoji: "🌇", category: "Social", date: "2026-10-09", time: "7:00 PM", where: "Rooftop Terrace, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 40, spots: 60, taken: 52, wait: 0, vibe: { score: 4.9, count: 42 }, host: "Layla Al Mansoori",
     contact: { name: "Layla Al Mansoori", role: "Event lead", email: "sunset@uniteuow.com" },
     desc: "A golden-hour mixer on the Block 5 rooftop with a live DJ, a mocktail bar and skyline views. The easiest way to meet students from every faculty after a busy week.",
     perks: ["Live DJ", "Mocktail bar", "Skyline views"] },
-  { id: 2, title: "UOWD Futsal Tournament", emoji: "⚽", category: "Sports", date: "2026-10-15", time: "7:30 PM", where: "UOWD Sports Hall", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 25, spots: 40, taken: 35, wait: 0, vibe: { score: 4.7, count: 58 }, host: "Omar Khalid",
+  { id: 2, lang: "English", title: "UOWD Futsal Tournament", emoji: "⚽", category: "Sports", date: "2026-10-15", time: "7:30 PM", where: "UOWD Sports Hall", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 25, spots: 40, taken: 35, wait: 0, vibe: { score: 4.7, count: 58 }, host: "Omar Khalid",
     contact: { name: "Omar Khalid", role: "Tournament organizer", email: "futsal@uniteuow.com" },
     desc: "Five-a-side knockout across eight teams, with referees, a trophy and pizza after the final. Register as a player and we balance the squads on the night, so you don't need a full team.",
     perks: ["Referees", "Trophy", "Pizza after"] },
-  { id: 3, title: "PS5 Tournament", emoji: "🎮", category: "Gaming", date: "2026-10-12", time: "6:00 PM", where: "Student Lounge, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 15, spots: 32, taken: 20, wait: 0, vibe: { score: 4.8, count: 37 }, host: "Karim Haddad",
+  { id: 3, lang: "Arabic", title: "PS5 Tournament", emoji: "🎮", category: "Gaming", date: "2026-10-12", time: "6:00 PM", where: "Student Lounge, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 15, spots: 32, taken: 20, wait: 0, vibe: { score: 4.8, count: 37 }, host: "Karim Haddad",
     contact: { name: "Karim Haddad", role: "Gaming lead", email: "ps5@uniteuow.com" },
     desc: "1v1 football and fighting-game brackets on big screens in the Student Lounge. Controllers are provided, the final is shoutcasted live, and the winner takes home the prize pot.",
     perks: ["Big screens", "Live shoutcast", "Prize pot"] },
-  { id: 4, title: "Open Mic & Chai", emoji: "☕", category: "Music", date: "2026-10-17", time: "8:00 PM", where: "Courtyard Café", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 50, taken: 22, wait: 0, vibe: null, host: "Yusuf Ibrahim",
+  { id: 4, lang: "Hindi", title: "Open Mic & Chai", emoji: "☕", category: "Music", date: "2026-10-17", time: "8:00 PM", where: "Courtyard Café", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 50, taken: 22, wait: 0, vibe: null, host: "Yusuf Ibrahim",
     contact: { name: "Yusuf Ibrahim", role: "Host", email: "openmic@uniteuow.com" },
     desc: "Sing, play, recite or just listen. Sign up for a five-minute slot on the night or come for the karak and the atmosphere. All talent levels welcome.",
     perks: ["5-min slots", "Free karak", "Acoustic setup"] },
-  { id: 5, title: "Finance Club Networking Night", emoji: "💼", category: "Career", date: "2026-10-22", time: "6:00 PM", where: "Auditorium Foyer, Block 3", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 100, taken: 64, wait: 0, vibe: { score: 4.6, count: 73 }, host: "Finance Club",
+  { id: 5, lang: "English", title: "Finance Club Networking Night", emoji: "💼", category: "Career", date: "2026-10-22", time: "6:00 PM", where: "Auditorium Foyer, Block 3", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 100, taken: 64, wait: 0, vibe: { score: 4.6, count: 73 }, host: "Finance Club",
     contact: { name: "Finance Club Committee", role: "Organizers", email: "finance@uniteuow.com" },
     desc: "Meet finance professionals, alumni and recruiters over canapés. A short panel on breaking into banking and fintech in the UAE is followed by open networking. Smart casual.",
     perks: ["Industry panel", "Alumni mentors", "Canapés"] },
-  { id: 6, title: "Halloween Costume Party", emoji: "🎃", category: "Social", date: "2026-10-30", time: "8:30 PM", where: "Grand Ballroom, Dubai Knowledge Park", address: "Dubai Knowledge Park, Dubai, UAE", maps: "Dubai Knowledge Park", price: 75, spots: 120, taken: 120, wait: 4, vibe: { score: 4.9, count: 156 }, host: "Student Council",
+  { id: 6, lang: "English", title: "Halloween Costume Party", emoji: "🎃", category: "Social", date: "2026-10-30", time: "8:30 PM", where: "Grand Ballroom, Dubai Knowledge Park", address: "Dubai Knowledge Park, Dubai, UAE", maps: "Dubai Knowledge Park", price: 75, spots: 120, taken: 120, wait: 4, vibe: { score: 4.9, count: 156 }, host: "Student Council",
     contact: { name: "Student Council", role: "Organizers", email: "council@uniteuow.com" },
     desc: "The biggest night of the semester: costume contest, two dance floors and a haunted photo booth. It sold out fast, so join the waitlist in case a spot opens up.",
     perks: ["Costume contest", "2 dance floors", "Photo booth"] },
-  { id: 7, title: "Post-Midterm Yacht Party", emoji: "🛥️", category: "Social", date: "2026-10-24", time: "5:00 PM", where: "Dubai Marina, Pier 7", address: "Dubai Marina, Dubai, UAE", maps: "Dubai Marina", price: 120, spots: 80, taken: 76, wait: 0, vibe: { score: 4.8, count: 31 }, host: "Class of 2027 Committee",
+  { id: 7, lang: "English", title: "Post-Midterm Yacht Party", emoji: "🛥️", category: "Social", date: "2026-10-24", time: "5:00 PM", where: "Dubai Marina, Pier 7", address: "Dubai Marina, Dubai, UAE", maps: "Dubai Marina", price: 120, spots: 80, taken: 76, wait: 0, vibe: { score: 4.8, count: 31 }, host: "Class of 2027 Committee",
     contact: { name: "Class of 2027 Committee", role: "Organizers", email: "yacht@uniteuow.com" },
     desc: "Three hours cruising the Marina skyline with a DJ, a buffet and a sunset deck. The boat leaves on time: arrive 20 minutes early with your ticket QR.",
     perks: ["Buffet", "DJ", "Sunset deck"] },
+  { id: 8, lang: "Russian", title: "Russian Movie Night", emoji: "🎬", category: "Social", date: "2026-10-14", time: "7:00 PM", where: "Lecture Theatre 2, Block 2", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 40, taken: 18, wait: 0, vibe: { score: 4.8, count: 21 }, host: "Anastasia Volkova",
+    contact: { name: "Anastasia Volkova", role: "Host", email: "kino@uniteuow.com" },
+    desc: "A cosy screening of a Soviet comedy classic with English subtitles, followed by tea, pryaniki and a relaxed chat. Native speakers and learners are equally welcome.",
+    perks: ["English subtitles", "Tea & pryaniki", "Post-film chat"] },
+  { id: 9, lang: "Arabic", title: "Arabic Coffee & Conversation", emoji: "🫖", category: "Social", date: "2026-10-13", time: "4:30 PM", where: "Majlis Lounge, Block 2", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 25, taken: 19, wait: 0, vibe: { score: 4.9, count: 33 }, host: "Mariam Al Suwaidi",
+    contact: { name: "Mariam Al Suwaidi", role: "Host", email: "majlis@uniteuow.com" },
+    desc: "Gahwa, dates and easy conversation in a traditional majlis setting. Practise your Arabic with native speakers from across the Gulf and the Levant, at any level.",
+    perks: ["Gahwa & dates", "All levels", "Native speakers"] },
+  { id: 10, lang: "Japanese", title: "Anime & Matcha Night", emoji: "🍵", category: "Social", date: "2026-10-20", time: "7:00 PM", where: "Student Lounge, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 20, spots: 30, taken: 12, wait: 0, vibe: null, host: "Yuki Tanaka",
+    contact: { name: "Yuki Tanaka", role: "Host", email: "anime@uniteuow.com" },
+    desc: "Back-to-back episodes on the big screen, freshly whisked matcha and mochi, and a short Japanese phrase corner between episodes. Your ticket covers drinks and snacks.",
+    perks: ["Big screen", "Matcha & mochi", "Phrase corner"] },
+  { id: 11, lang: "French", title: "Café Français Language Exchange", emoji: "🥐", category: "Social", date: "2026-10-19", time: "5:00 PM", where: "Courtyard Café", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 0, spots: 30, taken: 9, wait: 0, vibe: { score: 4.6, count: 14 }, host: "Camille Laurent",
+    contact: { name: "Camille Laurent", role: "Host", email: "francais@uniteuow.com" },
+    desc: "Half the hour in French, half in English. Rotate tables every 15 minutes and leave with a few new friends and much better pronunciation. Croissants on us.",
+    perks: ["Table rotations", "All levels", "Croissants"] },
+  { id: 12, lang: "Chinese", title: "Chinese Calligraphy Workshop", emoji: "🖌️", category: "Social", date: "2026-10-21", time: "6:00 PM", where: "Room 1.04, Block 1", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 10, spots: 20, taken: 11, wait: 0, vibe: { score: 4.9, count: 18 }, host: "Li Wei",
+    contact: { name: "Li Wei", role: "Workshop lead", email: "calligraphy@uniteuow.com" },
+    desc: "Learn brush basics and write your name in Chinese characters. Brushes, ink and rice paper are provided, and you take your finished piece home.",
+    perks: ["Materials included", "Take-home piece", "Beginners welcome"] },
 ];
 
 const CLUB_FILTERS = ["All", "Sports", "Tech", "Business", "Culture", "Arts"];
 const PARTY_FILTERS = ["All", "Social", "Music", "Sports", "Gaming", "Career"];
+const LANGUAGES = ["English", "Arabic", "Russian", "Chinese", "Japanese", "French", "Hindi", "Urdu", "Spanish", "Persian", "Mixed / Multilingual"];
 
 /* Ground-floor layout: 12 columns x 8 rows. c/r = start column/row, w/h = span. */
 const FLOOR_STATIC = [
@@ -288,6 +309,8 @@ const ICONS = {
   mail: "M4.5 5h15A1.5 1.5 0 0121 6.5v11a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 17.5v-11A1.5 1.5 0 014.5 5zM3.5 6.5l8.5 6.5 8.5-6.5",
   sun: "M12 16a4 4 0 100-8 4 4 0 000 8zM12 2.5v2M12 19.5v2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M2.5 12h2M19.5 12h2M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4",
   moon: "M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z",
+  globe: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.5 9h17M3.5 15h17M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9s1.2-6.4 3.6-9z",
+  chevron: "M6 9l6 6 6-6",
 };
 const Icon = ({ name, className = "h-4 w-4" }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -303,6 +326,13 @@ const VenueChip = ({ where }) => (
     <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}
   </span>
 );
+
+const LangBadge = ({ lang }) => (
+  <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-200">
+    <Icon name="globe" className="h-3 w-3" />{lang}
+  </span>
+);
+const hasBooth = (kind, ref) => BOOTHS.some((b) => b.kind === kind && b.ref === ref);
 
 function ThemeToggle({ dark, onToggle }) {
   return (
@@ -573,8 +603,8 @@ function AuthModal({ reason, onClose, onSignIn }) {
         {step === "email" && (
           <>
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-lg font-bold text-white shadow-lg">U</div>
-            <h2 className="mt-4 text-center text-xl font-bold text-slate-900">Welcome to Unite</h2>
-            <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in to join clubs and get tickets."}</p>
+            <h2 className="mt-4 text-center text-xl font-bold text-slate-900">Campus Login</h2>
+            <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
             <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">Email address</label>
             <input
@@ -669,7 +699,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
 }
 
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Social", date: "", time: "20:00", spots: 30, price: 0, where: "", email: defaultEmail });
+  const [f, setF] = useState({ title: "", category: "Social", date: "", time: "20:00", spots: 30, price: 0, where: "", lang: "English", email: defaultEmail });
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState("form");
   const [ref, setRef] = useState("");
@@ -692,7 +722,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   useEffect(() => {
     if (step !== "submitting") return;
     const t = setTimeout(() => {
-      onSubmitted({ ref, title: f.title.trim(), category: f.category, date: f.date, email: f.email.trim() });
+      onSubmitted({ ref, title: f.title.trim(), category: f.category, lang: f.lang, date: f.date, email: f.email.trim() });
       setStep("done");
     }, 1400);
     return () => clearTimeout(t);
@@ -711,6 +741,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left text-sm">
             <div className="flex justify-between"><span className="text-slate-500">Reference</span><span className="font-mono font-semibold">{ref}</span></div>
             <div className="mt-2 flex justify-between"><span className="text-slate-500">Event</span><span className="truncate pl-4 font-medium">{f.title.trim()}</span></div>
+            <div className="mt-2 flex justify-between"><span className="text-slate-500">Language</span><LangBadge lang={f.lang} /></div>
             <div className="mt-2 flex justify-between"><span className="text-slate-500">Status</span><span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Pending review</span></div>
           </div>
           <p className="mt-3 text-xs text-slate-400">Reviews usually take 1 to 2 working days.</p>
@@ -743,6 +774,16 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   className={`rounded-full px-3.5 py-1.5 text-sm font-medium ${f.category === c ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>{c}</button>
               ))}
             </div>
+          </div>
+          <div>
+            <label className={lab} htmlFor="c-lang">Event Language</label>
+            <div className="relative">
+              <select id="c-lang" className={`${input("lang")} appearance-none bg-white pr-10 shadow-sm`} value={f.lang} onChange={set("lang")}>
+                {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <span className="pointer-events-none absolute inset-y-0 right-3 mt-1 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
+            </div>
+            <p className="mt-1 text-xs text-slate-400">The main language spoken at your event. It shows as a badge and a filter on the feed.</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -993,7 +1034,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
       </div>
 
       <div className="space-y-5 p-5">
-        <div className="flex flex-wrap items-center gap-2"><Badge kind="verified" /><Vibe v={p.vibe} /></div>
+        <div className="flex flex-wrap items-center gap-2"><Badge kind="verified" /><LangBadge lang={p.lang} /><Vibe v={p.vibe} /></div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
@@ -1023,7 +1064,7 @@ function EventDetail({ party: p, action, onShare, onMap, onClose }) {
               <p className="text-slate-500">{p.address}</p>
               <p className="mt-1 flex flex-wrap gap-x-4">
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
-                {p.address === UOWD_ADDRESS && <button onClick={() => onMap(p)} className="font-semibold text-indigo-600 hover:underline">Find on campus map →</button>}
+                {hasBooth("party", p.id) && <button onClick={() => onMap(p)} className="font-semibold text-indigo-600 hover:underline">Find on campus map →</button>}
               </p>
             </div>
           </div>
@@ -1213,7 +1254,7 @@ function FloorMap({ clubs, parties, selId, onSelect, renderClub, renderParty, on
               ) : (
                 <>
                   <p className="flex items-center gap-1.5 text-sm text-slate-500"><Icon name="calendar" className="h-3.5 w-3.5" />{fmtDate(sel.d.date)} · {sel.d.time} · {sel.d.price > 0 ? `${sel.d.price} AED` : "Free"}</p>
-                  <Vibe v={sel.d.vibe} />
+                  <div className="flex flex-wrap items-center gap-2"><LangBadge lang={sel.d.lang} /><Vibe v={sel.d.vibe} /></div>
                   <Spots left={left(sel)} total={sel.d.spots} unit={sel.d.price > 0 ? "tickets" : "spots"} wait={sel.d.wait} />
                   {renderParty(sel.d)}
                 </>
@@ -1318,6 +1359,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("clubs");
   const [filter, setFilter] = useState("All");
+  const [langFilter, setLangFilter] = useState("All");
   const [clubs, setClubs] = useState(CLUBS.map((c) => ({ ...c, joined: false })));
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
@@ -1362,7 +1404,7 @@ export default function App() {
     if (action) setTimeout(() => action(email), 250);
   };
 
-  const changeTab = (t) => { setTab(t); setFilter("All"); };
+  const changeTab = (t) => { setTab(t); setFilter("All"); setLangFilter("All"); };
   const jumpTo = (t) => {
     changeTab(t);
     const el = document.getElementById("tabs");
@@ -1465,7 +1507,8 @@ export default function App() {
   const hostEvent = () => requireAuth("Sign in to host a student event", (email) => setModal({ type: "create", email }));
 
   const filteredClubs = clubs.filter((c) => filter === "All" || c.category === filter);
-  const filteredParties = parties.filter((p) => filter === "All" || p.category === filter);
+  const filteredParties = parties.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
+  const feedLangs = LANGUAGES.filter((l) => parties.some((p) => p.lang === l));
   const myClubs = clubs.filter((c) => c.joined).length;
   const hot = parties
     .filter((p) => p.spots - p.taken > 0 && p.spots - p.taken <= 5 && !bookingFor(p.id))
@@ -1494,7 +1537,7 @@ export default function App() {
               <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Sign in to join clubs and get tickets." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
           )}
           </div>
         </div>
@@ -1551,6 +1594,21 @@ export default function App() {
             )}
           </div>
         )}
+        {tab === "parties" && (
+          <div className="-mt-2 mb-5 flex items-center gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by event language">
+            <span className="inline-flex shrink-0 items-center gap-1 pr-1 text-xs font-semibold uppercase tracking-wider text-slate-400"><Icon name="globe" className="h-3.5 w-3.5" /> Language</span>
+            {["All", ...feedLangs].map((l) => {
+              const n = l === "All" ? parties.length : parties.filter((p) => p.lang === l).length;
+              const on = langFilter === l;
+              return (
+                <button key={l} onClick={() => setLangFilter(l)} aria-pressed={on}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${on ? "bg-sky-600 text-white ring-sky-600" : "bg-white text-slate-600 shadow-sm ring-slate-200/80 hover:bg-slate-50"}`}>
+                  {l === "All" ? "All languages" : l}<span className={on ? "text-sky-100" : "text-slate-400"}>{n}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Clubs */}
         {tab === "clubs" && (
@@ -1602,6 +1660,18 @@ export default function App() {
               </div>
             )}
 
+            {filteredParties.length === 0 && (
+              <div className="u-fade rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="globe" className="h-6 w-6" /></span>
+                <p className="mt-3 font-semibold text-slate-900">No {langFilter !== "All" ? langFilter + " " : ""}{filter !== "All" ? filter.toLowerCase() + " " : ""}events yet</p>
+                <p className="mt-1 text-sm text-slate-500">Try another filter, or host one yourself.</p>
+                <div className="mt-4 flex justify-center gap-2">
+                  <button onClick={() => { setFilter("All"); setLangFilter("All"); }} className="u-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Clear filters</button>
+                  <button onClick={hostEvent} className="u-btn rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Host an event</button>
+                </div>
+              </div>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2">
               {filteredParties.map((p, i) => {
                 const left = p.spots - p.taken;
@@ -1625,7 +1695,7 @@ export default function App() {
                       <div className="mt-2.5"><Vibe v={p.vibe} /></div>
                       <div className="mt-3 space-y-1.5 text-sm text-slate-600">
                         <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
-                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} />{p.address === UOWD_ADDRESS && <button onClick={() => showOnMap("party", p.id)} className="text-xs font-semibold text-indigo-600 hover:underline">Find on map →</button>}</p>
+                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} /><LangBadge lang={p.lang} />{hasBooth("party", p.id) && <button onClick={() => showOnMap("party", p.id)} className="text-xs font-semibold text-indigo-600 hover:underline">Find on map →</button>}</p>
                       </div>
                       <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
                       <div className="mt-4 flex gap-2">{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></div>
@@ -1662,7 +1732,7 @@ export default function App() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
               <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you sign in with your email.</p>
-              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with email</button>
+              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with your email</button>
             </div>
           ) : (
             <div className="space-y-8">
@@ -1724,7 +1794,7 @@ export default function App() {
                       <div key={s.ref} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4">
                         <div className="min-w-0">
                           <p className="truncate font-semibold">{s.title}</p>
-                          <p className="text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · <span className="font-mono">{s.ref}</span></p>
+                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500"><span>{s.category} · {fmtDate(s.date)} · <span className="font-mono">{s.ref}</span></span><LangBadge lang={s.lang} /></p>
                         </div>
                         <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending review</span>
                       </div>
