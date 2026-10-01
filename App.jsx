@@ -733,126 +733,106 @@ function AuthModal({ reason, onClose, onSignIn }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Event artwork: covers and logos are normalised before they are stored */
+/*  Event artwork: cover and logo image links                          */
 /* ------------------------------------------------------------------ */
-/* Covers: 16:9, encoded 1600x900. Logos: 1:1, encoded 512x512. Uploads are centre-cropped,
-   resized and re-encoded as WebP (JPEG where WebP encoding is unavailable); linked images must
-   load and meet the minimum resolution, and are displayed with the same aspect ratio. */
+/* Covers render at 16:9 (requested at 1600x900), logos at 1:1 (512x512). A link must be https,
+   load as an image and meet the minimum resolution. Known image CDNs are asked for an exact
+   centre-cropped rendition so cards get a sharp, correctly sized asset. */
 const IMAGE_SPECS = {
-  cover: { w: 1600, h: 900, minW: 800, minH: 450, label: "cover" },
-  logo: { w: 512, h: 512, minW: 128, minH: 128, label: "logo" },
+  cover: { w: 1600, h: 900, minW: 800, minH: 450 },
+  logo: { w: 512, h: 512, minW: 128, minH: 128 },
 };
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 
-const loadImage = (src, cors) => new Promise((resolve, reject) => {
+const loadImage = (src) => new Promise((resolve, reject) => {
   const img = new Image();
-  if (cors) img.crossOrigin = "anonymous";
   img.decoding = "async";
+  img.referrerPolicy = "no-referrer";
   img.onload = () => resolve(img);
   img.onerror = () => reject(new Error("load"));
   img.src = src;
 });
 
-async function processImageFile(file, kind) {
-  const spec = IMAGE_SPECS[kind];
-  if (!IMAGE_TYPES.includes(file.type)) throw new Error("Use a JPG, PNG or WebP image.");
-  if (file.size > IMAGE_MAX_BYTES) throw new Error("That image is over 10 MB.");
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await loadImage(url);
-    if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Image too small: at least ${spec.minW}×${spec.minH}px.`);
-    // centre-crop to the target aspect ratio, then scale to the target size
-    const target = spec.w / spec.h, ratio = img.naturalWidth / img.naturalHeight;
-    const sw = ratio > target ? img.naturalHeight * target : img.naturalWidth;
-    const sh = ratio > target ? img.naturalHeight : img.naturalWidth / target;
-    const c = document.createElement("canvas");
-    c.width = spec.w; c.height = spec.h;
-    const g = c.getContext("2d");
-    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
-    g.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, 0, 0, spec.w, spec.h);
-    let out = c.toDataURL("image/webp", 0.86);
-    if (!out.startsWith("data:image/webp")) out = c.toDataURL("image/jpeg", 0.88);
-    return out;
-  } finally { URL.revokeObjectURL(url); }
+function optimizeImageUrl(raw, kind) {
+  const { w, h } = IMAGE_SPECS[kind];
+  const u = new URL(raw.trim());
+  const set = (o) => Object.entries(o).forEach(([k, v]) => u.searchParams.set(k, String(v)));
+  if (u.hostname === "images.unsplash.com") set({ w, h, fit: "crop", crop: "entropy", auto: "format", q: 80 });
+  else if (u.hostname === "images.pexels.com") set({ auto: "compress", cs: "tinysrgb", w, h, fit: "crop" });
+  return u.toString();
 }
 
 async function checkImageUrl(raw, kind) {
   const spec = IMAGE_SPECS[kind];
   let u;
-  try { u = new URL(raw.trim()); } catch (e) { throw new Error("Enter a full image link starting with https://"); }
+  try { u = new URL(raw.trim()); } catch (e) { throw new Error("Enter the full image link, starting with https://"); }
   if (u.protocol !== "https:") throw new Error("Image links must start with https://");
+  const url = optimizeImageUrl(u.toString(), kind);
   let img;
-  try { img = await loadImage(u.toString()); } catch (e) { throw new Error("That link doesn't open as an image."); }
+  try { img = await loadImage(url); } catch (e) { throw new Error("That link doesn't open as an image. Use a direct image link (.jpg, .png, .webp)."); }
   if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Image too small: at least ${spec.minW}×${spec.minH}px.`);
-  return u.toString();
+  return url;
 }
 
-function ImageField({ kind, label, value, onChange }) {
+/* Required image-link field with live check and preview. value = { input, url, ok }. */
+function ImageUrlField({ id, kind, label, value, onChange, error }) {
   const spec = IMAGE_SPECS[kind];
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [urlMode, setUrlMode] = useState(false);
-  const [url, setUrl] = useState("");
-  const [drag, setDrag] = useState(false);
-  const fileRef = useRef(null);
-  const take = async (fn) => {
-    setBusy(true); setErr("");
-    try { onChange(await fn()); setUrlMode(false); setUrl(""); }
-    catch (e) { setErr(e.message || "Couldn't use that image."); }
-    finally { setBusy(false); }
+  const [state, setState] = useState(value.ok ? "ok" : "idle"); // idle | checking | ok | error
+  const [msg, setMsg] = useState("");
+  const seq = useRef(0);
+  const check = async (input) => {
+    if (!input.trim()) { setState("idle"); setMsg(""); onChange({ input, url: "", ok: false }); return; }
+    const n = ++seq.current;
+    setState("checking"); setMsg("");
+    try {
+      const url = await checkImageUrl(input, kind);
+      if (n !== seq.current) return;
+      setState("ok"); onChange({ input, url, ok: true });
+    } catch (e) {
+      if (n !== seq.current) return;
+      setState("error"); setMsg(e.message); onChange({ input, url: "", ok: false });
+    }
   };
-  const onFile = (f) => f && take(() => processImageFile(f, kind));
   const isCover = kind === "cover";
+  const shown = msg || error;
   return (
     <div>
-      <span className="text-sm font-medium text-slate-700">{label} <span className="font-normal text-slate-400">(optional)</span></span>
+      <label htmlFor={id} className="text-sm font-medium text-slate-700">{label}</label>
       <div className={`mt-1.5 flex gap-3 ${isCover ? "flex-col" : "items-center"}`}>
-        <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={busy}
-          onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
-          onDrop={(e) => { e.preventDefault(); setDrag(false); onFile(e.dataTransfer.files && e.dataTransfer.files[0]); }}
-          aria-label={`Upload ${label}`}
-          className={`group relative shrink-0 overflow-hidden border-2 border-dashed ${isCover ? "w-full rounded-2xl" : "h-20 w-20 rounded-2xl"} ${drag ? "border-indigo-500 bg-indigo-50" : value ? "border-transparent" : "border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50"}`}
-          style={isCover ? { aspectRatio: `${spec.w} / ${spec.h}` } : undefined}>
-          {value ? (
-            <img src={value} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: `${spec.w} / ${spec.h}` }} />
+        <div className={`relative shrink-0 overflow-hidden rounded-2xl border-2 ${value.ok ? "border-transparent" : "border-dashed border-slate-300 bg-white"} ${isCover ? "w-full" : "h-20 w-20"}`}
+          style={{ aspectRatio: `${spec.w} / ${spec.h}` }}>
+          {value.ok ? (
+            <img src={value.url} alt="" draggable={false} referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" />
           ) : (
-            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-slate-400 group-hover:text-indigo-500">
-              <svg viewBox="0 0 24 24" className={isCover ? "h-8 w-8" : "h-6 w-6"} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16l4.5-4.5a2 2 0 012.8 0L16 16m-2-2l1.5-1.5a2 2 0 012.8 0L20 14M14 8h.01M5 20h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
-              {isCover && <span className="text-xs font-semibold">Upload or drop an image</span>}
+            <span className="absolute inset-0 flex items-center justify-center text-slate-300">
+              <svg viewBox="0 0 24 24" className={isCover ? "h-9 w-9" : "h-6 w-6"} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16l4.5-4.5a2 2 0 012.8 0L16 16m-2-2l1.5-1.5a2 2 0 012.8 0L20 14M14 8h.01M5 20h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
             </span>
           )}
-          {busy && <span className="absolute inset-0 flex items-center justify-center bg-white/70"><span className="u-spin h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent" /></span>}
-        </button>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={busy} className="u-btn rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">{value ? "Replace" : "Upload"}</button>
-          <button type="button" onClick={() => { setUrlMode((m) => !m); setErr(""); }} disabled={busy} className="u-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">{urlMode ? "Cancel link" : "Use image link"}</button>
-          {value && <button type="button" onClick={() => onChange("")} className="u-btn rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-rose-600">Remove</button>}
+          {state === "checking" && <span className="absolute inset-0 flex items-center justify-center bg-white/70"><span className="u-spin h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent" /></span>}
+        </div>
+        <div className="relative min-w-0 flex-1">
+          <input id={id} type="url" inputMode="url" value={value.input} placeholder="https://…/image.jpg" autoComplete="off" spellCheck="false"
+            onChange={(e) => onChange({ input: e.target.value, url: "", ok: false }) || setState("idle")}
+            onBlur={(e) => check(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); check(e.currentTarget.value); } }}
+            onPaste={(e) => { const t = e.clipboardData.getData("text"); if (t) setTimeout(() => check(t), 0); }}
+            className={`w-full rounded-xl border bg-white px-3 py-2.5 pr-9 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${shown && state !== "ok" ? "border-rose-400" : state === "ok" ? "border-emerald-400" : "border-slate-300 focus:border-indigo-500"}`} />
+          {state === "ok" && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600"><Check className="h-4 w-4" /></span>}
         </div>
       </div>
-      <input ref={fileRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" onChange={(e) => { onFile(e.target.files && e.target.files[0]); e.target.value = ""; }} />
-      {urlMode && (
-        <div className="mt-2 flex gap-2">
-          <input type="url" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…/image.jpg" aria-label={`${label} link`}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), url.trim() && take(() => checkImageUrl(url, kind)))}
-            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-          <button type="button" onClick={() => url.trim() && take(() => checkImageUrl(url, kind))} disabled={busy || !url.trim()} className="u-btn rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40">Add</button>
-        </div>
-      )}
-      {err && <p className="mt-1 text-xs text-rose-600">{err}</p>}
+      {shown && state !== "ok" && <p className="mt-1 text-xs text-rose-600">{shown}</p>}
     </div>
   );
 }
 
 /* Event artwork for headers/thumbnails: logo image or emoji fallback. */
 const EventLogo = ({ p, className = "h-12 w-12 text-2xl" }) =>
-  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
+  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} referrerPolicy="no-referrer" className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
     : <span className={`${className} flex shrink-0 items-center justify-center`}>{p.emoji}</span>;
 
 const CREATE_TABS = [
-  ["basics", "Basics", ["title", "desc"]],
+  ["basics", "Basics", ["title", "pitch"]],
   ["when", "Time & place", ["date", "end", "venueName", "mapsUrl", "spots", "price"]],
-  ["details", "Details", ["dress", "reqs"]],
+  ["details", "Details", ["cover", "logo", "dress", "reqs"]],
   ["contacts", "Contacts", ["whatsapp", "telegram", "email"]],
 ];
 const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
@@ -885,13 +865,16 @@ const submissionToParty = (sub) => ({
   address: sub.venueName, maps: sub.venueName, mapsUrl: sub.mapsUrl, price: sub.price, spots: sub.spots, taken: 0, wait: 0, vibe: null,
   host: "you", own: true, cover: sub.cover, logo: sub.logo,
   contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
-  desc: sub.desc || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
+  desc: sub.pitch || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
   perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
 });
 const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
+const PITCH_MIN = 100;
+
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Party", lang: "English", desc: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, cover: "", logo: "" });
+  const [f, setF] = useState({ title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, cover: { input: "", url: "", ok: false }, logo: { input: "", url: "", ok: false }, website: "" });
+  const [sendError, setSendError] = useState("");
   const [errors, setErrors] = useState({});
   const [tab, setTab] = useState("basics");
   const [submitting, setSubmitting] = useState(false);
@@ -900,6 +883,9 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const validate = () => {
     const e = {};
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
+    if (f.pitch.trim().length < PITCH_MIN) e.pitch = `Please describe your event in more detail (at least ${PITCH_MIN} characters).`;
+    if (!f.cover.ok) e.cover = f.cover.input.trim() ? "Add a working cover image link." : "Add a cover image link.";
+    if (!f.logo.ok) e.logo = f.logo.input.trim() ? "Add a working logo image link." : "Add a logo / avatar image link.";
     if (!f.date || f.date < TODAY) e.date = "Pick a date from today onwards.";
     if (f.time && f.end && toMin(f.end) <= toMin(f.time)) e.end = "End after the start time.";
     if (f.venueName.trim().length < 3) e.venueName = "Add the venue name, e.g. Marina Rooftop Lounge.";
@@ -922,31 +908,30 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     setErrors({ ...errors, ...here });
     if (!Object.keys(here).length) setTab(CREATE_TABS[idx + 1][0]);
   };
-  const submit = () => {
+  const submit = async () => {
     const e = validate();
     setErrors(e);
     const bad = CREATE_TABS.find((t) => t[2].some((k) => e[k]));
     if (bad) return setTab(bad[0]);
-    setSubmitting(true);
+    setSubmitting(true); setSendError("");
+    const sub = {
+      ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, pitch: f.pitch.trim(),
+      date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
+      spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
+      whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.cover.url, logo: f.logo.url,
+    };
+    try {
+      await onSubmitted(sub, f.website); // posts the pitch to the moderation chat; resolves once it's delivered
+    } catch (err) {
+      setSubmitting(false);
+      setSendError(err.message || "The review team couldn't be reached. Please try again.");
+    }
   };
   const addReq = (r) => {
     if (f.reqs.includes(r)) return;
     setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r });
   };
 
-  useEffect(() => {
-    if (!submitting) return;
-    const t = setTimeout(() => {
-      onSubmitted({
-        ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, desc: f.desc.trim(),
-        date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
-        spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
-        whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.cover, logo: f.logo,
-      });
-    }, 1100);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line
-  }, [submitting]);
 
   const input = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
   const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
@@ -1000,9 +985,13 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                 </div>
               </div>
               <div>
-                <label className={lab} htmlFor="c-desc">Short description {opt()}</label>
-                <textarea id="c-desc" rows={3} className={`${input("desc")} resize-none`} value={f.desc} onChange={set("desc")} maxLength={280} placeholder="What will people do, and who is it for?" />
-                <Hint>{280 - f.desc.length} characters left</Hint>
+                <label className={lab} htmlFor="c-pitch">Tell us more details (What exactly do you want to host? Explain your setup, requirements, and full plan).</label>
+                <textarea id="c-pitch" rows={6} className={`${input("pitch")} resize-y`} value={f.pitch} onChange={set("pitch")} maxLength={2500}
+                  placeholder="Walk us through it: the concept and who it's for, the run of show from doors to close, your setup (music, food and drinks, decorations, equipment), safety and supervision, how guests get there, and anything you need from the venue or from us." />
+                <div className="mt-1 flex items-center justify-between text-xs">
+                  {errors.pitch ? <span className="text-rose-600">{errors.pitch}</span> : <span className="text-slate-400">The more detail you share, the faster the admin team can approve it.</span>}
+                  <span className={`ml-3 shrink-0 tabular-nums ${f.pitch.trim().length >= PITCH_MIN ? "text-emerald-600" : "text-slate-400"}`}>{f.pitch.trim().length >= PITCH_MIN ? "✓ " : ""}{f.pitch.trim().length} / {PITCH_MIN}+</span>
+                </div>
               </div>
             </>
           )}
@@ -1064,8 +1053,10 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
 
           {tab === "details" && (
             <>
-              <ImageField kind="cover" label="Event Cover Image / Background" value={f.cover} onChange={(v) => setF((x) => ({ ...x, cover: v }))} />
-              <ImageField kind="logo" label="Event Logo / Avatar" value={f.logo} onChange={(v) => setF((x) => ({ ...x, logo: v }))} />
+              <ImageUrlField id="c-cover" kind="cover" label="Event Cover Image URL" value={f.cover} error={errors.cover}
+                onChange={(v) => { setF((x) => ({ ...x, cover: v })); setErrors((x) => ({ ...x, cover: undefined })); }} />
+              <ImageUrlField id="c-logo" kind="logo" label="Event Logo/Avatar URL" value={f.logo} error={errors.logo}
+                onChange={(v) => { setF((x) => ({ ...x, logo: v })); setErrors((x) => ({ ...x, logo: undefined })); }} />
               <div>
                 <label className={lab} htmlFor="c-dress">Dress Code {opt("(if any)")}</label>
                 <input id="c-dress" list="c-dresses" className={input("dress")} value={f.dress} onChange={set("dress")} placeholder="e.g. Smart casual" />
@@ -1104,7 +1095,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   <label className={lab} htmlFor="c-tg">Telegram Username</label>
                   <div className="relative">
                     <span className="pointer-events-none absolute inset-y-0 left-3 mt-1 flex items-center text-sm text-slate-400">@</span>
-                    <input id="c-tg" className={`${input("telegram")} pl-7`} value={f.telegram} onChange={set("telegram")} placeholder="username" autoCapitalize="off" autoCorrect="off" spellCheck="false" />
+                    <input id="c-tg" className={`${input("telegram")} pl-7`} value={f.telegram} onChange={(e) => set("telegram")({ target: { value: e.target.value.replace(/^@+/, "") } })} placeholder="username" autoCapitalize="off" autoCorrect="off" spellCheck="false" />
                   </div>
                   <Err k="telegram" />
                 </div>
@@ -1119,6 +1110,11 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           )}
         </div>
 
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={set("website")}
+          style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
+        {sendError && (
+          <p role="alert" className="mt-5 rounded-xl bg-rose-50 px-3 py-2.5 text-sm text-rose-700 ring-1 ring-inset ring-rose-200">{sendError}</p>
+        )}
         <div className="mt-6 flex gap-2">
           {idx > 0 && <button onClick={() => setTab(CREATE_TABS[idx - 1][0])} disabled={submitting} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>}
           {idx < CREATE_TABS.length - 1 ? (
@@ -1489,6 +1485,12 @@ function ReviewModal({ sub: s, r, onClose }) {
             <div key={k} className="flex items-start justify-between gap-4"><dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd></div>
           ))}
         </dl>
+        {s.pitch && (
+          <div>
+            <p className="mb-1 text-sm font-semibold text-slate-900">Your pitch</p>
+            <p className="max-h-40 overflow-y-auto whitespace-pre-line rounded-xl border border-slate-200/80 bg-white p-3 text-sm leading-relaxed text-slate-600">{s.pitch}</p>
+          </div>
+        )}
         <div>
           <p className="mb-2 text-sm font-semibold text-slate-900">Organizer contacts</p>
           <ContactButtons contact={{ whatsapp: s.whatsapp, telegram: s.telegram, email: s.email }} subject={s.title} />
@@ -2124,7 +2126,24 @@ export default function App() {
   };
   const reviewOf = (sub) => (clock - sub.at >= REVIEW_MS ? "approved" : "review");
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
-  const submitParty = (sub) => {
+  // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
+  // queues it for review locally. Throws with a readable message if it couldn't be delivered.
+  const submitParty = async (sub, website) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    let res, data = {};
+    try {
+      res = await fetch("/api/pitch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...sub, account: user, studentId: studentIdRef.current, website }),
+        signal: ctrl.signal,
+      });
+      data = await res.json().catch(() => ({}));
+    } catch (e) {
+      throw new Error("Couldn't reach the review team. Check your connection and try again.");
+    } finally { clearTimeout(timer); }
+    if (!res.ok || !data.ok) throw new Error(data.error || "The review team couldn't be reached. Please try again.");
     setSubmissions((x) => [sub, ...x]);
     setModal(null);
     notify({ title: "Application Submitted!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
