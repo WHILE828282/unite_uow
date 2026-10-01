@@ -22,17 +22,17 @@ const GRADIENTS = {
 };
 
 const CLUBS = [
-  { id: 1, form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 18 }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 21 }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
-  { id: 2, form: ["Basketball"], name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 15 }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 19 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
-  { id: 3, form: ["Volleyball"], name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 14 }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 17 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
-  { id: 4, form: ["Cricket"], name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets", cap: 28, taken: 20 }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
-  { id: 5, form: ["Table Tennis", "Badminton"], name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 12 }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 9 }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
-  { id: 6, form: ["Padel", "Tennis"], name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts", cap: 16, taken: 11 }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
-  { id: 7, form: ["Chess"], name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge", cap: 30, taken: 13 }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
-  { id: 11, form: ["Track", "Swimming"], name: "Track & Swimming", emoji: "🏃", category: "Sports", desc: "Sprint, distance and pool sessions for athletics and swimming meets between Dubai universities.", members: 34, slots: [{ id: "ts-fri", day: 4, start: "15:00", end: "17:00", title: "Track & pool training", level: "Squad & trialists", where: "Running Track & Pool", cap: 30, taken: 16 }], where: "Running Track & Pool", lead: { name: "UOWD Sports & Recreation", role: "Track & swimming coordinator", email: "athletics@uniteuow.com" }, note: "Bring running shoes, swimwear and a towel. Times are recorded at the first session." },
-  { id: 8, name: "Tech & E-sports Club", emoji: "🎮", category: "Tech", desc: "Build projects, run hackathons and compete in campus e-sports leagues.", members: 72, slots: [{ id: "te-tue", day: 1, start: "16:00", end: "18:00", title: "Build night & e-sports scrims", level: "All levels", where: "Computer Lab", cap: 40, taken: 26 }], where: "Computer Lab", lead: { name: "Tech & E-sports committee", role: "Club committee", email: "tech@uniteuow.com" }, note: "Bring a laptop for build nights; consoles and PCs provided for scrims." },
-  { id: 9, name: "Finance & Entrepreneurship Society", emoji: "💼", category: "Business", desc: "Market simulations, pitch practice and networking with founders and finance professionals.", members: 85, slots: [{ id: "fe-thu", day: 3, start: "15:00", end: "17:00", title: "Workshop & pitch session", level: "All levels", where: "Innovation Studio", cap: 45, taken: 31 }], where: "Innovation Studio", lead: { name: "Finance & Entrepreneurship committee", role: "Society committee", email: "finance@uniteuow.com" }, note: "Smart casual for networking events." },
-  { id: 10, name: "Music & Dance Club", emoji: "🎵", category: "Arts", desc: "Jam sessions, choreography and performances at campus events.", members: 58, slots: [{ id: "md-mon", day: 0, start: "16:00", end: "18:00", title: "Rehearsal & jam", level: "All levels", where: "Multi-purpose Room", cap: 35, taken: 20 }], where: "Multi-purpose Room", lead: { name: "Music & Dance committee", role: "Club committee", email: "music@uniteuow.com" }, note: "Comfortable clothes for dance; instruments welcome." },
+  { id: 1, form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch" }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch" }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
+  { id: 2, form: ["Basketball"], name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
+  { id: 3, form: ["Volleyball"], name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall" }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall" }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
+  { id: 4, form: ["Cricket"], name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets" }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
+  { id: 5, form: ["Table Tennis", "Badminton"], name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall" }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall" }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
+  { id: 6, form: ["Padel", "Tennis"], name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts" }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
+  { id: 7, form: ["Chess"], name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge" }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
+  { id: 11, form: ["Track", "Swimming"], name: "Track & Swimming", emoji: "🏃", category: "Sports", desc: "Sprint, distance and pool sessions for athletics and swimming meets between Dubai universities.", members: 34, slots: [{ id: "ts-fri", day: 4, start: "15:00", end: "17:00", title: "Track & pool training", level: "Squad & trialists", where: "Running Track & Pool" }], where: "Running Track & Pool", lead: { name: "UOWD Sports & Recreation", role: "Track & swimming coordinator", email: "athletics@uniteuow.com" }, note: "Bring running shoes, swimwear and a towel. Times are recorded at the first session." },
+  { id: 8, name: "Tech & E-sports Club", emoji: "🎮", category: "Tech", desc: "Build projects, run hackathons and compete in campus e-sports leagues.", members: 72, slots: [{ id: "te-tue", day: 1, start: "16:00", end: "18:00", title: "Build night & e-sports scrims", level: "All levels", where: "Computer Lab" }], where: "Computer Lab", lead: { name: "Tech & E-sports committee", role: "Club committee", email: "tech@uniteuow.com" }, note: "Bring a laptop for build nights; consoles and PCs provided for scrims." },
+  { id: 9, name: "Finance & Entrepreneurship Society", emoji: "💼", category: "Business", desc: "Market simulations, pitch practice and networking with founders and finance professionals.", members: 85, slots: [{ id: "fe-thu", day: 3, start: "15:00", end: "17:00", title: "Workshop & pitch session", level: "All levels", where: "Innovation Studio" }], where: "Innovation Studio", lead: { name: "Finance & Entrepreneurship committee", role: "Society committee", email: "finance@uniteuow.com" }, note: "Smart casual for networking events." },
+  { id: 10, name: "Music & Dance Club", emoji: "🎵", category: "Arts", desc: "Jam sessions, choreography and performances at campus events.", members: 58, slots: [{ id: "md-mon", day: 0, start: "16:00", end: "18:00", title: "Rehearsal & jam", level: "All levels", where: "Multi-purpose Room" }], where: "Multi-purpose Room", lead: { name: "Music & Dance committee", role: "Club committee", email: "music@uniteuow.com" }, note: "Comfortable clothes for dance; instruments welcome." },
 ];
 
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
@@ -1190,7 +1190,7 @@ function EventDetail({ party: p, action, onShare, onClose }) {
   );
 }
 
-function ClubDetail({ club: c, joined, mine, action, onClose }) {
+function ClubDetail({ club: c, joined, action, onClose }) {
   const mapsUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UOWD_MAPS);
   return (
     <Modal onClose={onClose} size="lg">
@@ -1221,7 +1221,6 @@ function ClubDetail({ club: c, joined, mine, action, onClose }) {
                     <span className="block font-medium text-slate-900">{fmtRange(sl.start, sl.end)}</span>
                     <span className="block truncate text-xs text-slate-500">{sl.title} · {sl.where} · {sl.level}</span>
                   </span>
-                  {mine.includes(sl.id) && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-3 w-3" /> Registered</span>}
                 </li>
               ))}
             </ul>
@@ -1626,7 +1625,7 @@ const tryoutUrl = (c) => {
 
 /* Always dark, whatever the site theme: only fixed dark colours are used here, none that the
    .u-dark palette remap touches, and every surface carries u-keep. */
-function TryoutModal({ club: c, sent, onSent, onClose }) {
+function TryoutModal({ club: c, onSent, onClose }) {
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
   const src = tryoutUrl(c);
@@ -1703,16 +1702,10 @@ function TryoutModal({ club: c, sent, onSent, onClose }) {
 
         {/* Footer: locked dark */}
         <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-gray-900 p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-          {sent ? (
-            <span className="u-pop inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-500/15 py-2.5 text-sm font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
-              <Check className="h-4 w-4" /> Marked as submitted
-            </span>
-          ) : (
-            <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
-              I've submitted the form
-              <span className="ml-1.5 font-normal text-gray-900/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
-            </button>
-          )}
+          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
+            I've submitted the form
+            <span className="ml-1.5 font-normal text-gray-900/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1728,8 +1721,7 @@ export default function App() {
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
-  const [clubSlots, setClubSlots] = useState({}); // clubId -> [slotId]
-  const [tryouts, setTryouts] = useState({}); // clubId -> true once the student says they sent the UOWD form
+  const [joinedClubs, setJoinedClubs] = useState({}); // clubId -> true; each club's fixed official schedule is added in full
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -1780,15 +1772,14 @@ export default function App() {
   };
   const goHome = () => { changeTab("clubs"); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-  const mySlots = user ? clubSlots : {};
-  const isJoined = (c) => (mySlots[c.id] || []).length > 0;
+  const isJoined = (c) => !!(user && joinedClubs[c.id]);
   const memberCount = (c) => c.members + (isJoined(c) ? 1 : 0);
-  const sessions = clubs.flatMap((c) => c.slots.filter((sl) => (mySlots[c.id] || []).includes(sl.id)).map((slot) => ({ club: c, slot })));
+  const sessions = clubs.filter(isJoined).flatMap((c) => c.slots.map((slot) => ({ club: c, slot })));
 
   // Each team/club has one fixed official schedule; registering adds all of its sessions.
   const registerClub = (c) => {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
-    setClubSlots((x) => ({ ...x, [c.id]: c.slots.map((sl) => sl.id) }));
+    setJoinedClubs((x) => ({ ...x, [c.id]: true }));
     notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${clash ? ` Heads up: it overlaps with ${clash.club.name}.` : ""}`, 4200);
   };
   // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
@@ -1797,9 +1788,8 @@ export default function App() {
     if (isSports(c)) return requireAuth(`Sign in to register for ${c.name} tryouts`, () => setModal({ type: "tryout", id: c.id }));
     requireAuth(`Sign in to join ${c.name}`, () => registerClub(c));
   };
-  const tryoutSent = (c) => !!(user && tryouts[c.id]);
   const leaveClub = (c) => {
-    setClubSlots((x) => { const n = { ...x }; delete n[c.id]; return n; });
+    setJoinedClubs((x) => { const n = { ...x }; delete n[c.id]; return n; });
     setModal(null);
     notify(`You left ${c.name}`);
   };
@@ -2224,7 +2214,6 @@ export default function App() {
         <ClubDetail
           club={clubs.find((x) => x.id === modal.id)}
           joined={isJoined(clubs.find((x) => x.id === modal.id))}
-          mine={mySlots[modal.id] || []}
           action={isJoined(clubs.find((x) => x.id === modal.id)) ? (
             <div className="flex gap-2">
               <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> Registered · in My Schedule</span>
@@ -2239,8 +2228,7 @@ export default function App() {
         return (
           <TryoutModal
             club={c}
-            sent={tryoutSent(c)}
-            onSent={() => { setTryouts((t) => ({ ...t, [c.id]: true })); closeModal(); registerClub(c); }}
+            onSent={() => { closeModal(); registerClub(c); }}
             onClose={closeModal}
           />
         );
