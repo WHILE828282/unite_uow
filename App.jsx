@@ -259,8 +259,8 @@ async function copyText(text) {
   } catch (e) { return false; }
 }
 
-const glassDark = { background: "rgba(15,23,42,0.78)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" };
-const overlayStyle = { background: "rgba(15,23,42,0.55)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
+const glassDark = { background: "rgba(10,25,47,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" };
+const overlayStyle = { background: "rgba(6,16,31,0.6)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
 const glassChip = { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" };
 
 const CSS = `
@@ -504,7 +504,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
       </div>
 
       <div className="-mt-10 px-5 pb-5">
-        <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200/80">
+        <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200/60">
           <div className="u-keep flex items-center justify-between bg-slate-900 px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">U</span>
@@ -533,7 +533,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
               <span className="absolute h-7 w-7 rounded-full bg-slate-100" style={{ right: -34, top: -15 }} />
             </div>
 
-            <div className="mx-auto w-fit rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200/80"><QRCode value={b.id} className="h-36 w-36" /></div>
+            <div className="mx-auto w-fit rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200/60"><QRCode value={b.id} className="h-36 w-36" /></div>
             <p className="mt-3 text-center text-xs font-medium uppercase tracking-widest text-slate-400">Booking ID</p>
             <p className="text-center font-mono text-lg font-bold tracking-wider text-slate-900">{b.id}</p>
 
@@ -695,7 +695,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => onKey(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/80 bg-white shadow-sm focus:border-indigo-500"}`}
+                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/50 bg-white shadow-sm focus:border-indigo-500"}`}
                 />
               ))}
             </div>
@@ -733,111 +733,123 @@ function AuthModal({ reason, onClose, onSignIn }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Event artwork: cover and logo image links                          */
+/*  Event artwork: one upload becomes the cover and the logo           */
 /* ------------------------------------------------------------------ */
-/* Covers render at 16:9 (requested at 1600x900), logos at 1:1 (512x512). A link must be https,
-   load as an image and meet the minimum resolution. Known image CDNs are asked for an exact
-   centre-cropped rendition so cards get a sharp, correctly sized asset. */
+/* Covers are stored at 1600x900 (16:9), logos at 512x512 (1:1). Uploads must be JPEG/PNG/WebP
+   under 10 MB and at least 800x450; they are centre-cropped, resized and re-encoded as WebP
+   (JPEG where WebP encoding is unavailable). The logo defaults to a square crop of the cover. */
 const IMAGE_SPECS = {
   cover: { w: 1600, h: 900, minW: 800, minH: 450 },
   logo: { w: 512, h: 512, minW: 128, minH: 128 },
 };
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
 
 const loadImage = (src) => new Promise((resolve, reject) => {
   const img = new Image();
   img.decoding = "async";
-  img.referrerPolicy = "no-referrer";
   img.onload = () => resolve(img);
   img.onerror = () => reject(new Error("load"));
   img.src = src;
 });
 
-function optimizeImageUrl(raw, kind) {
-  const { w, h } = IMAGE_SPECS[kind];
-  const u = new URL(raw.trim());
-  const set = (o) => Object.entries(o).forEach(([k, v]) => u.searchParams.set(k, String(v)));
-  if (u.hostname === "images.unsplash.com") set({ w, h, fit: "crop", crop: "entropy", auto: "format", q: 80 });
-  else if (u.hostname === "images.pexels.com") set({ auto: "compress", cs: "tinysrgb", w, h, fit: "crop" });
-  return u.toString();
+const encodeCrop = (img, spec) => {
+  const target = spec.w / spec.h, ratio = img.naturalWidth / img.naturalHeight;
+  const sw = ratio > target ? img.naturalHeight * target : img.naturalWidth;
+  const sh = ratio > target ? img.naturalHeight : img.naturalWidth / target;
+  const c = document.createElement("canvas");
+  c.width = spec.w; c.height = spec.h;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  g.drawImage(img, (img.naturalWidth - sw) / 2, (img.naturalHeight - sh) / 2, sw, sh, 0, 0, spec.w, spec.h);
+  const out = c.toDataURL("image/webp", 0.85);
+  return out.startsWith("data:image/webp") ? out : c.toDataURL("image/jpeg", 0.88);
+};
+
+async function readImageFile(file, kind) {
+  const spec = IMAGE_SPECS[kind];
+  if (!file || !IMAGE_TYPES.includes(file.type)) throw new Error("Use a JPG, PNG or WebP photo.");
+  if (file.size > IMAGE_MAX_BYTES) throw new Error("That photo is over 10 MB.");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+    if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Photo too small: at least ${spec.minW}×${spec.minH}px.`);
+    return kind === "cover" ? { cover: encodeCrop(img, IMAGE_SPECS.cover), logo: encodeCrop(img, IMAGE_SPECS.logo) } : { logo: encodeCrop(img, IMAGE_SPECS.logo) };
+  } finally { URL.revokeObjectURL(url); }
 }
 
-async function checkImageUrl(raw, kind) {
-  const spec = IMAGE_SPECS[kind];
-  let u;
-  try { u = new URL(raw.trim()); } catch (e) { throw new Error("Enter the full image link, starting with https://"); }
-  if (u.protocol !== "https:") throw new Error("Image links must start with https://");
-  const url = optimizeImageUrl(u.toString(), kind);
-  let img;
-  try { img = await loadImage(url); } catch (e) { throw new Error("That link doesn't open as an image. Use a direct image link (.jpg, .png, .webp)."); }
-  if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Image too small: at least ${spec.minW}×${spec.minH}px.`);
-  return url;
-}
+const PhotoIcon = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="4.5" width="18" height="15" rx="2.5" /><circle cx="8.5" cy="10" r="1.6" /><path d="M21 15.5l-4.6-4.6a1.5 1.5 0 00-2.1 0L5 20" />
+  </svg>
+);
 
-/* Required image-link field with live check and preview. value = { input, url, ok }. */
-function ImageUrlField({ id, kind, label, value, onChange, error }) {
-  const spec = IMAGE_SPECS[kind];
-  const [state, setState] = useState(value.ok ? "ok" : "idle"); // idle | checking | ok | error
-  const [msg, setMsg] = useState("");
-  const seq = useRef(0);
-  const check = async (input) => {
-    if (!input.trim()) { setState("idle"); setMsg(""); onChange({ input, url: "", ok: false }); return; }
-    const n = ++seq.current;
-    setState("checking"); setMsg("");
+/* One dropzone for the event's artwork (locked dark styling). value = { cover, logo, logoCustom } */
+function ArtworkDrop({ value, onChange, error }) {
+  const [busy, setBusy] = useState("");
+  const [err, setErr] = useState("");
+  const [drag, setDrag] = useState(false);
+  const coverRef = useRef(null), logoRef = useRef(null);
+  const take = async (file, kind) => {
+    if (!file) return;
+    setBusy(kind); setErr("");
     try {
-      const url = await checkImageUrl(input, kind);
-      if (n !== seq.current) return;
-      setState("ok"); onChange({ input, url, ok: true });
-    } catch (e) {
-      if (n !== seq.current) return;
-      setState("error"); setMsg(e.message); onChange({ input, url: "", ok: false });
-    }
+      const out = await readImageFile(file, kind);
+      if (kind === "cover") onChange({ cover: out.cover, logo: value.logoCustom ? value.logo : out.logo, logoCustom: value.logoCustom });
+      else onChange({ ...value, logo: out.logo, logoCustom: true });
+    } catch (e) { setErr(e.message || "Couldn't use that photo."); }
+    finally { setBusy(""); }
   };
-  const isCover = kind === "cover";
-  const shown = msg || error;
+  const msg = err || error;
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-medium text-slate-700">{label}</label>
-      <div className={`mt-1.5 flex gap-3 ${isCover ? "flex-col" : "items-center"}`}>
-        <div className={`relative shrink-0 overflow-hidden rounded-2xl border-2 ${value.ok ? "border-transparent" : "border-dashed border-slate-300 bg-white"} ${isCover ? "w-full" : "h-20 w-20"}`}
-          style={{ aspectRatio: `${spec.w} / ${spec.h}` }}>
-          {value.ok ? (
-            <img src={value.url} alt="" draggable={false} referrerPolicy="no-referrer" className="absolute inset-0 h-full w-full object-cover" />
-          ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-slate-300">
-              <svg viewBox="0 0 24 24" className={isCover ? "h-9 w-9" : "h-6 w-6"} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16l4.5-4.5a2 2 0 012.8 0L16 16m-2-2l1.5-1.5a2 2 0 012.8 0L20 14M14 8h.01M5 20h14a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v14a1 1 0 001 1z" /></svg>
+      <div
+        role="button" tabIndex={0} aria-label={value.cover ? "Replace event photo" : "Upload event photo"}
+        onClick={() => coverRef.current && coverRef.current.click()}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); coverRef.current && coverRef.current.click(); } }}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); take(e.dataTransfer.files && e.dataTransfer.files[0], "cover"); }}
+        className={`u-keep group relative w-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-400/60 ${value.cover ? "ring-1 ring-white/10" : `border border-dashed ${drag ? "border-gold-400 bg-gold-400/[0.06]" : msg ? "border-rose-400/70 bg-white/[0.02]" : "border-white/20 bg-white/[0.02] hover:border-gold-400/60 hover:bg-white/[0.04]"}`}`}
+        style={{ aspectRatio: "16 / 9" }}>
+        {value.cover ? (
+          <>
+            <img src={value.cover} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-100" aria-hidden="true" />
+            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">Replace photo</span>
+          </>
+        ) : (
+          <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+            <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ring-1 transition-colors ${drag ? "text-gold-300 ring-gold-400/50" : "text-slate-400 ring-white/10 group-hover:text-gold-300 group-hover:ring-gold-400/40"}`}><PhotoIcon className="h-7 w-7" /></span>
+            <span>
+              <span className="block text-base font-semibold text-white">{drag ? "Drop to upload" : "Add a cover photo"}</span>
+              <span className="mt-1 block text-sm text-slate-400">Drag a photo here, or click to browse</span>
             </span>
-          )}
-          {state === "checking" && <span className="absolute inset-0 flex items-center justify-center bg-white/70"><span className="u-spin h-6 w-6 rounded-full border-2 border-indigo-500 border-t-transparent" /></span>}
-        </div>
-        <div className="relative min-w-0 flex-1">
-          <input id={id} type="url" inputMode="url" value={value.input} placeholder="https://…/image.jpg" autoComplete="off" spellCheck="false"
-            onChange={(e) => onChange({ input: e.target.value, url: "", ok: false }) || setState("idle")}
-            onBlur={(e) => check(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); check(e.currentTarget.value); } }}
-            onPaste={(e) => { const t = e.clipboardData.getData("text"); if (t) setTimeout(() => check(t), 0); }}
-            className={`w-full rounded-xl border bg-white px-3 py-2.5 pr-9 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${shown && state !== "ok" ? "border-rose-400" : state === "ok" ? "border-emerald-400" : "border-slate-300 focus:border-indigo-500"}`} />
-          {state === "ok" && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600"><Check className="h-4 w-4" /></span>}
-        </div>
+          </span>
+        )}
+        {busy === "cover" && <span className="absolute inset-0 flex items-center justify-center bg-[#0a192f]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-gold-400 border-t-transparent" /></span>}
+        {value.cover && (
+          <button type="button" onClick={(e) => { e.stopPropagation(); logoRef.current && logoRef.current.click(); }}
+            aria-label="Change logo" title="Change logo"
+            className="u-keep absolute bottom-3 left-3 h-16 w-16 overflow-hidden rounded-2xl shadow-xl ring-2 ring-white/80 transition-transform active:scale-95">
+            <img src={value.logo} alt="" draggable={false} className="h-full w-full object-cover" />
+            <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wider text-white">Logo</span>
+            {busy === "logo" && <span className="absolute inset-0 flex items-center justify-center bg-black/50"><span className="u-spin h-5 w-5 rounded-full border-2 border-gold-400 border-t-transparent" /></span>}
+          </button>
+        )}
       </div>
-      {shown && state !== "ok" && <p className="mt-1 text-xs text-rose-600">{shown}</p>}
+      <input ref={coverRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
+        onChange={(e) => { take(e.target.files && e.target.files[0], "cover"); e.target.value = ""; }} />
+      <input ref={logoRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
+        onChange={(e) => { take(e.target.files && e.target.files[0], "logo"); e.target.value = ""; }} />
+      {msg && <p className="mt-2 text-sm text-rose-300">{msg}</p>}
     </div>
   );
 }
 
 /* Event artwork for headers/thumbnails: logo image or emoji fallback. */
 const EventLogo = ({ p, className = "h-12 w-12 text-2xl" }) =>
-  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} referrerPolicy="no-referrer" className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
+  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
     : <span className={`${className} flex shrink-0 items-center justify-center`}>{p.emoji}</span>;
-
-const CREATE_TABS = [
-  ["basics", "Basics", ["title", "pitch"]],
-  ["when", "Time & place", ["date", "end", "venueName", "mapsUrl", "spots", "price"]],
-  ["details", "Details", ["cover", "logo", "dress", "reqs"]],
-  ["contacts", "Contacts", ["whatsapp", "telegram", "email"]],
-];
-const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
-const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
-const REVIEW_MS = 2 * 36e5; // admin safety review for student parties
 
 /* Contact helpers shared by the form and the event details. */
 const waDigits = (v) => (v || "").replace(/\D/g, "");
@@ -870,22 +882,51 @@ const submissionToParty = (sub) => ({
 });
 const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
+const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
+const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
+const REVIEW_MS = 2 * 36e5; // admin safety review for student parties
 const PITCH_MIN = 100;
+/* Field order on the page, used to bring the first problem into view on submit. */
+const FIELD_ORDER = ["art", "title", "pitch", "date", "end", "venueName", "mapsUrl", "spots", "price", "whatsapp", "telegram", "email"];
+
+/* Locked-dark form primitives (fixed colours; u-keep opts out of the theme remap). */
+const DK = {
+  label: "block text-[13px] font-medium tracking-wide text-slate-300",
+  input: (bad) => `u-keep mt-2 w-full rounded-xl border bg-white/[0.03] px-4 py-3 text-[15px] text-white placeholder:text-slate-500 transition-colors focus:outline-none focus:ring-2 ${bad ? "border-rose-400/70 focus:ring-rose-400/20" : "border-white/10 hover:border-white/20 focus:border-gold-400/70 focus:ring-gold-400/15"}`,
+  chip: (on) => `u-keep rounded-full border px-4 py-2 text-sm transition-all duration-200 active:scale-95 ${on ? "border-gold-400 bg-gold-400 font-semibold text-[#0a192f] shadow-[0_0_0_3px_rgba(247,185,40,0.12)]" : "border-white/15 text-slate-300 hover:border-white/35 hover:text-white"}`,
+  err: "mt-2 text-sm text-rose-300",
+  hint: "mt-2 text-xs text-slate-400",
+};
+const DkSection = ({ n, title, children }) => (
+  <section className="space-y-6 border-t border-white/[0.06] pt-10 first:border-0 first:pt-0">
+    <h3 className="flex items-baseline gap-3 text-lg font-semibold tracking-tight text-white">
+      <span className="text-xs font-semibold tabular-nums text-gold-400">{String(n).padStart(2, "0")}</span>{title}
+    </h3>
+    {children}
+  </section>
+);
 
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
-  const [f, setF] = useState({ title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "", spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, cover: { input: "", url: "", ok: false }, logo: { input: "", url: "", ok: false }, website: "" });
-  const [sendError, setSendError] = useState("");
+  const [f, setF] = useState({
+    title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
+    spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, art: { cover: "", logo: "", logoCustom: false }, website: "",
+  });
   const [errors, setErrors] = useState({});
-  const [tab, setTab] = useState("basics");
   const [submitting, setSubmitting] = useState(false);
+  const [sendError, setSendError] = useState("");
   const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setErrors({ ...errors, [k]: undefined, ...(k === "whatsapp" || k === "telegram" ? { whatsapp: undefined, telegram: undefined } : {}) }); };
+
+  useEffect(() => {
+    const h = (e) => e.key === "Escape" && !submitting && onClose();
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [submitting, onClose]);
 
   const validate = () => {
     const e = {};
+    if (!f.art.cover) e.art = "Add a cover photo for your event.";
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
     if (f.pitch.trim().length < PITCH_MIN) e.pitch = `Please describe your event in more detail (at least ${PITCH_MIN} characters).`;
-    if (!f.cover.ok) e.cover = f.cover.input.trim() ? "Add a working cover image link." : "Add a cover image link.";
-    if (!f.logo.ok) e.logo = f.logo.input.trim() ? "Add a working logo image link." : "Add a logo / avatar image link.";
     if (!f.date || f.date < TODAY) e.date = "Pick a date from today onwards.";
     if (f.time && f.end && toMin(f.end) <= toMin(f.time)) e.end = "End after the start time.";
     if (f.venueName.trim().length < 3) e.venueName = "Add the venue name, e.g. Marina Rooftop Lounge.";
@@ -899,234 +940,195 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     if (!validEmail(f.email.trim())) e.email = "Enter a valid contact email.";
     return e;
   };
-  const tabErrors = (k) => CREATE_TABS.find((t) => t[0] === k)[2].some((field) => errors[field]);
-  const idx = CREATE_TABS.findIndex((t) => t[0] === tab);
-  const next = () => {
-    const e = validate();
-    const fields = CREATE_TABS[idx][2];
-    const here = Object.fromEntries(Object.entries(e).filter(([k]) => fields.includes(k)));
-    setErrors({ ...errors, ...here });
-    if (!Object.keys(here).length) setTab(CREATE_TABS[idx + 1][0]);
-  };
+
   const submit = async () => {
     const e = validate();
     setErrors(e);
-    const bad = CREATE_TABS.find((t) => t[2].some((k) => e[k]));
-    if (bad) return setTab(bad[0]);
+    const first = FIELD_ORDER.find((k) => e[k]);
+    if (first) {
+      const el = document.getElementById(`c-${first}`);
+      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); if (el.focus) el.focus({ preventScroll: true }); }
+      return;
+    }
     setSubmitting(true); setSendError("");
     const sub = {
       ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, pitch: f.pitch.trim(),
       date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
       spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
-      whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.cover.url, logo: f.logo.url,
+      whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.art.cover, logo: f.art.logo,
     };
     try {
-      await onSubmitted(sub, f.website); // posts the pitch to the moderation chat; resolves once it's delivered
+      await onSubmitted(sub, f.website); // delivers the pitch to the moderation chat, then queues it for review
     } catch (err) {
       setSubmitting(false);
       setSendError(err.message || "The review team couldn't be reached. Please try again.");
     }
   };
-  const addReq = (r) => {
-    if (f.reqs.includes(r)) return;
-    setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r });
-  };
-
-
-  const input = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
-  const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
-  const Hint = ({ children }) => <p className="mt-1 text-xs text-slate-400">{children}</p>;
-  const lab = "text-sm font-medium text-slate-700";
-  const opt = (t = "(optional)") => <span className="font-normal text-slate-400">{t}</span>;
+  const addReq = (r) => { if (!f.reqs.includes(r)) setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r }); };
+  const E = ({ k }) => (errors[k] ? <p className={DK.err}>{errors[k]}</p> : null);
+  const pitchLen = f.pitch.trim().length;
 
   return (
-    <Modal onClose={onClose} locked={submitting} size="lg">
-      <div className="p-6 pt-7">
-        <h2 className="text-xl font-bold text-slate-900">Host a student party or event</h2>
-        <p className="mt-1 text-sm text-slate-500">Every party is checked by the admin team for safety before it goes live, usually within 2 hours.</p>
-
-        <div className="mt-5 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1" role="tablist" aria-label="Event form sections">
-          {CREATE_TABS.map(([k, label], i) => (
-            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-              className={`relative flex items-center justify-center gap-1.5 rounded-lg px-1 py-2 text-xs font-semibold sm:text-sm ${tab === k ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
-              <span className={`hidden h-5 w-5 items-center justify-center rounded-full text-xs sm:flex ${tab === k ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}>{i + 1}</span>
-              {label}
-              {tabErrors(k) && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" aria-label="has errors" />}
-            </button>
-          ))}
+    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
+      <div role="dialog" aria-modal="true" aria-labelledby="host-title"
+        className="u-keep u-up relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-2xl sm:rounded-3xl"
+        style={{ colorScheme: "dark" }}>
+        {/* Header */}
+        <div className="u-keep shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, env(safe-area-inset-top))" }}>
+          <button onClick={onClose} disabled={submitting} aria-label="Close"
+            className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">✕</button>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">Unite · Student events</p>
+          <h2 id="host-title" className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Host an event</h2>
+          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours.</p>
         </div>
 
-        <div key={tab} className="u-fade mt-5 space-y-4">
-          {tab === "basics" && (
-            <>
+        {/* Body */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10">
+          <div className="space-y-12">
+            <DkSection n={1} title="Artwork">
+              <div id="c-art" tabIndex={-1} className="focus:outline-none">
+                <ArtworkDrop value={f.art} error={errors.art} onChange={(art) => { setF((x) => ({ ...x, art })); setErrors((x) => ({ ...x, art: undefined })); }} />
+              </div>
+            </DkSection>
+
+            <DkSection n={2} title="The event">
               <div>
-                <label className={lab} htmlFor="c-title">Event title</label>
-                <input id="c-title" className={input("title")} value={f.title} onChange={set("title")} placeholder="e.g. Sunset Beach Social" />
-                <Err k="title" />
+                <label className={DK.label} htmlFor="c-title">Event name</label>
+                <input id="c-title" value={f.title} onChange={set("title")} placeholder="Sunset Beach Social"
+                  className={`u-keep mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-2xl font-semibold tracking-tight text-white placeholder:text-slate-600 focus:outline-none focus:ring-0 ${errors.title ? "border-rose-400/70" : "border-white/10 focus:border-gold-400"}`} />
+                <E k="title" />
               </div>
               <div>
-                <span className={lab}>Event type</span>
-                <div className="mt-1.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {EVENT_TYPES.map((c) => (
-                    <button key={c} type="button" onClick={() => setF({ ...f, category: c })} aria-pressed={f.category === c}
-                      className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs font-semibold ${f.category === c ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200/80 bg-white text-slate-600 shadow-sm hover:border-slate-300"}`}>
-                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br ${GRADIENTS[c]}`} />{c}
-                    </button>
-                  ))}
+                <span className={DK.label}>Type</span>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {EVENT_TYPES.map((c) => <button key={c} type="button" aria-pressed={f.category === c} onClick={() => setF({ ...f, category: c })} className={DK.chip(f.category === c)}>{c}</button>)}
                 </div>
               </div>
               <div>
-                <label className={lab} htmlFor="c-lang">Event Language</label>
+                <label className={DK.label} htmlFor="c-lang">Language spoken</label>
                 <div className="relative">
-                  <select id="c-lang" className={`${input("lang")} appearance-none pr-10`} value={f.lang} onChange={set("lang")}>
-                    {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+                  <select id="c-lang" value={f.lang} onChange={set("lang")} className={`${DK.input(false)} appearance-none pr-10`}>
+                    {LANGUAGES.map((l) => <option key={l} value={l} className="bg-[#0a192f]">{l}</option>)}
                   </select>
-                  <span className="pointer-events-none absolute inset-y-0 right-3 mt-1 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
+                  <span className="pointer-events-none absolute inset-y-0 right-4 mt-2 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
                 </div>
               </div>
               <div>
-                <label className={lab} htmlFor="c-pitch">Tell us more details (What exactly do you want to host? Explain your setup, requirements, and full plan).</label>
-                <textarea id="c-pitch" rows={6} className={`${input("pitch")} resize-y`} value={f.pitch} onChange={set("pitch")} maxLength={2500}
-                  placeholder="Walk us through it: the concept and who it's for, the run of show from doors to close, your setup (music, food and drinks, decorations, equipment), safety and supervision, how guests get there, and anything you need from the venue or from us." />
-                <div className="mt-1 flex items-center justify-between text-xs">
-                  {errors.pitch ? <span className="text-rose-600">{errors.pitch}</span> : <span className="text-slate-400">The more detail you share, the faster the admin team can approve it.</span>}
-                  <span className={`ml-3 shrink-0 tabular-nums ${f.pitch.trim().length >= PITCH_MIN ? "text-emerald-600" : "text-slate-400"}`}>{f.pitch.trim().length >= PITCH_MIN ? "✓ " : ""}{f.pitch.trim().length} / {PITCH_MIN}+</span>
+                <label className={DK.label} htmlFor="c-pitch">Tell us more details (What exactly do you want to host? Explain your setup, requirements, and full plan).</label>
+                <textarea id="c-pitch" rows={7} value={f.pitch} onChange={set("pitch")} maxLength={2500}
+                  placeholder="The concept and who it's for, the run of show from doors to close, your setup (music, food and drinks, decorations, equipment), safety and supervision, how guests get there, and anything you need from the venue or from us."
+                  className={`${DK.input(!!errors.pitch)} resize-y leading-relaxed`} />
+                <div className="mt-2 flex items-start justify-between gap-4 text-xs">
+                  {errors.pitch ? <span className="text-sm text-rose-300">{errors.pitch}</span> : <span className="text-slate-400">A thorough plan gets approved faster.</span>}
+                  <span className={`shrink-0 tabular-nums ${pitchLen >= PITCH_MIN ? "text-gold-300" : "text-slate-400"}`}>{pitchLen} / {PITCH_MIN}+</span>
                 </div>
               </div>
-            </>
-          )}
+            </DkSection>
 
-          {tab === "when" && (
-            <>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-3 sm:col-span-1">
-                  <label className={lab} htmlFor="c-date">Date</label>
-                  <input id="c-date" type="date" min={TODAY} className={input("date")} value={f.date} onChange={set("date")} />
-                  <Err k="date" />
-                </div>
-                <div>
-                  <label className={lab} htmlFor="c-time">Starts</label>
-                  <input id="c-time" type="time" className={input("time")} value={f.time} onChange={set("time")} />
-                </div>
+            <DkSection n={3} title="When & where">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div className="col-span-2 sm:col-span-1">
-                  <label className={lab} htmlFor="c-end">Ends</label>
-                  <input id="c-end" type="time" className={input("end")} value={f.end} onChange={set("end")} />
-                  <Err k="end" />
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500"><Icon name="pin" className="h-3.5 w-3.5" /> Location</p>
-                <div className="mt-3 space-y-3">
-                  <div>
-                    <label className={lab} htmlFor="c-venue">Venue Name</label>
-                    <input id="c-venue" list="c-venues" className={input("venueName")} value={f.venueName} onChange={set("venueName")} placeholder="e.g. Marina Rooftop Lounge or JBR Beach" />
-                    <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
-                    <Err k="venueName" />
-                  </div>
-                  <div>
-                    <label className={lab} htmlFor="c-room">Room / meeting point {opt()}</label>
-                    <input id="c-room" className={input("room")} value={f.room} onChange={set("room")} placeholder="e.g. Level 3 terrace, or the lifeguard tower near Gate 4" />
-                  </div>
-                  <div>
-                    <label className={lab} htmlFor="c-maps">Google Maps URL {opt()}</label>
-                    <input id="c-maps" type="url" inputMode="url" className={input("mapsUrl")} value={f.mapsUrl} onChange={set("mapsUrl")} placeholder="https://google.com/maps/..." />
-                    <Err k="mapsUrl" />
-                    {!errors.mapsUrl && <Hint>Guests tap the venue name to open this link. Without it, we search Google Maps for the venue name.</Hint>}
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={lab} htmlFor="c-spots">Max spots</label>
-                  <input id="c-spots" type="number" min="1" className={input("spots")} value={f.spots} onChange={set("spots")} />
-                  <Err k="spots" />
+                  <label className={DK.label} htmlFor="c-date">Date</label>
+                  <input id="c-date" type="date" min={TODAY} value={f.date} onChange={set("date")} className={DK.input(!!errors.date)} />
+                  <E k="date" />
                 </div>
                 <div>
-                  <label className={lab} htmlFor="c-price">Ticket price (AED)</label>
-                  <input id="c-price" type="number" min="0" className={input("price")} value={f.price} onChange={set("price")} />
-                  <Err k="price" />
-                  {!errors.price && <Hint>{Number(f.price) > 0 ? "Paid securely via Ziina." : "0 = free entry."}</Hint>}
+                  <label className={DK.label} htmlFor="c-time">Starts</label>
+                  <input id="c-time" type="time" value={f.time} onChange={set("time")} className={DK.input(false)} />
                 </div>
-              </div>
-            </>
-          )}
-
-          {tab === "details" && (
-            <>
-              <ImageUrlField id="c-cover" kind="cover" label="Event Cover Image URL" value={f.cover} error={errors.cover}
-                onChange={(v) => { setF((x) => ({ ...x, cover: v })); setErrors((x) => ({ ...x, cover: undefined })); }} />
-              <ImageUrlField id="c-logo" kind="logo" label="Event Logo/Avatar URL" value={f.logo} error={errors.logo}
-                onChange={(v) => { setF((x) => ({ ...x, logo: v })); setErrors((x) => ({ ...x, logo: undefined })); }} />
-              <div>
-                <label className={lab} htmlFor="c-dress">Dress Code {opt("(if any)")}</label>
-                <input id="c-dress" list="c-dresses" className={input("dress")} value={f.dress} onChange={set("dress")} placeholder="e.g. Smart casual" />
-                <datalist id="c-dresses">{DRESS_CODES.map((v) => <option key={v} value={v} />)}</datalist>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {DRESS_CODES.map((d) => (
-                    <button key={d} type="button" onClick={() => setF({ ...f, dress: f.dress === d ? "" : d })}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${f.dress === d ? "bg-slate-900 text-white ring-slate-900" : "bg-white text-slate-600 ring-slate-200/80 hover:bg-slate-50"}`}>{d}</button>
-                  ))}
+                <div>
+                  <label className={DK.label} htmlFor="c-end">Ends</label>
+                  <input id="c-end" type="time" value={f.end} onChange={set("end")} className={DK.input(!!errors.end)} />
+                  <E k="end" />
                 </div>
               </div>
               <div>
-                <label className={lab} htmlFor="c-reqs">Requirements {opt("(if any)")}</label>
-                <textarea id="c-reqs" rows={2} className={`${input("reqs")} resize-none`} value={f.reqs} onChange={set("reqs")} placeholder="e.g. Bring your own laptop / racket" />
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {REQ_CHIPS.map((r) => (
-                    <button key={r} type="button" onClick={() => addReq(r)} disabled={f.reqs.includes(r)}
-                      className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/80 hover:bg-slate-50 disabled:opacity-40">+ {r}</button>
-                  ))}
+                <label className={DK.label} htmlFor="c-venueName">Venue name</label>
+                <input id="c-venueName" list="c-venues" value={f.venueName} onChange={set("venueName")} placeholder="Marina Rooftop Lounge, JBR Beach…" className={DK.input(!!errors.venueName)} />
+                <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
+                <E k="venueName" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={DK.label} htmlFor="c-room">Room or meeting point <span className="text-slate-500">· optional</span></label>
+                  <input id="c-room" value={f.room} onChange={set("room")} placeholder="Level 3 terrace" className={DK.input(false)} />
+                </div>
+                <div>
+                  <label className={DK.label} htmlFor="c-mapsUrl">Google Maps link <span className="text-slate-500">· optional</span></label>
+                  <input id="c-mapsUrl" type="url" inputMode="url" value={f.mapsUrl} onChange={set("mapsUrl")} placeholder="https://maps.app.goo.gl/…" className={DK.input(!!errors.mapsUrl)} />
+                  <E k="mapsUrl" />
                 </div>
               </div>
-            </>
-          )}
-
-          {tab === "contacts" && (
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4">
-              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500"><Icon name="user" className="h-3.5 w-3.5" /> Organizer Contacts</p>
-              <p className="mt-1 text-xs text-slate-500">Shown on your event once it's approved. Add WhatsApp, Telegram or both.</p>
-              <div className="mt-3 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className={lab} htmlFor="c-wa">WhatsApp Number</label>
-                  <input id="c-wa" type="tel" inputMode="tel" autoComplete="tel" className={input("whatsapp")} value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 123 4567" />
-                  <Err k="whatsapp" />
+                  <label className={DK.label} htmlFor="c-spots">Capacity</label>
+                  <input id="c-spots" type="number" min="1" value={f.spots} onChange={set("spots")} className={DK.input(!!errors.spots)} />
+                  <E k="spots" />
                 </div>
                 <div>
-                  <label className={lab} htmlFor="c-tg">Telegram Username</label>
+                  <label className={DK.label} htmlFor="c-price">Ticket price (AED)</label>
+                  <input id="c-price" type="number" min="0" value={f.price} onChange={set("price")} className={DK.input(!!errors.price)} />
+                  {errors.price ? <E k="price" /> : <p className={DK.hint}>{Number(f.price) > 0 ? "Paid securely via Ziina." : "0 means free entry."}</p>}
+                </div>
+              </div>
+            </DkSection>
+
+            <DkSection n={4} title="Details">
+              <div>
+                <span className={DK.label}>Dress code</span>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {DRESS_CODES.map((d) => <button key={d} type="button" aria-pressed={f.dress === d} onClick={() => setF({ ...f, dress: f.dress === d ? "" : d })} className={DK.chip(f.dress === d)}>{d}</button>)}
+                </div>
+              </div>
+              <div>
+                <label className={DK.label} htmlFor="c-reqs">What guests should bring or know <span className="text-slate-500">· optional</span></label>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {REQ_CHIPS.map((r) => <button key={r} type="button" aria-pressed={f.reqs.includes(r)} onClick={() => addReq(r)} className={DK.chip(f.reqs.includes(r))}>{r}</button>)}
+                </div>
+                <textarea id="c-reqs" rows={2} value={f.reqs} onChange={set("reqs")} placeholder="Anything else guests need to know" className={`${DK.input(false)} mt-3 resize-none`} />
+              </div>
+            </DkSection>
+
+            <DkSection n={5} title="Organizer contacts">
+              <p className="-mt-2 text-sm text-slate-400">Shown on your event once it's approved. Add WhatsApp, Telegram or both.</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={DK.label} htmlFor="c-whatsapp">WhatsApp number</label>
+                  <input id="c-whatsapp" type="tel" inputMode="tel" autoComplete="tel" value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 123 4567" className={DK.input(!!errors.whatsapp)} />
+                  <E k="whatsapp" />
+                </div>
+                <div>
+                  <label className={DK.label} htmlFor="c-telegram">Telegram username</label>
                   <div className="relative">
-                    <span className="pointer-events-none absolute inset-y-0 left-3 mt-1 flex items-center text-sm text-slate-400">@</span>
-                    <input id="c-tg" className={`${input("telegram")} pl-7`} value={f.telegram} onChange={(e) => set("telegram")({ target: { value: e.target.value.replace(/^@+/, "") } })} placeholder="username" autoCapitalize="off" autoCorrect="off" spellCheck="false" />
+                    <span className="pointer-events-none absolute inset-y-0 left-4 mt-2 flex items-center text-[15px] text-slate-500">@</span>
+                    <input id="c-telegram" value={f.telegram} onChange={(e) => set("telegram")({ target: { value: e.target.value.replace(/^@+/, "") } })} placeholder="username"
+                      autoCapitalize="off" autoCorrect="off" spellCheck="false" className={`${DK.input(!!errors.telegram)} pl-8`} />
                   </div>
-                  <Err k="telegram" />
-                </div>
-                <div>
-                  <label className={lab} htmlFor="c-email">Contact Email</label>
-                  <input id="c-email" type="email" className={input("email")} value={f.email} onChange={set("email")} />
-                  <Err k="email" />
-                  {!errors.email && <Hint>Your approval notification is sent here too.</Hint>}
+                  <E k="telegram" />
                 </div>
               </div>
-            </div>
-          )}
+              <div>
+                <label className={DK.label} htmlFor="c-email">Contact email</label>
+                <input id="c-email" type="email" value={f.email} onChange={set("email")} className={DK.input(!!errors.email)} />
+                {errors.email ? <E k="email" /> : <p className={DK.hint}>Your approval notification is sent here too.</p>}
+              </div>
+            </DkSection>
+          </div>
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={set("website")}
+            style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
         </div>
 
-        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={set("website")}
-          style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
-        {sendError && (
-          <p role="alert" className="mt-5 rounded-xl bg-rose-50 px-3 py-2.5 text-sm text-rose-700 ring-1 ring-inset ring-rose-200">{sendError}</p>
-        )}
-        <div className="mt-6 flex gap-2">
-          {idx > 0 && <button onClick={() => setTab(CREATE_TABS[idx - 1][0])} disabled={submitting} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>}
-          {idx < CREATE_TABS.length - 1 ? (
-            <button onClick={next} className="u-btn flex-1 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Next: {CREATE_TABS[idx + 1][1]} →</button>
-          ) : (
-            <button onClick={submit} disabled={submitting} className="u-btn flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white hover:from-indigo-700 hover:to-violet-700 disabled:opacity-80">
-              {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
-            </button>
-          )}
+        {/* Footer */}
+        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+          {sendError && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
+          {Object.values(errors).some(Boolean) && !sendError && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
+          <button onClick={submit} disabled={submitting}
+            className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-gold-400 py-3.5 text-[15px] font-semibold text-[#0a192f] transition-all duration-200 hover:bg-gold-300 active:scale-[0.98] disabled:opacity-80">
+            {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-[#0a192f] border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
+          </button>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 }
 
@@ -1297,10 +1299,10 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
           )}
         </div>
 
-        <dl className="mt-5 space-y-1.5 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-sm">
+        <dl className="mt-5 space-y-1.5 rounded-2xl border border-slate-200/50 bg-slate-50 p-4 text-sm">
           <div className="flex justify-between"><dt className="text-slate-500">General admission × 1</dt><dd className="tabular-nums text-slate-800">{amount} AED</dd></div>
           <div className="flex justify-between"><dt className="text-slate-500">Service fee</dt><dd className="tabular-nums text-slate-800">0.00 AED</dd></div>
-          <div className="flex justify-between border-t border-slate-200/80 pt-2 font-semibold"><dt className="text-slate-900">Total</dt><dd className="tabular-nums text-slate-900">{amount} AED</dd></div>
+          <div className="flex justify-between border-t border-slate-200/50 pt-2 font-semibold"><dt className="text-slate-900">Total</dt><dd className="tabular-nums text-slate-900">{amount} AED</dd></div>
         </dl>
 
         <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-700"}`}>
@@ -1385,7 +1387,7 @@ function EventDetail({ party: p, action, onShare, onClose }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white shadow-sm p-4">{action}</div>
+      <div className="sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -1415,7 +1417,7 @@ function ClubDetail({ club: c, status, action, onClose }) {
         <div className="space-y-4 text-sm">
           <div>
             <h3 className="mb-2 text-sm font-semibold text-slate-900">Official weekly schedule</h3>
-            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80">
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/50">
               {c.slots.map((sl) => (
                 <li key={sl.id} className="flex items-center gap-3 px-3.5 py-2.5">
                   <span className="w-10 shrink-0 text-xs font-semibold uppercase tracking-wider text-slate-400">{DAYS[sl.day].slice(0, 3)}</span>
@@ -1448,7 +1450,7 @@ function ClubDetail({ club: c, status, action, onClose }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200/80 bg-white shadow-sm p-4">{action}</div>
+      <div className="sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -1480,7 +1482,7 @@ function ReviewModal({ sub: s, r, onClose }) {
         <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
           Our admin team is verifying your event's safety. Once approved (within 2 hours) it goes live on Student Parties and you'll be notified at <span className="font-semibold">{s.email}</span>.
         </p>
-        <dl className="space-y-2 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-sm">
+        <dl className="space-y-2 rounded-2xl border border-slate-200/50 bg-slate-50 p-4 text-sm">
           {rows.map(([k, v]) => (
             <div key={k} className="flex items-start justify-between gap-4"><dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd></div>
           ))}
@@ -1488,7 +1490,7 @@ function ReviewModal({ sub: s, r, onClose }) {
         {s.pitch && (
           <div>
             <p className="mb-1 text-sm font-semibold text-slate-900">Your pitch</p>
-            <p className="max-h-40 overflow-y-auto whitespace-pre-line rounded-xl border border-slate-200/80 bg-white p-3 text-sm leading-relaxed text-slate-600">{s.pitch}</p>
+            <p className="max-h-40 overflow-y-auto whitespace-pre-line rounded-xl border border-slate-200/50 bg-white p-3 text-sm leading-relaxed text-slate-600">{s.pitch}</p>
           </div>
         )}
         <div>
@@ -1717,14 +1719,14 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
       </div>
     );
 
-  const selectCls = "u-btn appearance-none rounded-xl border border-slate-200/80 bg-white py-2 pl-3 pr-8 text-sm font-semibold text-slate-900 shadow-sm hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+  const selectCls = "u-btn appearance-none rounded-xl border border-slate-200/50 bg-white py-2 pl-3 pr-8 text-sm font-semibold text-slate-900 shadow-sm hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
   const Chevron = () => <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>;
 
   return (
     <div className="space-y-6">
       {/* Summary */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:col-span-2">
+        <div className="min-w-0 rounded-2xl border border-slate-200/50 bg-white p-4 shadow-sm sm:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Next up</p>
           {nextSession ? (
             <button onClick={() => onOpenClub(nextSession.club)} className="mt-2 flex w-full items-center gap-3 text-left">
@@ -1745,15 +1747,15 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
           ) : <p className="mt-2 text-sm text-slate-500">Nothing coming up.</p>}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions{sessions.some((x) => x.pending) ? <span className="text-amber-600"> · {sessions.filter((x) => x.pending).length} pending</span> : null}</p></div>
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{weekly % 1 ? weekly.toFixed(1) : weekly}</p><p className="text-xs text-slate-500">hours a week</p></div>
+          <div className="rounded-2xl border border-slate-200/50 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions{sessions.some((x) => x.pending) ? <span className="text-amber-600"> · {sessions.filter((x) => x.pending).length} pending</span> : null}</p></div>
+          <div className="rounded-2xl border border-slate-200/50 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{weekly % 1 ? weekly.toFixed(1) : weekly}</p><p className="text-xs text-slate-500">hours a week</p></div>
         </div>
       </div>
 
       {/* Calendar */}
-      <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-3xl border border-slate-200/50 bg-white shadow-sm">
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 border-b border-slate-200/80 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 border-b border-slate-200/50 p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <select aria-label="Month" value={mid.getMonth()} onChange={(e) => jumpMonth(mid.getFullYear(), +e.target.value)} className={selectCls}>
@@ -1773,18 +1775,18 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-            <div className="inline-flex overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
+            <div className="inline-flex overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm">
               <button onClick={() => go(addDays(anchor, -7))} disabled={+anchor <= +minAnchor} aria-label="Previous week"
                 className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
                 <Icon name="chevron" className="h-4 w-4 rotate-90" /><span className="hidden sm:inline">Previous week</span>
               </button>
-              <button onClick={() => go(mondayOf(today))} disabled={isCurrent} className="border-x border-slate-200/80 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:hover:bg-transparent">Today</button>
+              <button onClick={() => go(mondayOf(today))} disabled={isCurrent} className="border-x border-slate-200/50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:hover:bg-transparent">Today</button>
               <button onClick={() => go(addDays(anchor, 7))} disabled={+anchor >= +maxAnchor} aria-label="Next week"
                 className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
                 <span className="hidden sm:inline">Next week</span><Icon name="chevron" className="h-4 w-4 -rotate-90" />
               </button>
             </div>
-            <button onClick={onExport} className="u-btn inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+            <button onClick={onExport} className="u-btn inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-slate-200/50 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
               <Icon name="calendar" className="h-4 w-4" /> Add to my calendar
             </button>
           </div>
@@ -1793,12 +1795,12 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
         {/* Week grid */}
         <div className="overflow-x-auto">
           <div key={+anchor} className="u-fade min-w-[860px]">
-            <div className="grid border-b border-slate-200/80" style={{ gridTemplateColumns: cols }}>
+            <div className="grid border-b border-slate-200/50" style={{ gridTemplateColumns: cols }}>
               <div className="px-2 py-3 text-right text-xs font-medium text-slate-400">{weekHours ? `${weekHours % 1 ? weekHours.toFixed(1) : weekHours} h` : ""}</div>
               {days.map((d, i) => {
                 const isToday = +d === +today;
                 return (
-                  <div key={i} className={`border-l border-slate-200/80 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
+                  <div key={i} className={`border-l border-slate-200/50 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
                     <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-indigo-600" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
                     <p className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-base font-bold ${isToday ? "bg-indigo-600 text-white" : d < today ? "text-slate-400" : "text-slate-900"}`}>{d.getDate()}</p>
                   </div>
@@ -1815,7 +1817,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
               {days.map((d, i) => {
                 const isToday = +d === +today;
                 return (
-                  <div key={i} className={`relative border-l border-slate-200/80 ${i >= 5 ? "bg-slate-50" : ""} ${d < today ? "opacity-70" : ""}`}>
+                  <div key={i} className={`relative border-l border-slate-200/50 ${i >= 5 ? "bg-slate-50" : ""} ${d < today ? "opacity-70" : ""}`}>
                     {hours.map((h, j) => <div key={h} className="absolute inset-x-0 border-t border-slate-100" style={{ top: j * HOUR_PX }} />)}
                     {dayItems[i].map((it) => {
                       const top = ((it.s - startH * 60) / 60) * HOUR_PX;
@@ -1862,7 +1864,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 px-4 py-3 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/50 px-4 py-3 text-xs text-slate-500">
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             {[["Sports", "bg-emerald-500"], ["Tech", "bg-sky-500"], ["Business", "bg-violet-500"], ["Arts", "bg-pink-500"]].map(([k, c]) => (
               <span key={k} className="inline-flex items-center gap-1.5"><span className={`h-3 w-1 rounded-full ${c}`} /> {k}</span>
@@ -1884,7 +1886,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
             {reviews.map((r) => {
               const d = new Date(r.date + "T00:00:00");
               return (
-                <button key={r.ref} onClick={() => onOpenReview(r)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
+                <button key={r.ref} onClick={() => onOpenReview(r)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/50 bg-white p-3 text-left shadow-sm">
                   {r.logo && <EventLogo p={r} className="h-14 w-14 ring-1 ring-slate-200/70" />}
                   <span className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-gradient-to-br text-white ${GRADIENTS[r.category] || GRADIENTS.Party}`}>
                     <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: 0.85 }}>{d.toLocaleDateString("en-GB", { month: "short" })}</span>
@@ -1910,7 +1912,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
             {upcoming.map((b) => {
               const d = new Date(b.date + "T00:00:00");
               return (
-                <button key={b.id} onClick={() => onOpenTicket(b)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
+                <button key={b.id} onClick={() => onOpenTicket(b)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/50 bg-white p-3 text-left shadow-sm">
                   <span className="u-keep flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-900 text-white">
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">{fmt(d, { month: "short" })}</span>
                     <span className="text-xl font-bold leading-none">{d.getDate()}</span>
@@ -1958,14 +1960,14 @@ function TryoutModal({ club: c, onSent, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/75 backdrop-blur-md sm:items-center sm:p-6"
+    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={`UOWD registration for ${c.name}`}
-        className="u-keep u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-gray-950 text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
+        className="u-keep u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
         style={{ colorScheme: "dark" }}>
 
         {/* Header: solid, locked dark */}
-        <div className="u-keep shrink-0 border-b border-white/10 bg-gray-900 px-4 pb-4 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
               <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back to Feed
@@ -1980,32 +1982,32 @@ function TryoutModal({ club: c, onSent, onClose }) {
           <div className="mt-4 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
             <div className="min-w-0">
-              <p className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-gold-400/15 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-gold-400 ring-1 ring-inset ring-gold-400/30">
                 <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form
               </p>
               <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">{isSports(c) ? "Sports Tryouts Registration" : "Club Registration"}</h2>
-              <p className="truncate text-sm text-gray-400">For {c.name} · processed by UOWD Student Services</p>
+              <p className="truncate text-sm text-slate-400">For {c.name} · processed by UOWD Student Services</p>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-300">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
             {picks.length > 0 && (
               <span className="inline-flex items-center gap-1.5">
                 Sport{picks.length > 1 ? "s" : ""}:
-                {picks.map((o) => <span key={o} className="rounded-md bg-emerald-500 px-2 py-0.5 font-semibold text-gray-950">{o}</span>)}
-                <span className="text-gray-400">· pre-selected, please check it's ticked</span>
+                {picks.map((o) => <span key={o} className="rounded-md bg-gold-400 px-2 py-0.5 font-semibold text-[#0a192f]">{o}</span>)}
+                <span className="text-slate-400">· pre-selected, please check it's ticked</span>
               </span>
             )}
-            <span className="hidden text-gray-400 sm:inline">Answers go straight to UOWD, not to Unite.</span>
+            <span className="hidden text-slate-400 sm:inline">Answers go straight to UOWD, not to Unite.</span>
           </div>
         </div>
 
         {/* Form: the white Jotform sits on the dark frame */}
-        <div className="u-keep relative min-h-0 flex-1 bg-gray-950 sm:p-3">
+        <div className="u-keep relative min-h-0 flex-1 bg-[#06101f] sm:p-3">
           {!loaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-emerald-400" />
-              <p className="text-sm font-medium text-gray-300">Loading the official UOWD form…</p>
-              {slow && <p className="text-xs text-gray-400">Taking a while? <a href={src} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-400 hover:underline">Open it in a new tab ↗</a></p>}
+              <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-gold-400" />
+              <p className="text-sm font-medium text-slate-300">Loading the official UOWD form…</p>
+              {slow && <p className="text-xs text-slate-400">Taking a while? <a href={src} target="_blank" rel="noopener noreferrer" className="font-semibold text-gold-400 hover:underline">Open it in a new tab ↗</a></p>}
             </div>
           )}
           <iframe
@@ -2021,10 +2023,10 @@ function TryoutModal({ club: c, onSent, onClose }) {
         </div>
 
         {/* Footer: locked dark */}
-        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-gray-900 p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
+        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-gold-400 py-3 text-sm font-semibold text-[#0a192f] hover:bg-gold-300">
             I've submitted the form
-            <span className="ml-1.5 font-normal text-gray-900/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
+            <span className="ml-1.5 font-normal text-[#0a192f]/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
           </button>
         </div>
       </div>
@@ -2256,12 +2258,12 @@ export default function App() {
       <style>{CSS}</style>
 
       {/* Nav */}
-      <header className={`u-keep sticky top-0 z-30 border-b ${dark ? "border-slate-700" : "border-slate-200/80 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+      <header className={`u-keep sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-sm">U</div>
+            <div className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-gold-400 shadow-sm ring-1 ring-gold-400/40">U</div>
             <span className={`text-lg font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>Unite</span>
-            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-indigo-200" : "bg-indigo-100/70 text-indigo-700"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
+            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-gold-200" : "bg-gold-50 text-gold-800 ring-1 ring-gold-200"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
@@ -2287,7 +2289,7 @@ export default function App() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
           </span>
           <h1 className={`mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
-            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-indigo-300 to-fuchsia-300" : "from-indigo-600 to-fuchsia-600"}`}>together.</span>
+            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-gold-200 to-gold-400" : "from-indigo-800 via-indigo-600 to-gold-500"}`}>together.</span>
           </h1>
           <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -2308,11 +2310,11 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
-          <div className="absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
+        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
+          <div className="u-tab-ind absolute rounded-xl bg-slate-900 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
-              className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "text-white" : "text-slate-500 hover:text-slate-800"}`}>
+              className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "u-tab-on text-white" : "text-slate-500 hover:text-slate-800"}`}>
               <span className="sm:hidden">{short}</span><span className="hidden sm:inline">{l}</span>
               {k === "tickets" && user && bookings.length > 0 && <span className="ml-1 rounded-full bg-indigo-500 px-1.5 py-0.5 text-xs text-white">{bookings.length}</span>}
               {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
@@ -2325,7 +2327,7 @@ export default function App() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex gap-2 overflow-x-auto pb-1">
               {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
-                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/80 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
+                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
               ))}
             </div>
             {tab === "parties" && (
@@ -2341,7 +2343,7 @@ export default function App() {
               const on = langFilter === l;
               return (
                 <button key={l} onClick={() => setLangFilter(l)} aria-pressed={on}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${on ? "bg-sky-600 text-white ring-sky-600" : "bg-white text-slate-600 shadow-sm ring-slate-200/80 hover:bg-slate-50"}`}>
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${on ? "bg-sky-600 text-white ring-sky-600" : "bg-white text-slate-600 shadow-sm ring-slate-200/60 hover:bg-slate-50"}`}>
                   {l === "All" ? "All languages" : l}<span className={on ? "text-sky-100" : "text-slate-400"}>{n}</span>
                 </button>
               );
@@ -2356,7 +2358,7 @@ export default function App() {
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
                 <article key={c.id} {...cardOpen(() => setModal({ type: "club", id: c.id }))}
-                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+                  className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                   <div className="flex items-start gap-4">
                     <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
                     <div className="min-w-0 flex-1">
@@ -2415,7 +2417,7 @@ export default function App() {
                 const left = p.spots - p.taken;
                 return (
                   <article key={p.id} id={"event-" + p.id} {...cardOpen(() => setModal({ type: "detail", id: p.id }))}
-                    className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+                    className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
                     <div className={`relative flex justify-between gap-2 overflow-hidden px-4 ${p.cover ? "h-40 items-end bg-slate-900 pb-3" : `items-center bg-gradient-to-r py-4 ${GRADIENTS[p.category]}`}`}>
                       {p.cover && (
                         <>
@@ -2461,7 +2463,7 @@ export default function App() {
         {/* My schedule */}
         {tab === "schedule" &&
           (!user ? (
-            <div className="rounded-3xl border border-slate-200/80 bg-white px-6 py-14 text-center shadow-sm">
+            <div className="rounded-3xl border border-slate-200/50 bg-white px-6 py-14 text-center shadow-sm">
               <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
               <h3 className="mt-4 text-lg font-bold">Your campus week, in one place</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Sign in, pick club sessions and book events. They show up here as a weekly calendar you can export.</p>
@@ -2483,7 +2485,7 @@ export default function App() {
         {/* My tickets */}
         {tab === "tickets" &&
           (!user ? (
-            <div className="rounded-3xl border border-slate-200/80 bg-white shadow-sm px-6 py-14 text-center">
+            <div className="rounded-3xl border border-slate-200/50 bg-white shadow-sm px-6 py-14 text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
               <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you sign in with your email.</p>
@@ -2503,7 +2505,7 @@ export default function App() {
                 ) : (
                   <div className="grid gap-3 md:grid-cols-2">
                     {bookings.map((b) => (
-                      <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4 text-left">
+                      <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold">{b.title}</p>
@@ -2523,7 +2525,7 @@ export default function App() {
                     {Object.entries(waitlist).map(([id, pos]) => {
                       const p = parties.find((x) => x.id === Number(id));
                       return p ? (
-                        <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm p-4 text-left">
+                        <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{p.emoji}</div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate font-semibold">{p.title}</p>
@@ -2539,7 +2541,7 @@ export default function App() {
               <section>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Event applications</h3>
                 {submissions.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm p-5 text-sm text-slate-500">
+                  <div className="rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 text-sm text-slate-500">
                     Parties you submit appear here while the admin team reviews them (usually within 2 hours).
                     <button onClick={hostEvent} className="ml-1 font-semibold text-indigo-600 hover:underline">Host an event</button>
                   </div>
@@ -2549,7 +2551,7 @@ export default function App() {
                       const r = { ...s, status: reviewOf(s), left: reviewLeft(s) };
                       return (
                         <button key={s.ref} onClick={() => (s.live ? setModal({ type: "detail", id: s.at }) : setModal({ type: "review", ref: s.ref }))}
-                          className="u-card flex w-full flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                          className="u-card flex w-full flex-col gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
                           <span className="min-w-0">
                             <span className="block truncate font-semibold">{s.title}</span>
                             <span className="block text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · {fmtRange(s.start, s.end)} · <span className="font-mono">{s.ref}</span></span>

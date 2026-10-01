@@ -9,6 +9,13 @@ const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const isHttps = (u) => { try { return new URL(u).protocol === "https:"; } catch (e) { return false; } };
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+// Artwork arrives as the app's processed upload: a base64 WebP/JPEG/PNG data URL (cover 1600x900, logo 512x512).
+const MAX_IMAGE_CHARS = 2_800_000; // ~2 MB of image data
+const parseImage = (v) => {
+  const m = /^data:(image\/(?:webp|jpeg|png));base64,([A-Za-z0-9+/=]+)$/.exec(String(v || ""));
+  if (!m || v.length > MAX_IMAGE_CHARS) return null;
+  return { type: m[1], data: Buffer.from(m[2], "base64") };
+};
 
 function buildMessage(p) {
   const line = (label, value) => (value ? `<b>${label}:</b> ${esc(value)}` : null);
@@ -33,9 +40,7 @@ function buildMessage(p) {
     line("Email", p.email),
     line("Student ID", p.studentId),
     "",
-    "🖼 <b>Artwork</b>",
-    link("Cover Image URL", p.cover),
-    link("Logo/Avatar URL", p.logo),
+    "🖼 <b>Artwork:</b> cover photo and logo attached below",
     p.dress || p.reqs ? "" : null,
     line("Dress Code", p.dress),
     line("Requirements", p.reqs),
@@ -70,7 +75,7 @@ export default async function handler(req, res) {
     venueName: str(b.venueName, 120), room: str(b.room, 120), mapsUrl: str(b.mapsUrl, 500),
     whatsapp: str(b.whatsapp, 30), telegram: str(b.telegram, 40).replace(/^@/, ""), email: str(b.email, 120),
     studentId: str(b.studentId, 20), account: str(b.account, 120),
-    cover: str(b.cover, 1000), logo: str(b.logo, 1000), dress: str(b.dress, 80), reqs: str(b.reqs, 300),
+    dress: str(b.dress, 80), reqs: str(b.reqs, 300),
     pitch: str(b.pitch, 2500),
   };
   const missing = [];
@@ -79,8 +84,9 @@ export default async function handler(req, res) {
   if (p.pitch.length < 100) missing.push("detailed description");
   if (!isEmail(p.email)) missing.push("email");
   if (!p.whatsapp && !p.telegram) missing.push("WhatsApp or Telegram");
-  if (!isHttps(p.cover)) missing.push("cover image URL");
-  if (!isHttps(p.logo)) missing.push("logo URL");
+  const cover = parseImage(b.cover), logo = b.logo ? parseImage(b.logo) : null;
+  if (!cover) missing.push("cover photo");
+  if (b.logo && !logo) missing.push("logo");
   if (p.mapsUrl && !isHttps(p.mapsUrl)) missing.push("Google Maps URL");
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
@@ -94,6 +100,18 @@ export default async function handler(req, res) {
     if (!r.ok || !data.ok) {
       console.error("Telegram sendMessage failed", r.status, data && data.description);
       return res.status(502).json({ ok: false, error: "The review team couldn't be reached. Please try again." });
+    }
+    // The pitch is delivered; attach the artwork as photos (a failure here doesn't fail the submission).
+    for (const [img, label] of [[cover, "Cover"], [logo, "Logo"]]) {
+      if (!img) continue;
+      try {
+        const form = new FormData();
+        form.append("chat_id", CHAT_ID);
+        form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
+        form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
+        const pr = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: "POST", body: form });
+        if (!pr.ok) console.error("Telegram sendPhoto failed", pr.status, await pr.text().catch(() => ""));
+      } catch (e) { console.error("Telegram sendPhoto error", e); }
     }
     return res.status(200).json({ ok: true });
   } catch (e) {

@@ -21,13 +21,13 @@ npm run dev
 - Sports sections (Football, Basketball, Volleyball, Cricket, Table Tennis & Badminton, Padel & Tennis, Chess, Track & Swimming): 'Register · tryouts' opens UOWD's official Sports Tryouts Jotform (https://uowd.jotform.com/251912229886062) embedded in the app, with the matching sport(s) pre-selected via `?sport=Football` style URL parameters; answers go straight to UOWD.
   - **Pre-fill setup:** set `JOTFORM_SPORT_FIELD` in `App.jsx` to the sports checkbox's *Unique Name* (Jotform builder → click the field → gear icon → Advanced → Field Details). Option labels must match the form exactly: Badminton, Basketball, Cricket, Football, Volleyball, Table Tennis, Track, Padel, Tennis, Swimming, Chess.
 - Each team/club has one fixed official weekly schedule. 'Register' on any team or club opens the official UOWD form in the dark modal; after "I've submitted the form" the registration is pending (~24h Student Services processing) and its sessions appear in **My Schedule**, a weekly timeline with month/year pickers and previous/next week navigation (exportable as an .ics calendar file).
-- Hosting: the 4-step form (Basics, Time & place, Details, Contacts) collects Venue Name, an optional Google Maps URL (opened in English), and WhatsApp / Telegram / email contacts. Submitted parties sit in a 2-hour admin safety review ("⏳ Party Under Review" in My Schedule and My Tickets), then go live on Student Parties with contact buttons.
-- Event artwork: hosts must add a Cover Image URL (shown at 16:9, at least 800×450) and a Logo/Avatar URL (1:1, at least 128×128). Links must be https and load as images; Unsplash/Pexels links are requested at exactly 1600×900 / 512×512.
+- Hosting: a single-scroll form (Artwork, The event, When & where, Details, Organizer contacts) collects Venue Name, an optional Google Maps URL (opened in English), and WhatsApp / Telegram / email contacts. Submitted parties sit in a 2-hour admin safety review ("⏳ Party Under Review" in My Schedule and My Tickets), then go live on Student Parties with contact buttons.
+- Event artwork: one photo dropzone in the host form (click or drag a JPG/PNG/WebP, max 10 MB, at least 800×450). It is centre-cropped in the browser to a 1600×900 WebP cover and a 512×512 logo; the logo can be swapped separately.
 - Share buttons copy `<site>/events/<id>`, which opens that event directly.
 - Data (clubs, events, waitlists, tickets, schedules, party applications) lives in memory and resets on refresh.
 
 ## Telegram moderation (party pitches)
-"Submit Party Application" POSTs the pitch to `/api/pitch` (a Vercel serverless function in `api/pitch.js`), which formats it and sends it with the Telegram Bot API to the admin chat `8878768622`. The form only closes once Telegram confirms delivery.
+"Submit Party Application" POSTs the pitch to `/api/pitch` (a Vercel serverless function in `api/pitch.js`), which formats it and sends it with the Telegram Bot API to the admin chat `8878768622`, followed by the cover and logo as photos. The form only closes once Telegram confirms delivery.
 
 Setup (one time):
 1. In Vercel → Project → Settings → Environment Variables, add `TELEGRAM_BOT_TOKEN` (the token from @BotFather) for Production and Preview, then redeploy.
