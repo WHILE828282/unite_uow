@@ -16,12 +16,12 @@ npm run dev
 4. Add the domain: **Project → Settings → Domains → uniteuow.com**.
 
 ## Demo behaviour
-- Sign in: any `@uowdubai.ac.ae`, `@uowmail.edu.ae` or `@uowmail.edu.au` email, OTP code **1234**.
+- Sign in: any valid email address (university, Gmail, iCloud…), optional Student ID, then any 4-digit code (e.g. **1234**).
 - Payments: simulated Ziina checkout, no real charge.
 - Data (clubs, events, waitlists, tickets) lives in memory and resets on refresh.
 
 ## Before going live
-- Real OTP email delivery and server-side domain check (e.g. Supabase Auth, Auth0, or your own API).
+- Real OTP email delivery and server-side code check (e.g. Supabase Auth, Auth0, or your own API).
 - Real Ziina payment links created server-side, confirmed by webhook.
 - A database for events, bookings, waitlists and admin approval of submitted events.
 - Replace demo clubs/events/floor plan with real UOWD data.

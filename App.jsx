@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 /* ------------------------------------------------------------------ */
 /*  Config & data                                                      */
 /* ------------------------------------------------------------------ */
-const DOMAINS = ["@uowdubai.ac.ae", "@uowmail.edu.ae", "@uowmail.edu.au"];
 const TODAY = new Date().toISOString().slice(0, 10);
 
 const GRADIENTS = {
@@ -105,7 +104,6 @@ const FEED = [
 const fmtDate = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 const initials = (email) => (email || "??").slice(0, 2).toUpperCase();
-const validDomain = (v) => DOMAINS.some((d) => v.endsWith(d));
 const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const makeId = (prefix, n = 6) =>
   prefix + "-" + Array.from({ length: n }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
@@ -212,7 +210,8 @@ function downloadTicket(b) {
   font(600, 20); g.fillStyle = "#64748b"; g.fillText("BOOKING ID", W / 2, 700);
   font(800, 44); g.fillStyle = "#0f172a"; g.fillText(b.id, W / 2, 752);
   g.textAlign = "left";
-  const rows = [["Venue", clip(b.where, 30)], ["Attendee", clip(b.email, 30)], ["Amount", b.paid ? `${b.price} AED` : "Free"], ["Status", "Confirmed"]];
+  const rows = [["Venue", clip(b.where, 30)], ["Attendee", clip(b.email, 30)], ["Amount", b.paid ? `${b.price} AED` : "Free"],
+    b.studentId ? ["Student ID", clip(b.studentId, 30)] : ["Status", "Confirmed"]];
   rows.forEach(([k, v], i) => { const y = 820 + i * 56; font(500, 24); g.fillStyle = "#64748b"; g.fillText(k, 80, y); g.textAlign = "right"; font(600, 26); g.fillStyle = "#0f172a"; g.fillText(v, W - 80, y); g.textAlign = "left"; });
   g.textAlign = "center"; font(500, 20); g.fillStyle = "#94a3b8"; g.fillText("Scan this code at the entrance", W / 2, 1040);
   c.toBlob((blob) => {
@@ -260,11 +259,9 @@ const CSS = `
 .u-btn:not(:disabled):active{transform:scale(.95)}
 @keyframes uSlide{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 @keyframes uDraw{to{stroke-dashoffset:0}}
-@keyframes uShake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-6px)}40%,60%{transform:translateX(6px)}}
 .u-slide{animation:uSlide .3s ease-out both}
 .u-ring{stroke-dasharray:151;stroke-dashoffset:151;animation:uDraw .6s ease-out forwards}
 .u-tick{stroke-dasharray:40;stroke-dashoffset:40;animation:uDraw .4s .5s ease-out forwards}
-.u-shake{animation:uShake .45s}
 .u-rise{animation:uUp .45s cubic-bezier(.2,.8,.2,1) backwards}
 .u-tab{animation:uUp .35s cubic-bezier(.2,.8,.2,1) backwards}
 `;
@@ -477,7 +474,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
             <p className="text-center font-mono text-lg font-bold tracking-wider text-slate-900">{b.id}</p>
 
             <dl className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm">
-              {[["Attendee", b.email], ...(b.txn ? [["Ziina reference", b.txn]] : [])].map(([k, v]) => (
+              {[["Attendee", b.email], ...(b.studentId ? [["Student ID", b.studentId]] : []), ...(b.txn ? [["Ziina reference", b.txn]] : [])].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <dt className="text-slate-500">{k}</dt>
                   <dd className="truncate text-right font-medium text-slate-800">{v}</dd>
@@ -504,10 +501,10 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
 function AuthModal({ reason, onClose, onSignIn }) {
   const [step, setStep] = useState("email"); // email | otp | success
   const [email, setEmail] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
   const [digits, setDigits] = useState(["", "", "", ""]);
-  const [otpError, setOtpError] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [seconds, setSeconds] = useState(45);
   const [resent, setResent] = useState(false);
@@ -525,32 +522,27 @@ function AuthModal({ reason, onClose, onSignIn }) {
 
   const sendCode = (override) => {
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
-    if (!validEmail(v)) return setError("Enter your UOWD email address.");
-    if (!validDomain(v)) return setError("Please use your " + DOMAINS.join(" or ") + " email.");
+    if (!validEmail(v)) return setError("Enter a valid email address, like name@gmail.com.");
     setEmail(v); setError(""); setSending(true);
     later(() => { setSending(false); setDigits(["", "", "", ""]); setSeconds(45); setStep("otp"); }, 800);
   };
 
-  const verify = (code) => {
-    setVerifying(true); setOtpError(false);
+  // Demo mode: any complete 4-digit code verifies.
+  const verify = () => {
+    setVerifying(true);
     later(() => {
       setVerifying(false);
-      if (code === "1234") {
-        setStep("success");
-        later(() => onSignIn(email), 1300);
-      } else {
-        setOtpError(true); setDigits(["", "", "", ""]);
-        if (refs.current[0]) refs.current[0].focus();
-      }
+      setStep("success");
+      later(() => onSignIn(email, studentId.trim()), 1300);
     }, 700);
   };
 
   const setDigit = (i, raw) => {
     const d = raw.replace(/\D/g, "").slice(-1);
     const next = [...digits]; next[i] = d;
-    setDigits(next); setOtpError(false);
+    setDigits(next);
     if (d && i < 3 && refs.current[i + 1]) refs.current[i + 1].focus();
-    if (next.every(Boolean)) verify(next.join(""));
+    if (next.every(Boolean)) verify();
   };
   const onKey = (i, e) => {
     if (e.key === "Backspace" && !digits[i] && i > 0) {
@@ -565,12 +557,12 @@ function AuthModal({ reason, onClose, onSignIn }) {
     e.preventDefault();
     const next = ["", "", "", ""];
     t.split("").forEach((ch, i) => { next[i] = ch; });
-    setDigits(next); setOtpError(false);
+    setDigits(next);
     refs.current[Math.min(t.length, 3)].focus();
-    if (t.length === 4) verify(t);
+    if (t.length === 4) verify();
   };
   const resend = () => {
-    setSeconds(45); setResent(true); setDigits(["", "", "", ""]); setOtpError(false);
+    setSeconds(45); setResent(true); setDigits(["", "", "", ""]);
     later(() => setResent(false), 3000);
     if (refs.current[0]) refs.current[0].focus();
   };
@@ -582,22 +574,32 @@ function AuthModal({ reason, onClose, onSignIn }) {
           <>
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-lg font-bold text-white shadow-lg">U</div>
             <h2 className="mt-4 text-center text-xl font-bold text-slate-900">Welcome to Unite</h2>
-            <p className="mt-1 text-center text-sm text-slate-500">{reason || "Verify you're a UOWD student to continue."}</p>
+            <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in to join clubs and get tickets."}</p>
 
-            <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">University email</label>
+            <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">Email address</label>
             <input
               id="auth-email" type="email" value={email} autoFocus autoComplete="email"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
-              placeholder={"name" + DOMAINS[0]}
-              className={`mt-1.5 w-full rounded-xl border px-3.5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${error ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+              placeholder="you@example.com"
+              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${error ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
             />
-            {error && <p className="mt-1.5 text-sm text-rose-600">{error}</p>}
+            {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Any email works: university, Gmail, iCloud, Outlook…</p>}
+
+            <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
+            <input
+              id="auth-sid" value={studentId} inputMode="numeric" autoComplete="off"
+              onChange={(e) => setStudentId(e.target.value.replace(/\s/g, "").slice(0, 12))}
+              onKeyDown={(e) => e.key === "Enter" && sendCode()}
+              placeholder="e.g., 7654321"
+              className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            />
+            <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
 
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
               {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Send verification code"}
             </button>
-            <button onClick={() => sendCode("demo" + DOMAINS[0])} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
+            <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
               Continue with a demo account
             </button>
 
@@ -614,8 +616,9 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <button onClick={() => setStep("email")} className="-ml-1 rounded-lg px-1.5 py-1 text-sm font-medium text-slate-500 hover:bg-slate-100">← Change email</button>
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Enter your code</h2>
             <p className="mt-1 text-center text-sm text-slate-500">We sent a 4-digit code to <span className="font-semibold text-slate-800">{maskEmail(email)}</span></p>
+            {studentId.trim() && <p className="mt-2 text-center"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Student ID {studentId.trim()}</span></p>}
 
-            <div className={`mt-6 flex justify-center gap-3 ${otpError ? "u-shake" : ""}`} onPaste={onPaste}>
+            <div className="mt-6 flex justify-center gap-3" onPaste={onPaste}>
               {digits.map((d, i) => (
                 <input
                   key={i}
@@ -628,7 +631,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => onKey(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${otpError ? "border-rose-400 bg-rose-50" : d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/80 bg-white shadow-sm focus:border-indigo-500"}`}
+                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/80 bg-white shadow-sm focus:border-indigo-500"}`}
                 />
               ))}
             </div>
@@ -636,8 +639,6 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <div className="mt-4 flex h-6 items-center justify-center text-sm">
               {verifying ? (
                 <span className="inline-flex items-center gap-2 text-slate-500"><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent" /> Verifying…</span>
-              ) : otpError ? (
-                <span className="font-medium text-rose-600">That code doesn't match. Please try again.</span>
               ) : resent ? (
                 <span className="font-medium text-emerald-600">New code sent ✓</span>
               ) : null}
@@ -651,7 +652,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
               )}
             </div>
 
-            <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Demo mode: enter <span className="font-mono font-bold text-slate-700">1234</span> to sign in.</p>
+            <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Demo mode: any 4-digit code works, for example <span className="font-mono font-bold text-slate-700">1234</span>.</p>
           </>
         )}
 
@@ -1257,7 +1258,7 @@ function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
         <div className="u-pop mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-3xl font-extrabold text-white shadow-lg">#{pos}</div>
         <h2 className="mt-4 text-xl font-bold text-slate-900">{fresh ? "You're on the waitlist" : "Your waitlist spot"}</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          You are <span className="font-semibold text-slate-900">#{pos}</span> on the waitlist. If a spot opens up, an automated confirmation code will be sent to your UOWD email.
+          You are <span className="font-semibold text-slate-900">#{pos}</span> on the waitlist. If a spot opens up, an automated confirmation code will be sent to your email.
         </p>
 
         <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left">
@@ -1330,6 +1331,7 @@ export default function App() {
     try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
   });
   const toastTimer = useRef(null);
+  const studentIdRef = useRef("");
 
   useEffect(() => {
     document.title = "Unite · UOWD clubs & events";
@@ -1351,8 +1353,9 @@ export default function App() {
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
 
-  const signIn = (email) => {
+  const signIn = (email, sid) => {
     const action = modal && modal.action;
+    studentIdRef.current = sid || "";
     setUser(email);
     setModal(null);
     notify("Signed in as " + email);
@@ -1379,7 +1382,7 @@ export default function App() {
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, txn: p.price > 0 ? makeId("ZN", 8) : null };
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
     setBookings((bs) => [b, ...bs]);
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
     return b;
@@ -1487,11 +1490,11 @@ export default function App() {
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={user}>{initials(user)}</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={studentIdRef.current ? `${user} · ID ${studentIdRef.current}` : user}>{initials(user)}</div>
               <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }} className="u-keep rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:bg-white hover:bg-opacity-10 hover:text-white">Sign out</button>
             </div>
           ) : (
-            <button onClick={() => setModal({ type: "auth", reason: "Verify you're a UOWD student to continue." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
+            <button onClick={() => setModal({ type: "auth", reason: "Sign in to join clubs and get tickets." })} className="u-keep u-btn rounded-lg bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Sign in</button>
           )}
           </div>
         </div>
@@ -1506,7 +1509,7 @@ export default function App() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
           </span>
           <h1 className="mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Where UOWD comes together.</h1>
-          <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One UOWD login, tickets in seconds.</p>
+          <p className="mt-3 max-w-lg text-slate-300">Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <button onClick={hostEvent} className="u-keep u-btn rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-100">Host an event</button>
             <button onClick={() => jumpTo("clubs")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-white" style={glassChip}>Explore clubs</button>
@@ -1658,8 +1661,8 @@ export default function App() {
             <div className="rounded-3xl border border-slate-200/80 bg-white shadow-sm px-6 py-14 text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
               <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you verify with your UOWD email.</p>
-              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with UOWD Email</button>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you sign in with your email.</p>
+              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with email</button>
             </div>
           ) : (
             <div className="space-y-8">
