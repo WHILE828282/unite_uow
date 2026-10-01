@@ -22,13 +22,14 @@ const GRADIENTS = {
 };
 
 const CLUBS = [
-  { id: 1, name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 18 }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 21 }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
-  { id: 2, name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 15 }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 19 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
-  { id: 3, name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 14 }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 17 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
-  { id: 4, name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets", cap: 28, taken: 20 }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
-  { id: 5, name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 12 }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 9 }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
-  { id: 6, name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts", cap: 16, taken: 11 }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
-  { id: 7, name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge", cap: 30, taken: 13 }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
+  { id: 1, form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 18 }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch", cap: 30, taken: 21 }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
+  { id: 2, form: ["Basketball"], name: "Basketball Team", emoji: "🏀", category: "Sports", desc: "Men's and women's squads training for the inter-university basketball league.", members: 48, slots: [{ id: "bb-tue", day: 1, start: "16:30", end: "18:30", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 15 }, { id: "bb-thu", day: 3, start: "16:30", end: "18:30", title: "Scrimmage & drills", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 19 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Basketball coordinator", email: "basketball@uniteuow.com" }, note: "Court shoes required; balls and bibs provided." },
+  { id: 3, form: ["Volleyball"], name: "Volleyball Team", emoji: "🏐", category: "Sports", desc: "Indoor volleyball for every level, with a competitive squad for university tournaments.", members: 36, slots: [{ id: "vb-mon", day: 0, start: "18:00", end: "20:00", title: "Team training", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 14 }, { id: "vb-thu", day: 3, start: "18:00", end: "20:00", title: "Match practice", level: "Squad & trialists", where: "Sports Hall", cap: 24, taken: 17 }], where: "Sports Hall", lead: { name: "UOWD Sports & Recreation", role: "Volleyball coordinator", email: "volleyball@uniteuow.com" }, note: "Knee pads recommended. Mixed sessions." },
+  { id: 4, form: ["Cricket"], name: "Cricket Team", emoji: "🏏", category: "Sports", desc: "Nets, fielding drills and T20 fixtures against other Dubai universities.", members: 42, slots: [{ id: "cr-fri", day: 4, start: "16:00", end: "19:00", title: "Nets & match practice", level: "Squad & trialists", where: "Cricket Nets", cap: 28, taken: 20 }], where: "Cricket Nets", lead: { name: "UOWD Sports & Recreation", role: "Cricket coordinator", email: "cricket@uniteuow.com" }, note: "Whites not required for training. Helmets and pads available to borrow." },
+  { id: 5, form: ["Table Tennis", "Badminton"], name: "Table Tennis & Badminton", emoji: "🏓", category: "Sports", desc: "Racket sports for beginners and competitive players, with a weekly ladder.", members: 40, slots: [{ id: "tt-tue", day: 1, start: "15:00", end: "17:00", title: "Table tennis & badminton", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 12 }, { id: "tt-sat", day: 5, start: "11:00", end: "13:00", title: "Open play & ladder", level: "All levels", where: "Multi-purpose Hall", cap: 24, taken: 9 }], where: "Multi-purpose Hall", lead: { name: "UOWD Sports & Recreation", role: "Racket sports coordinator", email: "rackets@uniteuow.com" }, note: "Bring your own racket if you have one; spares available." },
+  { id: 6, form: ["Padel", "Tennis"], name: "Padel & Tennis", emoji: "🎾", category: "Sports", desc: "Coached padel and tennis sessions, plus friendly doubles.", members: 28, slots: [{ id: "pt-wed", day: 2, start: "16:00", end: "18:00", title: "Coached session", level: "All levels", where: "Padel & Tennis Courts", cap: 16, taken: 11 }], where: "Padel & Tennis Courts", lead: { name: "UOWD Sports & Recreation", role: "Padel & tennis coordinator", email: "padel@uniteuow.com" }, note: "Rackets and balls provided. Non-marking court shoes please." },
+  { id: 7, form: ["Chess"], name: "Chess Team", emoji: "♟️", category: "Sports", desc: "Rated training games, opening prep and inter-university chess tournaments.", members: 30, slots: [{ id: "ch-wed", day: 2, start: "14:00", end: "16:00", title: "Training & rated games", level: "All levels", where: "Student Lounge", cap: 30, taken: 13 }], where: "Student Lounge", lead: { name: "UOWD Sports & Recreation", role: "Chess coordinator", email: "chess@uniteuow.com" }, note: "Boards and clocks provided. All ratings welcome." },
+  { id: 11, form: ["Track", "Swimming"], name: "Track & Swimming", emoji: "🏃", category: "Sports", desc: "Sprint, distance and pool sessions for athletics and swimming meets between Dubai universities.", members: 34, slots: [{ id: "ts-fri", day: 4, start: "15:00", end: "17:00", title: "Track & pool training", level: "Squad & trialists", where: "Running Track & Pool", cap: 30, taken: 16 }], where: "Running Track & Pool", lead: { name: "UOWD Sports & Recreation", role: "Track & swimming coordinator", email: "athletics@uniteuow.com" }, note: "Bring running shoes, swimwear and a towel. Times are recorded at the first session." },
   { id: 8, name: "Tech & E-sports Club", emoji: "🎮", category: "Tech", desc: "Build projects, run hackathons and compete in campus e-sports leagues.", members: 72, slots: [{ id: "te-tue", day: 1, start: "16:00", end: "18:00", title: "Build night & e-sports scrims", level: "All levels", where: "Computer Lab", cap: 40, taken: 26 }], where: "Computer Lab", lead: { name: "Tech & E-sports committee", role: "Club committee", email: "tech@uniteuow.com" }, note: "Bring a laptop for build nights; consoles and PCs provided for scrims." },
   { id: 9, name: "Finance & Entrepreneurship Society", emoji: "💼", category: "Business", desc: "Market simulations, pitch practice and networking with founders and finance professionals.", members: 85, slots: [{ id: "fe-thu", day: 3, start: "15:00", end: "17:00", title: "Workshop & pitch session", level: "All levels", where: "Innovation Studio", cap: 45, taken: 31 }], where: "Innovation Studio", lead: { name: "Finance & Entrepreneurship committee", role: "Society committee", email: "finance@uniteuow.com" }, note: "Smart casual for networking events." },
   { id: 10, name: "Music & Dance Club", emoji: "🎵", category: "Arts", desc: "Jam sessions, choreography and performances at campus events.", members: 58, slots: [{ id: "md-mon", day: 0, start: "16:00", end: "18:00", title: "Rehearsal & jam", level: "All levels", where: "Multi-purpose Room", cap: 35, taken: 20 }], where: "Multi-purpose Room", lead: { name: "Music & Dance committee", role: "Club committee", email: "music@uniteuow.com" }, note: "Comfortable clothes for dance; instruments welcome." },
@@ -110,9 +111,10 @@ const BOOTHS = [
   { id: "b4", kind: "club", ref: 4, short: "Cricket", c: 7, r: 3, w: 2, h: 1 },
   { id: "b5", kind: "club", ref: 5, short: "Rackets", c: 9, r: 3, w: 2, h: 1 },
   { id: "b6", kind: "club", ref: 6, short: "Padel", c: 11, r: 3, w: 2, h: 1 },
-  { id: "b14", kind: "club", ref: 7, short: "Chess", c: 1, r: 4, w: 3, h: 1 },
-  { id: "b15", kind: "club", ref: 8, short: "Tech & E-sports", c: 4, r: 4, w: 3, h: 1 },
-  { id: "b16", kind: "club", ref: 9, short: "Finance", c: 7, r: 4, w: 3, h: 1 },
+  { id: "b14", kind: "club", ref: 7, short: "Chess", c: 1, r: 4, w: 2, h: 1 },
+  { id: "b18", kind: "club", ref: 11, short: "Track & Swim", c: 3, r: 4, w: 2, h: 1 },
+  { id: "b15", kind: "club", ref: 8, short: "Tech & E-sports", c: 5, r: 4, w: 3, h: 1 },
+  { id: "b16", kind: "club", ref: 9, short: "Finance", c: 8, r: 4, w: 2, h: 1 },
   { id: "b17", kind: "club", ref: 10, short: "Music & Dance", c: 10, r: 4, w: 3, h: 1 },
   { id: "b7", kind: "party", ref: 4, short: "Open Mic", c: 5, r: 1, w: 4, h: 2 },
   { id: "b8", kind: "party", ref: 2, short: "Futsal", c: 1, r: 5, w: 2, h: 2 },
@@ -1614,20 +1616,69 @@ const CAT_TINT = {
   Sports: "border-emerald-500 bg-emerald-50", Tech: "border-sky-500 bg-sky-50", Business: "border-violet-500 bg-violet-50",
   Arts: "border-pink-500 bg-pink-50", Culture: "border-amber-500 bg-amber-50",
 };
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const HOUR_PX = 56;
+const mondayOf = (d) => { const m = new Date(d); m.setHours(0, 0, 0, 0); m.setDate(m.getDate() - weekdayIdx(m)); return m; };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const isoWeek = (d) => { const t = addDays(mondayOf(d), 3); const jan4 = new Date(t.getFullYear(), 0, 4); return 1 + Math.round((t - mondayOf(jan4)) / 6048e5); };
+const shortTime = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return `${((h + 11) % 12) + 1}${m ? ":" + String(m).padStart(2, "0") : ""}`; };
+const shortRange = (a, b) => `${shortTime(a)}–${shortTime(b)} ${+b.split(":")[0] < 12 ? "AM" : "PM"}`;
+const hourLabel = (h) => `${((h + 11) % 12) + 1} ${h < 12 || h === 24 ? "AM" : "PM"}`;
+
+/* Side-by-side lanes for overlapping blocks within one day. */
+function layoutDay(items) {
+  const sorted = [...items].sort((a, b) => a.s - b.s || b.e - a.e);
+  const lanes = [];
+  sorted.forEach((it) => {
+    let l = lanes.findIndex((end) => end <= it.s);
+    if (l < 0) { l = lanes.length; lanes.push(0); }
+    lanes[l] = it.e; it.lane = l;
+  });
+  sorted.forEach((it) => { it.lanes = Math.max(...sorted.filter((o) => o.s < it.e && it.s < o.e).map((o) => o.lane)) + 1; });
+  return sorted;
+}
 
 function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onExport }) {
-  const [week, setWeek] = useState(0);
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const monday = new Date(today); monday.setDate(today.getDate() - weekdayIdx(today) + week * 7);
-  const days = DAYS.map((_, i) => { const d = new Date(monday); d.setDate(monday.getDate() + i); return d; });
-  const range = `${days[0].toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${days[6].toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
-  const upcoming = events.filter((b) => b.date >= isoDay(today)).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
-  const hours = sessions.reduce((h, x) => h + slotHours(x.slot), 0);
+  const [anchor, setAnchor] = useState(() => mondayOf(today));
+  const [now, setNow] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(t); }, []);
 
-  // Next thing on the calendar, from now.
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const days = DAYS.map((_, i) => addDays(anchor, i));
+  const mid = days[3]; // the week belongs to the month its Thursday falls in
+  const thisYear = today.getFullYear();
+  const years = [thisYear, thisYear + 1];
+  const minAnchor = mondayOf(new Date(thisYear, 0, 4));
+  const maxAnchor = mondayOf(new Date(thisYear + 1, 11, 28));
+  const go = (d) => setAnchor(d < minAnchor ? minAnchor : d > maxAnchor ? maxAnchor : d);
+  const jumpMonth = (y, m) => go(mondayOf(new Date(y, m, 4)));
+  const isCurrent = +anchor === +mondayOf(today);
+  const fmt = (d, o) => d.toLocaleDateString("en-GB", o);
+  const range = `${fmt(days[0], { day: "numeric", month: "short" })} – ${fmt(days[6], { day: "numeric", month: "short", year: "numeric" })}`;
+
+  // Everything on the grid this week.
+  const dayItems = days.map((d, i) => {
+    const iso = isoDay(d);
+    return layoutDay([
+      ...sessions.filter((x) => x.slot.day === i).map((x) => ({ kind: "session", key: x.slot.id, s: toMin(x.slot.start), e: toMin(x.slot.end), x })),
+      ...events.filter((b) => b.date === iso).map((b) => { const s = toMin(to24(b.time)); return { kind: "event", key: b.id, s, e: Math.min(s + 120, 24 * 60), b }; }),
+    ]);
+  });
+  const all = dayItems.flat();
+  // Days with overlapping sessions get proportionally wider columns.
+  const cols = `60px ${dayItems.map((its) => `minmax(0, ${Math.max(1, ...its.map((it) => Math.min(it.lanes, 3)))}fr)`).join(" ")}`;
+  // Fit the grid to this week's items, with an hour of breathing room either side.
+  const startH = all.length ? Math.max(6, Math.min(...all.map((it) => Math.floor(it.s / 60))) - 1) : 9;
+  const endH = all.length ? Math.min(24, Math.max(startH + 6, ...all.map((it) => Math.ceil(it.e / 60) + 1))) : 18;
+  const hours = Array.from({ length: endH - startH }, (_, i) => startH + i);
+  const gridH = (endH - startH) * HOUR_PX;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const weekHours = all.reduce((h, it) => h + (it.e - it.s) / 60, 0);
+  const weekly = sessions.reduce((h, x) => h + slotHours(x.slot), 0);
+  const upcoming = events.filter((b) => b.date >= isoDay(today)).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
+
   const nextSession = sessions
-    .map((x) => { const ahead = (x.slot.day - weekdayIdx(today) + 7) % 7; const days = ahead === 0 && toMin(x.slot.start) <= nowMin ? 7 : ahead; return { ...x, days }; })
+    .map((x) => { const ahead = (x.slot.day - weekdayIdx(today) + 7) % 7; return { ...x, days: ahead === 0 && toMin(x.slot.start) <= nowMin ? 7 : ahead }; })
     .sort((a, b) => a.days - b.days || toMin(a.slot.start) - toMin(b.slot.start))[0];
   const whenLabel = (n) => (n === 0 ? "Today" : n === 1 ? "Tomorrow" : DAYS[(weekdayIdx(today) + n) % 7]);
 
@@ -1636,13 +1687,16 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
       <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
         <h3 className="mt-4 text-lg font-bold text-slate-900">Your week is wide open</h3>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Join a club and pick its weekly sessions, or grab a ticket to an event. Everything you sign up for lands here automatically.</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Register for a team or club and pick its weekly sessions, or grab a ticket to an event. Everything you sign up for lands here automatically.</p>
         <div className="mt-5 flex justify-center gap-2">
-          <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse clubs</button>
+          <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse teams & clubs</button>
           <button onClick={() => onBrowse("parties")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Find events</button>
         </div>
       </div>
     );
+
+  const selectCls = "u-btn appearance-none rounded-xl border border-slate-200/80 bg-white py-2 pl-3 pr-8 text-sm font-semibold text-slate-900 shadow-sm hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+  const Chevron = () => <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>;
 
   return (
     <div className="space-y-6">
@@ -1655,7 +1709,7 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
               <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl ${GRADIENTS[nextSession.club.category]}`}>{nextSession.club.emoji}</span>
               <span className="min-w-0">
                 <span className="block truncate font-semibold text-slate-900">{nextSession.club.name} · {nextSession.slot.title}</span>
-                <span className="block text-sm text-slate-500">{whenLabel(nextSession.days)}, {fmtRange(nextSession.slot.start, nextSession.slot.end)} · {nextSession.slot.where}</span>
+                <span className="block truncate text-sm text-slate-500">{whenLabel(nextSession.days)}, {fmtRange(nextSession.slot.start, nextSession.slot.end)} · {nextSession.slot.where}</span>
               </span>
             </button>
           ) : upcoming[0] ? (
@@ -1667,68 +1721,120 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{sessions.length}</p><p className="text-xs text-slate-500">weekly sessions</p></div>
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{hours % 1 ? hours.toFixed(1) : hours}</p><p className="text-xs text-slate-500">hours a week</p></div>
+          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tabular-nums text-slate-900">{weekly % 1 ? weekly.toFixed(1) : weekly}</p><p className="text-xs text-slate-500">hours a week</p></div>
         </div>
       </div>
 
-      {/* Week calendar */}
-      <section>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button onClick={() => setWeek((w) => Math.max(0, w - 1))} disabled={week === 0} aria-label="Previous week" className="u-btn flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40"><Icon name="chevron" className="h-4 w-4 rotate-90" /></button>
-            <button onClick={() => setWeek((w) => Math.min(11, w + 1))} disabled={week === 11} aria-label="Next week" className="u-btn flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-40"><Icon name="chevron" className="h-4 w-4 -rotate-90" /></button>
-            <div className="ml-1">
-              <p className="font-semibold text-slate-900">{week === 0 ? "This week" : week === 1 ? "Next week" : `In ${week} weeks`}</p>
+      {/* Calendar */}
+      <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+        {/* Toolbar */}
+        <div className="flex flex-col gap-3 border-b border-slate-200/80 p-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <select aria-label="Month" value={mid.getMonth()} onChange={(e) => jumpMonth(mid.getFullYear(), +e.target.value)} className={selectCls}>
+                {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+              </select>
+              <Chevron />
+            </div>
+            <div className="relative">
+              <select aria-label="Year" value={mid.getFullYear()} onChange={(e) => jumpMonth(+e.target.value, mid.getMonth())} className={selectCls}>
+                {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+              <Chevron />
+            </div>
+            <div className="ml-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900">Week {isoWeek(anchor)}{isCurrent && <span className="ml-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">This week</span>}</p>
               <p className="text-xs text-slate-500">{range}</p>
             </div>
-            {week > 0 && <button onClick={() => setWeek(0)} className="ml-1 rounded-lg px-2 py-1 text-xs font-semibold text-indigo-600 hover:bg-indigo-50">Today</button>}
           </div>
-          <button onClick={onExport} className="u-btn inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
-            <Icon name="calendar" className="h-4 w-4" /> Add to my calendar
-          </button>
+          <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+            <div className="inline-flex overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
+              <button onClick={() => go(addDays(anchor, -7))} disabled={+anchor <= +minAnchor} aria-label="Previous week"
+                className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
+                <Icon name="chevron" className="h-4 w-4 rotate-90" /><span className="hidden sm:inline">Previous week</span>
+              </button>
+              <button onClick={() => go(mondayOf(today))} disabled={isCurrent} className="border-x border-slate-200/80 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:hover:bg-transparent">Today</button>
+              <button onClick={() => go(addDays(anchor, 7))} disabled={+anchor >= +maxAnchor} aria-label="Next week"
+                className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
+                <span className="hidden sm:inline">Next week</span><Icon name="chevron" className="h-4 w-4 -rotate-90" />
+              </button>
+            </div>
+            <button onClick={onExport} className="u-btn inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+              <Icon name="calendar" className="h-4 w-4" /> Add to my calendar
+            </button>
+          </div>
         </div>
 
-        <div key={week} className="u-fade grid gap-2 md:grid-cols-7">
-          {days.map((d, i) => {
-            const iso = isoDay(d);
-            const items = [
-              ...sessions.filter((x) => x.slot.day === i).map((x) => ({ kind: "session", t: x.slot.start, x })),
-              ...events.filter((b) => b.date === iso).map((b) => ({ kind: "event", t: to24(b.time), b })),
-            ].sort((a, b) => a.t.localeCompare(b.t));
-            const isToday = iso === isoDay(today);
-            const past = d < today;
-            return (
-              <div key={i} className={`${items.length ? "flex" : "hidden md:flex"} flex-col rounded-2xl border bg-white p-2 shadow-sm md:min-h-[200px] ${isToday ? "border-indigo-400 ring-2 ring-indigo-100" : "border-slate-200/80"} ${past ? "opacity-60" : ""}`}>
-                <div className="mb-2 flex items-baseline justify-between px-1 md:block">
-                  <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-indigo-600" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
-                  <p className={`text-sm font-bold md:text-lg ${isToday ? "text-indigo-600" : "text-slate-900"}`}>{d.getDate()} {isToday && <span className="align-middle text-xs font-semibold">· Today</span>}</p>
-                </div>
-                <div className="space-y-1.5">
-                  {items.map((it) =>
-                    it.kind === "session" ? (
-                      <button key={it.x.slot.id} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title}`}
-                        className={`block w-full rounded-lg border-l-4 px-2 py-1.5 text-left ${CAT_TINT[it.x.club.category]}`}>
-                        <span className="block text-xs font-semibold tabular-nums text-slate-500">{fmtTime(it.x.slot.start)}</span>
-                        <span className="block truncate text-xs font-semibold text-slate-900">{it.x.club.emoji} {it.x.club.name}</span>
-                        <span className="block truncate text-xs text-slate-500">{it.x.slot.title}</span>
-                      </button>
-                    ) : (
-                      <button key={it.b.id} onClick={() => onOpenTicket(it.b)} title={it.b.title}
-                        className="block w-full rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-2 py-1.5 text-left">
-                        <span className="block text-xs font-semibold tabular-nums text-indigo-600">{it.b.time} · Event</span>
-                        <span className="block truncate text-xs font-semibold text-slate-900">{it.b.emoji} {it.b.title}</span>
-                      </button>
-                    )
-                  )}
-                  {!items.length && <p className="px-1 text-xs text-slate-400" style={{ opacity: 0.6 }}>Free</p>}
-                </div>
+        {/* Week grid */}
+        <div className="overflow-x-auto">
+          <div key={+anchor} className="u-fade min-w-[860px]">
+            <div className="grid border-b border-slate-200/80" style={{ gridTemplateColumns: cols }}>
+              <div className="px-2 py-3 text-right text-xs font-medium text-slate-400">{weekHours ? `${weekHours % 1 ? weekHours.toFixed(1) : weekHours} h` : ""}</div>
+              {days.map((d, i) => {
+                const isToday = +d === +today;
+                return (
+                  <div key={i} className={`border-l border-slate-200/80 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-indigo-600" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
+                    <p className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-base font-bold ${isToday ? "bg-indigo-600 text-white" : d < today ? "text-slate-400" : "text-slate-900"}`}>{d.getDate()}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="relative grid" style={{ gridTemplateColumns: cols, height: gridH, transition: "grid-template-columns .3s ease" }}>
+              {/* Hour labels + lines */}
+              <div className="relative">
+                {hours.map((h, i) => (
+                  <span key={h} className="absolute right-2 -translate-y-1/2 text-xs tabular-nums text-slate-400" style={{ top: i * HOUR_PX }}>{i === 0 ? "" : hourLabel(h)}</span>
+                ))}
               </div>
-            );
-          })}
+              {days.map((d, i) => {
+                const isToday = +d === +today;
+                return (
+                  <div key={i} className={`relative border-l border-slate-200/80 ${i >= 5 ? "bg-slate-50" : ""} ${d < today ? "opacity-70" : ""}`}>
+                    {hours.map((h, j) => <div key={h} className="absolute inset-x-0 border-t border-slate-100" style={{ top: j * HOUR_PX }} />)}
+                    {dayItems[i].map((it) => {
+                      const top = ((it.s - startH * 60) / 60) * HOUR_PX;
+                      const height = Math.max(26, ((it.e - it.s) / 60) * HOUR_PX - 3);
+                      const style = { top: top + 1, height, left: `calc(${(it.lane / it.lanes) * 100}% + 3px)`, width: `calc(${100 / it.lanes}% - 6px)` };
+                      const tall = height > 70;
+                      const narrow = it.lanes > 1;
+                      return it.kind === "session" ? (
+                        <button key={it.key} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title} · ${fmtRange(it.x.slot.start, it.x.slot.end)}`}
+                          className={`absolute overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left shadow-sm hover:z-10 hover:shadow-md ${CAT_TINT[it.x.club.category]}`} style={style}>
+                          <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.x.slot.start, it.x.slot.end)}</span>
+                          <span className="block truncate text-xs font-bold text-slate-900">{it.x.club.emoji} {it.x.club.name}</span>
+                          {tall && !narrow && <span className="block truncate text-xs text-slate-500">{it.x.slot.title}</span>}
+                          {tall && <span className="mt-0.5 block truncate text-xs text-slate-400">{narrow ? it.x.slot.title : it.x.slot.where}</span>}
+                        </button>
+                      ) : (
+                        <button key={it.key} onClick={() => onOpenTicket(it.b)} title={`${it.b.title} · ${it.b.time}`}
+                          className="absolute overflow-hidden rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-2 py-1 text-left hover:z-10 hover:shadow-md" style={style}>
+                          <span className="block truncate text-xs font-semibold text-indigo-600">{it.b.time} · Event</span>
+                          <span className="block truncate text-xs font-bold text-slate-900">{it.b.emoji} {it.b.title}</span>
+                          {tall && <span className="block truncate text-xs text-slate-500">{shortVenue(it.b.where)}</span>}
+                        </button>
+                      );
+                    })}
+                    {isToday && nowMin >= startH * 60 && nowMin <= endH * 60 && (
+                      <div className="pointer-events-none absolute inset-x-0 z-20" style={{ top: ((nowMin - startH * 60) / 60) * HOUR_PX }}>
+                        <div className="relative h-0.5 bg-rose-500"><span className="absolute -left-1 -top-1 h-2.5 w-2.5 rounded-full bg-rose-500" /></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-1 text-xs text-slate-500">
-          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-1 rounded-full bg-emerald-500" /> Weekly club session</span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200/80 px-4 py-3 text-xs text-slate-500">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {[["Sports", "bg-emerald-500"], ["Tech", "bg-sky-500"], ["Business", "bg-violet-500"], ["Arts", "bg-pink-500"]].map(([k, c]) => (
+              <span key={k} className="inline-flex items-center gap-1.5"><span className={`h-3 w-1 rounded-full ${c}`} /> {k}</span>
+            ))}
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-rose-500" /> Now</span>
+          </div>
+          <span className="sm:hidden">Swipe sideways to see the whole week →</span>
         </div>
       </section>
 
@@ -1741,8 +1847,8 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
               const d = new Date(b.date + "T00:00:00");
               return (
                 <button key={b.id} onClick={() => onOpenTicket(b)} className="u-card flex w-full items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm">
-                  <span className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-900 text-white">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">{d.toLocaleDateString("en-GB", { month: "short" })}</span>
+                  <span className="u-keep flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-slate-900 text-white">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">{fmt(d, { month: "short" })}</span>
                     <span className="text-xl font-bold leading-none">{d.getDate()}</span>
                   </span>
                   <span className="min-w-0 flex-1">
@@ -1760,13 +1866,26 @@ function MySchedule({ sessions, events, onOpenClub, onOpenTicket, onBrowse, onEx
   );
 }
 
-/* Official UOWD Sports tryouts registration (Jotform), embedded full-height. */
+/* Official UOWD Sports tryouts registration (Jotform), embedded full-height.
+   The sports checkbox is pre-filled through Jotform's URL parameters: ?<field unique name>=Option1,Option2.
+   JOTFORM_SPORT_FIELD must match the checkbox's "Unique Name" in the Jotform builder
+   (field settings > Advanced > Field Details). Unknown parameters are ignored by Jotform. */
 const UOWD_TRYOUTS_URL = "https://uowd.jotform.com/251912229886062";
+const JOTFORM_SPORT_FIELD = "sport";
+const JOTFORM_SPORTS = ["Badminton", "Basketball", "Cricket", "Football", "Volleyball", "Table Tennis", "Track", "Padel", "Tennis", "Swimming", "Chess"];
 const isSports = (c) => c.category === "Sports";
+const tryoutUrl = (c) => {
+  const picks = (c.form || []).filter((o) => JOTFORM_SPORTS.includes(o));
+  return picks.length ? `${UOWD_TRYOUTS_URL}?${JOTFORM_SPORT_FIELD}=${picks.map(encodeURIComponent).join(",")}` : UOWD_TRYOUTS_URL;
+};
 
+/* Always dark, whatever the site theme: only fixed dark colours are used here, none that the
+   .u-dark palette remap touches, and every surface carries u-keep. */
 function TryoutModal({ club: c, sent, onSent, onSessions, onClose }) {
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
+  const src = tryoutUrl(c);
+  const picks = (c.form || []).filter((o) => JOTFORM_SPORTS.includes(o));
   useEffect(() => {
     const t = setTimeout(() => setSlow(true), 8000);
     const h = (e) => e.key === "Escape" && onClose();
@@ -1775,72 +1894,80 @@ function TryoutModal({ club: c, sent, onSent, onSessions, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="u-fade fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6" style={overlayStyle}
+    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/75 backdrop-blur-md sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={`UOWD Sports tryouts registration for ${c.name}`}
-        className="u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl">
+        className="u-keep u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-gray-950 text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
+        style={{ colorScheme: "dark" }}>
 
-        {/* Header */}
-        <div className="u-keep relative shrink-0 overflow-hidden bg-slate-900 px-4 pb-4 pt-3 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
-          <div className={`absolute -right-16 -top-24 h-56 w-56 rounded-full bg-gradient-to-br ${GRADIENTS[c.category]}`} style={{ filter: "blur(60px)", opacity: 0.45 }} />
-          <div className="relative flex items-center justify-between gap-2">
-            <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-semibold text-slate-200 hover:text-white" style={glassChip}>
+        {/* Header: solid, locked dark */}
+        <div className="u-keep shrink-0 border-b border-white/10 bg-gray-900 px-4 pb-4 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
               <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back to Feed
             </button>
             <div className="flex items-center gap-2">
-              <a href={UOWD_TRYOUTS_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-200 hover:text-white" style={glassChip}>
+              <a href={src} target="_blank" rel="noopener noreferrer" className="u-keep inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
                 Open in new tab ↗
               </a>
-              <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg text-slate-200 hover:text-white" style={glassChip}>✕</button>
+              <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/10 hover:bg-white/20">✕</button>
             </div>
           </div>
-          <div className="relative mt-4 flex items-center gap-3">
+          <div className="mt-4 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
             <div className="min-w-0">
-              <p className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-widest text-emerald-300"><Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD form</p>
-              <h2 className="truncate text-lg font-bold leading-tight sm:text-xl">Sports Tryouts Registration</h2>
-              <p className="truncate text-sm text-slate-400">For {c.name} · run by UOWD Sports</p>
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
+                <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form
+              </p>
+              <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">Sports Tryouts Registration</h2>
+              <p className="truncate text-sm text-gray-400">For {c.name} · run by UOWD Sports</p>
             </div>
           </div>
-          <p className="relative mt-3 rounded-xl px-3 py-2 text-xs leading-relaxed text-slate-300" style={glassChip}>
-            <span className="hidden sm:inline">You're filling in UOWD's official Jotform: name, student number, date of birth, medical conditions and so on. </span>Your answers go straight to UOWD Sports, not to Unite.
-          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-300">
+            {picks.length > 0 && (
+              <span className="inline-flex items-center gap-1.5">
+                Sport{picks.length > 1 ? "s" : ""}:
+                {picks.map((o) => <span key={o} className="rounded-md bg-emerald-500 px-2 py-0.5 font-semibold text-gray-950">{o}</span>)}
+                <span className="text-gray-400">· pre-selected, please check it's ticked</span>
+              </span>
+            )}
+            <span className="hidden text-gray-400 sm:inline">Answers go straight to UOWD Sports, not to Unite.</span>
+          </div>
         </div>
 
-        {/* Form */}
-        <div className="relative min-h-0 flex-1 bg-slate-50">
+        {/* Form: the white Jotform sits on the dark frame */}
+        <div className="u-keep relative min-h-0 flex-1 bg-gray-950 sm:p-3">
           {!loaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <span className="u-spin h-9 w-9 rounded-full border-4 border-slate-200 border-t-indigo-600" />
-              <p className="text-sm font-medium text-slate-600">Loading the official UOWD form…</p>
-              {slow && (
-                <p className="text-xs text-slate-500">Taking a while? <a href={UOWD_TRYOUTS_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open it in a new tab ↗</a></p>
-              )}
+              <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-emerald-400" />
+              <p className="text-sm font-medium text-gray-300">Loading the official UOWD form…</p>
+              {slow && <p className="text-xs text-gray-400">Taking a while? <a href={src} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-400 hover:underline">Open it in a new tab ↗</a></p>}
             </div>
           )}
           <iframe
+            key={src}
             title={`UOWD Sports Tryouts Registration form for ${c.name}`}
-            src={UOWD_TRYOUTS_URL}
+            src={src}
             onLoad={() => setLoaded(true)}
             allow="fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
-            className="absolute inset-0 h-full w-full border-0 bg-white"
-            style={{ opacity: loaded ? 1 : 0, transition: "opacity .3s ease" }}
+            className="u-keep h-full w-full border-0 bg-white sm:rounded-2xl"
+            style={{ opacity: loaded ? 1 : 0, transition: "opacity .3s ease", colorScheme: "light" }}
           />
         </div>
 
-        {/* Footer */}
-        <div className="flex shrink-0 flex-col gap-2 border-t border-slate-200/80 bg-white p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+        {/* Footer: locked dark */}
+        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-gray-900 p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
           {sent ? (
-            <span className="u-pop inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-2.5 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200 sm:justify-start sm:px-3">
+            <span className="u-pop inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-500/15 py-2.5 text-sm font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
               <Check className="h-4 w-4" /> Marked as submitted
             </span>
           ) : (
-            <button onClick={onSent} className="u-btn flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+            <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-gray-950 hover:bg-emerald-400">
               I've submitted the form
             </button>
           )}
-          <button onClick={onSessions} className="u-btn flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+          <button onClick={onSessions} className="u-keep u-btn flex-1 rounded-xl bg-white/10 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/20">
             Pick weekly training sessions →
           </button>
         </div>
