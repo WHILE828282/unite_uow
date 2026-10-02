@@ -42,3 +42,18 @@ The token is read only on the server. Never put it in `App.jsx` or any frontend 
 - Real Ziina payment links created server-side, confirmed by webhook.
 - A database for events, bookings, waitlists and admin approval of submitted events.
 - Replace demo clubs/events/floor plan with real UOWD data.
+
+## Email sign-in (Resend)
+
+Campus Login offers two paths:
+
+- **Send verification code** (live): `/api/otp` (`api/otp.js`) emails a real 6-digit code with Resend and checks it. Codes expire after 10 minutes and the form allows 5 tries per code. No database is needed: the server returns a signed challenge (HMAC) that only matches the right code for that email.
+- **Continue with a demo account**: the one-tap walkthrough for judges and quick reviews; any 4-digit code (e.g. 1234) works.
+
+Setup in Vercel → Settings → Environment Variables, then redeploy:
+
+- `RESEND_API_KEY` (required).
+- `RESEND_FROM` (optional), e.g. `Unite <login@yourdomain.com>`. Until a domain is verified in Resend, the default sender `onboarding@resend.dev` can only deliver to the email address that owns the Resend account; other addresses get a clear message pointing to the demo account.
+- `OTP_SECRET` (optional): signing key for the challenge; defaults to one derived from the Resend key.
+
+Party pitches sent to Telegram say whether the organizer verified their email or used the demo login.

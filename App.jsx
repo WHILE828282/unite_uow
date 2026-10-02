@@ -570,6 +570,11 @@ function AuthModal({ reason, onClose, onSignIn }) {
   const [sending, setSending] = useState(false);
   const [digits, setDigits] = useState(["", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
+  // "demo": the original walkthrough (any 4-digit code). "live": a real 6-digit code emailed via Resend (/api/otp).
+  const [mode, setMode] = useState("demo");
+  const [challenge, setChallenge] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [attempts, setAttempts] = useState(0);
   const [seconds, setSeconds] = useState(45);
   const [resent, setResent] = useState(false);
   const refs = useRef([]);
@@ -584,49 +589,89 @@ function AuthModal({ reason, onClose, onSignIn }) {
   }, [step, seconds]);
   useEffect(() => { if (step === "otp" && refs.current[0]) refs.current[0].focus(); }, [step]);
 
-  const sendCode = (override) => {
+  const blank = (n) => Array(n).fill("");
+  const otpApi = async (body) => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const r = await fetch("/api/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+      const data = await r.json().catch(() => ({}));
+      return r.ok && data.ok ? data : { ok: false, error: data.error || "We couldn't send the code. Try again, or use the demo account." };
+    } catch (e) {
+      return { ok: false, error: "Couldn't reach the server. Check your connection, or use the demo account." };
+    } finally { clearTimeout(t); }
+  };
+  // Live: email a real 6-digit code through Resend.
+  const sendLive = async (v) => {
+    setSending(true);
+    const r = await otpApi({ action: "send", email: v });
+    setSending(false);
+    if (!r.ok) return r.error;
+    setChallenge(r.challenge); setMode("live"); setAttempts(0); setOtpError("");
+    setDigits(blank(6)); setSeconds(45); setStep("otp");
+    return "";
+  };
+  const sendCode = async (override) => {
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@gmail.com.");
-    setEmail(v); setError(""); setSending(true);
+    setEmail(v); setError("");
+    if (typeof override !== "string") { const err = await sendLive(v); if (err) setError(err); return; }
+    // Demo account: unchanged walkthrough, any 4-digit code works.
+    setMode("demo"); setOtpError(""); setSending(true);
     later(() => { setSending(false); setDigits(["", "", "", ""]); setSeconds(45); setStep("otp"); }, 800);
   };
 
-  // Demo mode: any complete 4-digit code verifies.
-  const verify = () => {
-    setVerifying(true);
-    later(() => {
-      setVerifying(false);
-      setStep("success");
-      later(() => onSignIn(email, studentId.trim()), 1300);
-    }, 700);
+  const finish = (verified) => {
+    setVerifying(false);
+    setStep("success");
+    later(() => onSignIn(email, studentId.trim(), verified), 1300);
+  };
+  const verify = async (code) => {
+    setVerifying(true); setOtpError("");
+    // Demo mode: any complete 4-digit code verifies.
+    if (mode === "demo") return later(() => finish(false), 700);
+    const r = await otpApi({ action: "verify", email, code, challenge });
+    if (r.ok) return finish(true);
+    const n = attempts + 1;
+    setVerifying(false); setAttempts(n);
+    setOtpError(n >= 5 ? "Too many tries. Tap Resend code for a new one." : r.error);
+    setDigits(blank(6));
+    if (n < 5 && refs.current[0]) setTimeout(() => refs.current[0] && refs.current[0].focus(), 0);
   };
 
+  const N = digits.length;
+  const locked = verifying || (mode === "live" && attempts >= 5);
   const setDigit = (i, raw) => {
     const d = raw.replace(/\D/g, "").slice(-1);
     const next = [...digits]; next[i] = d;
-    setDigits(next);
-    if (d && i < 3 && refs.current[i + 1]) refs.current[i + 1].focus();
-    if (next.every(Boolean)) verify();
+    setDigits(next); setOtpError("");
+    if (d && i < N - 1 && refs.current[i + 1]) refs.current[i + 1].focus();
+    if (next.every(Boolean)) verify(next.join(""));
   };
   const onKey = (i, e) => {
     if (e.key === "Backspace" && !digits[i] && i > 0) {
       const next = [...digits]; next[i - 1] = ""; setDigits(next); refs.current[i - 1].focus();
     }
     if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1].focus();
-    if (e.key === "ArrowRight" && i < 3) refs.current[i + 1].focus();
+    if (e.key === "ArrowRight" && i < N - 1) refs.current[i + 1].focus();
   };
   const onPaste = (e) => {
-    const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 4);
-    if (!t) return;
+    const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, N);
+    if (!t || locked) return;
     e.preventDefault();
-    const next = ["", "", "", ""];
+    const next = blank(N);
     t.split("").forEach((ch, i) => { next[i] = ch; });
-    setDigits(next);
-    refs.current[Math.min(t.length, 3)].focus();
-    if (t.length === 4) verify();
+    setDigits(next); setOtpError("");
+    refs.current[Math.min(t.length, N - 1)].focus();
+    if (t.length === N) verify(t);
   };
-  const resend = () => {
-    setSeconds(45); setResent(true); setDigits(["", "", "", ""]);
+  const resend = async () => {
+    if (mode === "live") {
+      setSeconds(45);
+      const err = await sendLive(email);
+      if (err) { setOtpError(err); setSeconds(0); return; }
+    } else { setSeconds(45); setDigits(["", "", "", ""]); }
+    setResent(true);
     later(() => setResent(false), 3000);
     if (refs.current[0]) refs.current[0].focus();
   };
@@ -679,10 +724,10 @@ function AuthModal({ reason, onClose, onSignIn }) {
           <>
             <button onClick={() => setStep("email")} className="-ml-1 rounded-lg px-1.5 py-1 text-sm font-medium text-slate-500 hover:bg-slate-100">← Change email</button>
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Enter your code</h2>
-            <p className="mt-1 text-center text-sm text-slate-500">We sent a 4-digit code to <span className="font-semibold text-slate-800">{maskEmail(email)}</span></p>
+            <p className="mt-1 text-center text-sm text-slate-500">We sent a {N}-digit code to <span className="font-semibold text-slate-800">{maskEmail(email)}</span></p>
             {studentId.trim() && <p className="mt-2 text-center"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Student ID {studentId.trim()}</span></p>}
 
-            <div className="mt-6 flex justify-center gap-3" onPaste={onPaste}>
+            <div className={mode === "live" ? "mx-auto mt-6 grid max-w-[22rem] grid-cols-6 gap-2" : "mt-6 flex justify-center gap-3"} onPaste={onPaste}>
               {digits.map((d, i) => (
                 <input
                   key={i}
@@ -691,11 +736,11 @@ function AuthModal({ reason, onClose, onSignIn }) {
                   inputMode="numeric"
                   autoComplete={i === 0 ? "one-time-code" : "off"}
                   aria-label={`Digit ${i + 1}`}
-                  readOnly={verifying}
+                  readOnly={locked}
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => onKey(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`h-16 w-14 rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/50 bg-white shadow-sm focus:border-indigo-500"}`}
+                  className={`${mode === "live" ? "h-14 w-full min-w-0" : "h-16 w-14"} rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/50 bg-white shadow-sm focus:border-indigo-500"}`}
                 />
               ))}
             </div>
@@ -703,6 +748,8 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <div className="mt-4 flex h-6 items-center justify-center text-sm">
               {verifying ? (
                 <span className="inline-flex items-center gap-2 text-slate-500"><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent" /> Verifying…</span>
+              ) : otpError ? (
+                <span role="alert" className="font-medium text-rose-600">{otpError}</span>
               ) : resent ? (
                 <span className="font-medium text-emerald-600">New code sent ✓</span>
               ) : null}
@@ -716,7 +763,11 @@ function AuthModal({ reason, onClose, onSignIn }) {
               )}
             </div>
 
-            <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Demo mode: any 4-digit code works, for example <span className="font-mono font-bold text-slate-700">1234</span>.</p>
+            {mode === "demo" ? (
+              <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Demo mode: any 4-digit code works, for example <span className="font-mono font-bold text-slate-700">1234</span>.</p>
+            ) : (
+              <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Check your inbox for an email from Unite. Not there? Look in spam or promotions. The code expires in 10 minutes.</p>
+            )}
           </>
         )}
 
@@ -2126,6 +2177,7 @@ export default function App() {
   });
   const toastTimer = useRef(null);
   const studentIdRef = useRef("");
+  const verifiedRef = useRef(false); // true when the email was confirmed with a live code
 
   useEffect(() => {
     document.title = "Unite · UOWD clubs & events";
@@ -2157,12 +2209,13 @@ export default function App() {
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
 
-  const signIn = (email, sid) => {
+  const signIn = (email, sid, verified) => {
     const action = modal && modal.action;
     studentIdRef.current = sid || "";
+    verifiedRef.current = !!verified;
     setUser(email);
     setModal(null);
-    notify("Signed in as " + email);
+    notify(verified ? { title: "Email verified", body: "Welcome to Unite! Signed in as " + email } : "Signed in as " + email, verified ? 3500 : 2400);
     if (action) setTimeout(() => action(email), 250);
   };
 
@@ -2205,7 +2258,7 @@ export default function App() {
       const res = await fetch("/api/pitch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...sub, account: user, studentId: studentIdRef.current, website }),
+        body: JSON.stringify({ ...sub, account: user, studentId: studentIdRef.current, verified: verifiedRef.current, website }),
         signal: ctrl.signal,
       });
       const data = await res.json().catch(() => ({}));
