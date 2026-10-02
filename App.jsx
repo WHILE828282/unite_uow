@@ -752,7 +752,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
         {step === "email" && (
           <>
             <div className="flex flex-col items-center">
-              <UniteIcon full className="h-24 w-24 shadow-lg" />
+              <UniteIcon className="h-24 w-24 shadow-lg" />
               <span className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">unite</span>
             </div>
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>
@@ -3025,7 +3025,7 @@ export default function App() {
         <div key={tab} className="u-tab">
         {(tab === "clubs" || tab === "parties") && (
           <div className="mb-5 flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
+            <div className="u-chips flex min-w-0 flex-1 gap-2 pb-1 pr-4">
               {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
                 <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
               ))}
@@ -3036,7 +3036,7 @@ export default function App() {
           </div>
         )}
         {tab === "parties" && (
-          <div className="-mt-2 mb-5 flex items-center gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by event language">
+          <div className="u-chips -mt-2 mb-5 flex items-center gap-2 pb-1 pr-4" role="group" aria-label="Filter by event language">
             <span className="inline-flex shrink-0 items-center gap-1 pr-1 text-xs font-semibold uppercase tracking-wider text-slate-400"><Icon name="globe" className="h-3.5 w-3.5" /> Language</span>
             {["All", ...feedLangs].map((l) => {
               const n = l === "All" ? parties.length : parties.filter((p) => p.lang === l).length;

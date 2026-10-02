@@ -13,10 +13,10 @@ body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: 
 body { padding-left: var(--sal); padding-right: var(--sar); }
 .u-safe-top { padding-top: var(--sat); }
 /* Bottom sheets: a spacer clears the home bar; sheets with a sticky action bar extend the bar instead. */
-.u-safe-sheet::after { content: ""; display: block; height: var(--sab); }
+.u-safe-sheet::after { content: ""; display: block; height: var(--sabx); }
 .u-safe-sheet:has(> .u-safe-bar)::after { display: none; }
-.u-safe-bar { padding-bottom: calc(1rem + var(--sab)); }
-.u-safe-full { padding-top: var(--sat); padding-bottom: var(--sab); }
+.u-safe-bar { padding-bottom: calc(1rem + var(--sabx)); }
+.u-safe-full { padding-top: var(--sat); padding-bottom: var(--sabx); }
 .u-safe-toast { top: calc(5rem + var(--sat)); }
 /* ---- Get the app (/install page, badges, banner) ---- */
 @keyframes uInstRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -33,19 +33,27 @@ body { padding-left: var(--sal); padding-right: var(--sar); }
 html.u-typing .u-hide-typing { display: none !important; }
 
 /* ---- iPhone layout ----
-   --vvh / --vvtop: the visible screen (visualViewport, set from main.jsx). iOS Safari's 100vh is taller than the
-   visible area while its toolbars show, and the on-screen keyboard shrinks the visual viewport, so overlays and
-   full-screen panels size themselves to this instead. Falls back to 100dvh, then 100vh. */
-:root { --vvh: 100vh; --vvtop: 0px; }
+   Overlays (.u-vv) always cover the whole screen, including the strip iOS 26 Safari draws its floating toolbar over.
+   While the keyboard is up they shrink to the part you can see (--kbtop / --kb, set from main.jsx), and their
+   dark backdrop carries on above and below (::before / ::after) so the page never shows through around the keyboard.
+   --vvh: visible height. --tb: height of Safari's floating toolbar over the page (0 on older iOS). */
+:root { --vvh: 100vh; --kbtop: 0px; --kb: 0px; --tb: 0px; --sabx: max(var(--sab), var(--tb)); }
 @supports (height: 100dvh) { :root { --vvh: 100dvh; } }
-.u-vv { top: var(--vvtop) !important; bottom: auto !important; height: 100vh; height: var(--vvh); }
+html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
+.u-vv { top: var(--kbtop) !important; bottom: var(--kb) !important; height: auto !important; }
+.u-vv::before, .u-vv::after { content: ""; position: absolute; left: 0; right: 0; height: 100vh; background: rgba(6, 16, 31, 0.96); pointer-events: auto; }
+.u-vv::before { bottom: 100%; }
+.u-vv::after { top: 100%; }
 .u-sheet-h { max-height: 90vh; max-height: calc(var(--vvh) * 0.9); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-.u-full-h { height: 100vh; height: var(--vvh); }
+.u-full-h { height: 100%; }
 .u-scroll { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-@media (min-width: 640px) { .u-full-h { height: calc(var(--vvh) * 0.92); } }
+@media (min-width: 640px) { .u-full-h { height: 92%; } }
+/* Horizontal chip rows: no scroll bars (iOS drew a stray white bar beside the last chip) and a soft fade at the edge. */
+.u-chips { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+.u-chips::-webkit-scrollbar { display: none; }
 /* Short screens (iPhone landscape): full-screen panels take the whole height and headers drop secondary lines. */
 @media (max-height: 500px) {
-  .u-full-h { height: var(--vvh) !important; border-radius: 0 !important; }
+  .u-full-h { height: 100% !important; border-radius: 0 !important; }
   .u-full-pad { padding: 0 !important; }
   .u-short-hide { display: none !important; }
   .u-short-tight { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
