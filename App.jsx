@@ -496,7 +496,7 @@ function Modal({ children, onClose, locked, size = "md" }) {
       style={overlayStyle}
       onMouseDown={(e) => e.target === e.currentTarget && !locked && onClose()}
     >
-      <div className={`u-up relative w-full ${size === "lg" ? "max-w-lg" : size === "sm" ? "max-w-sm" : "max-w-md"} overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`} style={{ maxHeight: "92vh" }}>
+      <div className={`u-up relative w-full ${size === "lg" ? "max-w-lg" : size === "sm" ? "max-w-sm" : "max-w-md"} u-safe-sheet overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`} style={{ maxHeight: "92vh" }}>
         {!locked && (
           <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
             ✕
@@ -1070,7 +1070,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   return (
     <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
-        className="u-keep u-up relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-2xl sm:rounded-3xl"
+        className="u-keep u-up u-safe-full relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-2xl sm:rounded-3xl"
         style={{ colorScheme: "dark" }}>
         {/* Header */}
         <div className="u-keep shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, env(safe-area-inset-top))" }}>
@@ -1486,7 +1486,7 @@ function EventDetail({ party: p, action, onShare, onClose }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
+      <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -1561,7 +1561,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
         </div>
       </div>
 
-      <div className="sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
+      <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
 }
@@ -2125,7 +2125,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
     <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={`UOWD registration for ${c.name}`}
-        className="u-keep u-up flex h-[100dvh] w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
+        className="u-keep u-up u-safe-full flex h-[100dvh] w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
         style={{ colorScheme: "dark" }}>
 
         {/* Header: solid, locked dark */}
@@ -2266,6 +2266,72 @@ function ClubCard({ c, i, open, members, button }) {
 /* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
+/*  Install as an app (PWA)                                            */
+/* ------------------------------------------------------------------ */
+/* Chrome / Android: offers the browser's install dialog. iPhone Safari has no install API, so it shows
+   the Share → Add to Home Screen hint instead. Hidden when already running as an installed app, and a
+   dismissal is remembered for 30 days. */
+const INSTALL_KEY = "unite-install-dismissed";
+const INSTALL_SNOOZE_MS = 30 * 24 * 3600 * 1000;
+const isStandalone = () => {
+  try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) { return false; }
+};
+const isIosSafari = () => {
+  const ua = navigator.userAgent || "";
+  const ios = /iP(hone|od|ad)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); // iPadOS reports as Mac
+  return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram|Line\//.test(ua);
+};
+const installSnoozed = () => {
+  try { return Date.now() - Number(localStorage.getItem(INSTALL_KEY) || 0) < INSTALL_SNOOZE_MS; } catch (e) { return false; }
+};
+
+const ShareIcon = () => (
+  <svg viewBox="0 0 24 24" className="inline h-4 w-4 -translate-y-px" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Share">
+    <path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+  </svg>
+);
+
+function InstallPrompt() {
+  const [mode, setMode] = useState(null); // "android" | "ios" | null
+  const deferred = useRef(null);
+  useEffect(() => {
+    if (isStandalone() || installSnoozed()) return;
+    let t;
+    const onPrompt = (e) => { e.preventDefault(); deferred.current = e; t = setTimeout(() => setMode("android"), 2500); };
+    const onInstalled = () => { deferred.current = null; setMode(null); };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    if (isIosSafari()) t = setTimeout(() => setMode("ios"), 2500);
+    return () => { clearTimeout(t); window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("appinstalled", onInstalled); };
+  }, []);
+  if (!mode) return null;
+  const dismiss = () => { try { localStorage.setItem(INSTALL_KEY, String(Date.now())); } catch (e) { /* ignore */ } setMode(null); };
+  const install = async () => {
+    const e = deferred.current;
+    if (!e) return setMode(null);
+    deferred.current = null;
+    try { e.prompt(); const { outcome } = await e.userChoice; if (outcome !== "accepted") dismiss(); else setMode(null); } catch (err) { setMode(null); }
+  };
+  return (
+    <div role="dialog" aria-label="Install Unite" className="u-keep u-up fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
+      <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 py-3 pl-3 pr-2 text-white shadow-2xl" style={{ background: "rgba(10,25,47,0.94)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+        <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
+        <div className="min-w-0 flex-1 text-sm leading-snug">
+          <p className="font-semibold">Install Unite</p>
+          {mode === "ios"
+            ? <p className="text-slate-300">Tap <ShareIcon /> Share, then <span className="font-semibold text-white">Add to Home Screen</span>.</p>
+            : <p className="text-slate-300">Open clubs, events and tickets straight from your home screen.</p>}
+        </div>
+        {mode === "android" && (
+          <button onClick={install} className="shrink-0 rounded-xl bg-crimson-700 px-4 py-2 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">Install</button>
+        )}
+        <button onClick={dismiss} aria-label="Dismiss install suggestion" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white">✕</button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("clubs");
@@ -2601,7 +2667,7 @@ export default function App() {
       <style>{CSS}</style>
 
       {/* Nav */}
-      <header className={`u-keep sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+      <header className={`u-keep u-safe-top sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
             <div className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-white shadow-sm ring-1 ring-crimson-500/60"><span className="text-crimson-400">U</span></div>
@@ -2892,6 +2958,8 @@ export default function App() {
         </footer>
       </main>
 
+      <InstallPrompt />
+
       {/* Modals */}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} />}
       {modal && modal.type === "create" && (
@@ -2967,7 +3035,7 @@ export default function App() {
       )}
 
       {toast && (
-        <div className="pointer-events-none fixed inset-x-0 top-20 z-50 flex justify-center px-4">
+        <div className="u-safe-toast pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4">
           <div key={typeof toast === "string" ? toast : toast.title + toast.body} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500"><Check className="h-3 w-3" /></span>
             {typeof toast === "string" ? <span>{toast}</span> : <span><span className="block font-bold">{toast.title}</span><span className="block font-normal text-slate-200">{toast.body}</span></span>}

@@ -68,3 +68,12 @@ Each party application arrives in the admin Telegram chat with three buttons und
 **One-time setup — connect a database:** Vercel → your project → **Storage** → **Create Database** → **Upstash for Redis** (free) → **Connect** to the project, then redeploy. It adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`). Then open `https://<your-site>/api/pitch`: it registers the Telegram webhook and should say "Moderation buttons are on."
 
 Without a database, pitches still reach Telegram (without buttons) and the app keeps its 2-hour demo review.
+
+## Installable app (PWA)
+
+Built with `vite-plugin-pwa` (`vite.config.js`): manifest "Unite · UOWD", standalone, portrait, navy `#0a192f`; icons in `public/icons/`.
+
+- **Updates:** `registerType: "autoUpdate"`. Each Vercel deploy ships a new `sw.js` (served with no-cache headers from `vercel.json`) that activates on its own.
+- **Caching:** the app shell, JS/CSS, icons and photos are precached. `/api/*` is always network-only (OTP, pitches, moderation, events). Navigations fall back to `index.html`, so `/events/7` and `/sports/basketball` open from the home screen.
+- **Install prompt:** Chrome/Android shows an "Install Unite" banner; iPhone Safari shows "tap Share, then Add to Home Screen". Neither appears inside the installed app, and dismissing hides it for 30 days.
+- **Safe areas:** header, bottom sheets, full-screen forms and toasts respect the notch and home bar (`--sat`/`--sab` in `index.css`).

@@ -5,6 +5,23 @@
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
 
+/* Installed app on phones with a notch / home bar: keep content clear of the unsafe areas.
+   (viewport-fit=cover in index.html exposes the insets; they are 0 on other devices.) */
+:root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
+body { padding-left: var(--sal); padding-right: var(--sar); }
+.u-safe-top { padding-top: var(--sat); }
+/* Bottom sheets: a spacer clears the home bar; sheets with a sticky action bar extend the bar instead. */
+.u-safe-sheet::after { content: ""; display: block; height: var(--sab); }
+.u-safe-sheet:has(> .u-safe-bar)::after { display: none; }
+.u-safe-bar { padding-bottom: calc(1rem + var(--sab)); }
+.u-safe-full { padding-top: var(--sat); padding-bottom: var(--sab); }
+.u-safe-toast { top: calc(5rem + var(--sat)); }
+@media (min-width: 640px) {
+  .u-safe-sheet::after { display: none; }
+  .u-safe-bar { padding-bottom: 1rem; }
+  .u-safe-full { padding-top: 0; padding-bottom: 0; }
+}
+
 @layer base {
   button { transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1); }
   button:not(:disabled):active { transform: scale(0.95); }
