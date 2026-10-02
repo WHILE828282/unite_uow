@@ -168,6 +168,22 @@ const LANGUAGES = ["English", "Arabic", "Russian", "Chinese", "Japanese", "Frenc
 /* ------------------------------------------------------------------ */
 const fmtDate = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+// "Today" / "Tomorrow" for dates that close (isoDay is defined below; only called at render time).
+const dayTag = (iso) => {
+  const now = new Date();
+  if (iso === isoDay(now)) return "Today";
+  if (iso === isoDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))) return "Tomorrow";
+  return null;
+};
+// "ilyas.gasanov.2020@gmail.com" -> "Ilyas"
+const firstName = (email) => {
+  const w = (email.split("@")[0].split(/[._+\-\d]+/).find(Boolean) || "there");
+  return w.charAt(0).toUpperCase() + w.slice(1);
+};
+const DayTag = ({ iso }) => {
+  const t = dayTag(iso);
+  return t ? <span className="rounded-full bg-crimson-50 px-1.5 py-0.5 text-[11px] font-semibold text-crimson-700 ring-1 ring-crimson-100">{t}</span> : null;
+};
 const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
 const fmtTime = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
 const fmtRange = (a, b) => `${fmtTime(a)} – ${fmtTime(b)}`;
@@ -607,6 +623,10 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
         <button onClick={() => onDownload(b)} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
           Download ticket
+        </button>
+        <button onClick={() => downloadCalendar([], [b], `${b.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`)}
+          className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-white">
+          <Icon name="calendar" className="h-4 w-4" /> Add to calendar
         </button>
         <button onClick={onClose} className="u-btn mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-slate-600 hover:bg-white">Done</button>
         <p className="mt-1 text-center text-xs text-slate-400">Show the QR code at the entrance. Screenshots work too.</p>
@@ -1677,7 +1697,7 @@ function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
         <h3 className="font-semibold text-slate-900">{p.title}</h3>
         <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
         <div className="mt-3 space-y-1.5 text-sm text-slate-600">
-          <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
+          <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time} <DayTag iso={p.date} /></p>
           <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
         </div>
         <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
@@ -1734,7 +1754,7 @@ function EventDetailBody({ p, onShare }) {
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
             <InfoIcon name="calendar" />
-            <div><p className="font-semibold text-slate-900">{fmtDate(p.date)} · {p.time}</p><p className="text-slate-500">Doors open 30 minutes before</p></div>
+            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.time} <DayTag iso={p.date} /></p><p className="text-slate-500">Doors open 30 minutes before</p></div>
           </div>
           <div className="flex gap-3">
             <InfoIcon name="pin" />
@@ -1800,7 +1820,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
       <div className="space-y-5 p-5">
         <Badge team={c.category === "Sports"} />
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">About the club</h3>
+          <h3 className="text-sm font-semibold text-slate-900">About the {c.category === "Sports" ? "team" : "club"}</h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{c.desc}</p>
         </div>
         <div className="space-y-4 text-sm">
@@ -1972,7 +1992,7 @@ function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
 const overlaps = (a, b) => a.day === b.day && toMin(a.start) < toMin(b.end) && toMin(b.start) < toMin(a.end);
 
 /* Builds an .ics file: weekly club sessions (12 weeks) plus booked one-off events. */
-function downloadCalendar(sessions, events) {
+function downloadCalendar(sessions, events, file = "unite-schedule.ics") {
   const pad = (n) => String(n).padStart(2, "0");
   const stamp = (d, hhmm) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${hhmm.replace(":", "")}00`;
   const esc = (t) => String(t).replace(/[,;\\]/g, (m) => "\\" + m);
@@ -1995,7 +2015,7 @@ function downloadCalendar(sessions, events) {
   out.push("END:VCALENDAR");
   const url = URL.createObjectURL(new Blob([out.join("\r\n")], { type: "text/calendar" }));
   const a = document.createElement("a");
-  a.href = url; a.download = "unite-schedule.ics";
+  a.href = url; a.download = file;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
@@ -2771,15 +2791,20 @@ export default function App() {
     if (action) setTimeout(() => action(email), 250);
   };
 
+  // Scroll so the section starts right under the (sticky) tab bar. Only moves up: if the tabs are still in view,
+  // nothing jumps.
+  const toTabs = (behavior = "instant", always = false) => {
+    const a = document.getElementById("tabs-anchor"), head = document.querySelector("header");
+    if (!a) return;
+    const y = a.getBoundingClientRect().top + window.scrollY - (head ? head.offsetHeight : 0) + 1;
+    if (always || window.scrollY > y) window.scrollTo({ top: Math.max(0, y), behavior });
+  };
   const changeTab = (t) => {
     if (t !== tab) { try { window.history.pushState({ ...(window.history.state || {}), uniteTab: t, uniteModal: false }, "", window.location.href); } catch (e) { /* ignore */ } }
     setTab(t); setFilter("All"); setLangFilter("All");
+    if (t !== tab) toTabs();
   };
-  const jumpTo = (t) => {
-    changeTab(t);
-    const el = document.getElementById("tabs");
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: "smooth" });
-  };
+  const jumpTo = (t) => { changeTab(t); setTimeout(() => toTabs("smooth", true), 0); };
   // Logo: reload the app from the top (also picks up a new version if one was deployed).
   const goHome = () => {
     try { window.history.scrollRestoration = "manual"; window.history.replaceState(null, "", "/"); } catch (e) { /* ignore */ }
@@ -2934,14 +2959,23 @@ export default function App() {
   const hostEvent = () => requireAuth("Sign in to host a student event", (email) => setModal({ type: "create", email }));
 
   const filteredClubs = clubs.filter((c) => filter === "All" || c.category === filter);
-  const filteredParties = parties.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
-  const feedLangs = LANGUAGES.filter((l) => parties.some((p) => p.lang === l));
+  // The feed: upcoming events only (past dates drop off), soonest first.
+  const today = isoDay(new Date(clock));
+  const upcoming = parties.filter((p) => p.date >= today).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
+  const filteredParties = upcoming.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
+  const feedLangs = LANGUAGES.filter((l) => upcoming.some((p) => p.lang === l));
   const myClubs = clubs.filter(isJoined).length;
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
-  const hot = parties
+  const hot = upcoming
     .filter((p) => p.spots - p.taken > 0 && p.spots - p.taken <= 5 && !bookingFor(p.id))
     .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
+  const weekSummary = (() => {
+    const parts = [];
+    if (myClubs) parts.push(`${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`);
+    if (bookings.length) parts.push(`${bookings.length} ${bookings.length > 1 ? "tickets" : "ticket"}`);
+    return parts.length ? `You're signed up for ${parts.join(" and ")}. Everything is in My Schedule.` : "Join a team, grab a ticket or host your own event.";
+  })();
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
   const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Parties", "Parties"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
@@ -2993,33 +3027,43 @@ export default function App() {
       {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
       {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
       <section className="u-keep relative">
-        <div className="relative mx-auto max-w-5xl px-4 pb-16 pt-10 sm:pt-14">
-          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${dark ? "text-indigo-100" : "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200"}`} style={dark ? glassChip : undefined}>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> University of Wollongong in Dubai
-          </span>
-          <h1 className={`mt-4 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
-            Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-crimson-200 to-crimson-400" : "from-indigo-800 via-indigo-700 to-crimson-600"}`}>together.</span>
-          </h1>
-          <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
+        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-14 pt-7 sm:pt-10" : "pb-16 pt-10 sm:pt-14"}`}>
+          {user ? (
+            <>
+              <h1 className={`max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl ${dark ? "text-white" : "text-gray-900"}`}>Hi, {firstName(user)} 👋</h1>
+              <p className={`mt-2 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>{weekSummary}</p>
+            </>
+          ) : (
+            <>
+            <h1 className={`max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
+              Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-crimson-200 to-crimson-400" : "from-indigo-800 via-indigo-700 to-crimson-600"}`}>together.</span>
+            </h1>
+            <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
+            </>
+          )}
           <div className="mt-6 flex flex-wrap gap-3">
             <button onClick={hostEvent} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 text-white shadow-sm hover:bg-gray-800"}`}>Host an event</button>
             <button onClick={() => jumpTo("clubs")} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "text-white" : "bg-white text-gray-800 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"}`} style={dark ? glassChip : undefined}>Explore clubs</button>
           </div>
-          <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
-            {[[clubs.length, "Teams & clubs", "clubs"], [parties.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
+          {!user && <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
+            {[[clubs.length, "Teams & clubs", "clubs"], [upcoming.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
               <button key={l} onClick={() => jumpTo(t)}
                 className={`u-keep u-btn rounded-2xl p-3 text-left ${dark ? "hover:border-white" : "bg-white/80 shadow-sm ring-1 ring-gray-200/80 hover:ring-indigo-200"}`} style={dark ? glassChip : undefined}>
                 <p className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-gray-900"}`}>{n}</p>
                 <p className={`text-xs ${dark ? "text-slate-300" : "text-gray-500"}`}>{l}</p>
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       </section>
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="relative mb-5 grid rounded-2xl border border-slate-200/50 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
+        <div id="tabs-anchor" aria-hidden="true" />
+        {/* Stays under the header while you scroll, so switching sections is always one tap away. The strip behind
+            it has the page background, so cards don't show between the header and the tabs. */}
+        <div className="sticky z-20 -mx-4 mb-3 bg-slate-50 px-4 pb-2 pt-2" style={{ top: "calc(var(--sat) + 3.75rem)" }}>
+        <div id="tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="relative grid rounded-2xl border border-slate-200/50 bg-white p-1.5 shadow-sm" role="tablist">
           <div className="u-keep absolute rounded-xl bg-crimson-700 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
@@ -3030,6 +3074,7 @@ export default function App() {
               {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
             </button>
           ))}
+        </div>
         </div>
 
         <div key={tab} className="u-tab">
@@ -3049,7 +3094,7 @@ export default function App() {
           <div className="u-chips -mt-2 mb-5 flex items-center gap-2 pb-1 pr-4" role="group" aria-label="Filter by event language">
             <span className="inline-flex shrink-0 items-center gap-1 pr-1 text-xs font-semibold uppercase tracking-wider text-slate-400"><Icon name="globe" className="h-3.5 w-3.5" /> Language</span>
             {["All", ...feedLangs].map((l) => {
-              const n = l === "All" ? parties.length : parties.filter((p) => p.lang === l).length;
+              const n = l === "All" ? upcoming.length : upcoming.filter((p) => p.lang === l).length;
               const on = langFilter === l;
               return (
                 <button key={l} onClick={() => setLangFilter(l)} aria-pressed={on}
