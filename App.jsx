@@ -35,6 +35,26 @@ const CLUBS = [
   { id: 10, name: "Music & Dance Club", emoji: "🎵", category: "Arts", desc: "Jam sessions, choreography and performances at campus events.", members: 58, slots: [{ id: "md-mon", day: 0, start: "16:00", end: "18:00", title: "Rehearsal & jam", level: "All levels", where: "Multi-purpose Room" }], where: "Multi-purpose Room", lead: { name: "Music & Dance committee", role: "Club committee", email: "music@uniteuow.com" }, note: "Comfortable clothes for dance; instruments welcome." },
 ];
 
+/* Shareable links: /sports/<slug> for teams, /clubs/<slug> for clubs (either prefix works). */
+const CLUB_SLUGS = { 1: "football", 2: "basketball", 3: "volleyball", 4: "cricket", 5: "table-tennis", 6: "padel-tennis", 7: "chess", 11: "track-swimming", 8: "tech-esports", 9: "finance-entrepreneurship", 10: "music-dance" };
+const clubPath = (c) => `/${c.category === "Sports" ? "sports" : "clubs"}/${CLUB_SLUGS[c.id]}`;
+const clubFromPath = (path) => {
+  const m = /^\/(?:sports|clubs)\/([a-z-]+)\/?$/.exec(path || "");
+  const id = m && Object.keys(CLUB_SLUGS).find((k) => CLUB_SLUGS[k] === m[1]);
+  return id ? Number(id) : null;
+};
+/* Action photos for the team detail header: paste a direct image link (https://images.unsplash.com/photo-…).
+   Empty or broken links keep the coloured header. */
+const HERO_PHOTOS = {
+  1: "", // Football: players running on the field during a live match
+  2: "", // Basketball: high-angle shot of a player dunking
+  3: "", // Volleyball: spike over the net in an arena game
+  4: "", // Cricket: batsman striking the ball on a floodlit pitch
+  5: "", // Table Tennis: fast-paced player with a paddle at the table
+  6: "", // Padel / Tennis: mid-swing on a sunlit court
+  7: "", // Chess: hands moving tournament pieces across the board
+};
+
 const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge Park, Dubai, UAE";
 const UOWD_MAPS = "University of Wollongong in Dubai";
 /* Google Maps link that always opens in English (hl=en) with UAE results (gl=ae); otherwise Google
@@ -1439,20 +1459,32 @@ function EventDetail({ party: p, action, onShare, onClose }) {
   );
 }
 
-function ClubDetail({ club: c, status, action, onClose }) {
+function ClubDetail({ club: c, status, action, onClose, onShare }) {
   const joined = status === "joined";
   const mapsUrl = mapsLink(UOWD_MAPS);
+  const photoSrc = HERO_PHOTOS[c.id] || "";
+  const photo = useImageReady(photoSrc);
   return (
     <Modal onClose={onClose} size="lg">
-      <div className={`bg-gradient-to-br px-6 pb-6 pt-7 text-white ${GRADIENTS[c.category]}`}>
-        <span className="text-5xl">{c.emoji}</span>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className={`relative overflow-hidden px-6 pb-6 text-white ${photo ? "u-keep flex min-h-[15rem] flex-col justify-end bg-slate-950 pt-24 sm:min-h-[17rem]" : `bg-gradient-to-br pt-7 ${GRADIENTS[c.category]}`}`}>
+        {photo && (<>
+          <img src={photoSrc} alt="" decoding="async" className="u-fade absolute inset-0 h-full w-full object-cover" />
+          <span className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" aria-hidden="true" />
+        </>)}
+        {onShare && (
+          <button onClick={() => onShare(c)} aria-label={`Copy link to ${c.name}`} className="absolute right-14 top-3 z-10 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white backdrop-blur hover:bg-white/30" style={{ background: "rgba(255,255,255,0.18)" }}>
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 14a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1 1M14 10a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1-1" /></svg>
+            Share
+          </button>
+        )}
+        <span className="relative text-5xl">{c.emoji}</span>
+        <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
           {status === "pending" && <span className="u-keep rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Pending approval</span>}
         </div>
-        <h2 className="mt-2 text-2xl font-bold leading-tight">{c.name}</h2>
-        <p className="mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members + (joined ? 1 : 0)} members · Free to join</p>
+        <h2 className="relative mt-2 text-2xl font-bold leading-tight drop-shadow-sm">{c.name}</h2>
+        <p className="relative mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members + (joined ? 1 : 0)} members · Free to join</p>
       </div>
 
       <div className="space-y-5 p-5">
@@ -2234,6 +2266,8 @@ export default function App() {
     try {
       const m = window.location.pathname.match(/\/events\/(\d+)/);
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }
+      const clubId = clubFromPath(window.location.pathname);
+      if (clubId) { setTab("clubs"); setModal({ type: "club", id: clubId }); }
     } catch (e) { /* ignore */ }
   }, []);
 
@@ -2244,6 +2278,16 @@ export default function App() {
   }, [dark]);
 
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
+
+  // Keep the address bar on the open team or club, so the link can be copied straight from the browser.
+  useEffect(() => {
+    try {
+      const club = modal && modal.type === "club" && CLUBS.find((x) => x.id === modal.id);
+      const path = window.location.pathname;
+      if (club && path !== clubPath(club)) window.history.replaceState(null, "", clubPath(club));
+      else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave"].includes(modal.type))) window.history.replaceState(null, "", "/");
+    } catch (e) { /* ignore */ }
+  }, [modal]);
 
   useEffect(() => { const t = setInterval(() => setClock(Date.now()), 60000); return () => clearInterval(t); }, []);
   const reviewOf = (sub) => {
@@ -2452,6 +2496,11 @@ export default function App() {
     });
   };
 
+  const shareClub = async (c) => {
+    const url = `${window.location.origin}${clubPath(c)}`;
+    const ok = await copyText(url);
+    notify(ok ? `Link to ${c.name} copied! Share it with your squad.` : `Copy this link to share: ${url}`, ok ? 3000 : 6000);
+  };
   const shareEvent = async (p) => {
     const url = `${window.location.origin}/events/${p.id}`;
     const ok = await copyText(url);
@@ -2854,6 +2903,7 @@ export default function App() {
               );
             return clubBtn(c, "w-full py-3");
           })()}
+          onShare={shareClub}
           onClose={closeModal}
         />
       )}
