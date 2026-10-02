@@ -2878,10 +2878,11 @@ export default function App() {
           {!isStandalone() && (
             <a href={installPath(platform())} aria-label="Get the app"
               className="u-keep group inline-flex h-9 items-center gap-2 rounded-full bg-black pl-2.5 pr-2.5 text-[13px] font-semibold text-white shadow-[0_6px_18px_-8px_rgba(0,0,0,0.55)] ring-1 ring-white/15 transition-all duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.7)] active:scale-95 sm:pr-3.5">
+              {/* iPhone: Apple only · Android: Android only · computer: both */}
               <span className="flex items-center gap-1.5" aria-hidden="true">
-                <AppleLogo className="h-[15px] w-[15px] -mt-px" />
-                <span className="h-3.5 w-px bg-white/25" />
-                <AndroidLogo className="h-[15px] w-[15px] text-[#3DDC84]" />
+                {platform() !== "android" && <AppleLogo className="h-[15px] w-[15px] -mt-px" />}
+                {platform() === "desktop" && <span className="h-3.5 w-px bg-white/25" />}
+                {platform() !== "ios" && <AndroidLogo className="h-[15px] w-[15px] text-[#3DDC84]" />}
               </span>
               <span className="hidden sm:inline">Get the app</span>
             </a>
