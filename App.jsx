@@ -849,7 +849,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
    logo → 512×512, cover → 1600×900. */
 const IMAGE_SPECS = {
   logo: { w: 512, h: 512, minW: 512, minH: 512 },
-  cover: { w: 1600, h: 900, minW: 1600, minH: 900 },
+  cover: { w: 1600, h: 900, minW: 1376, minH: 768 }, // 1376×768 (≈16:9, common AI/phone export) is accepted
 };
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
@@ -857,7 +857,7 @@ const PHOTO_COPY = {
   logo: { title: "Event logo", where: "Shown on event cards", ratio: "1 / 1", empty: "Add a square logo",
     specs: ["Square 1:1", "Recommended 1080 × 1080 px", "Minimum 512 × 512 px", "JPG, PNG or WebP · max 10 MB"] },
   cover: { title: "Event cover", where: "Shown at the top of the event page", ratio: "16 / 9", empty: "Add a widescreen cover",
-    specs: ["Widescreen 16:9", "Recommended 1920 × 1080 px", "Minimum 1600 × 900 px", "JPG, PNG or WebP · max 10 MB"] },
+    specs: ["Widescreen 16:9", "Recommended 1920 × 1080 px", "Also fits: 1600 × 900 or 1376 × 768 px", "Minimum 1376 × 768 px", "JPG, PNG or WebP · max 10 MB"] },
 };
 
 const loadImage = (src) => new Promise((resolve, reject) => {
