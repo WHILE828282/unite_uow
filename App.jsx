@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { GetAppBadges, InstallBanner } from "./GetApp.jsx";
+import { GetAppBadges, InstallBanner, AppleLogo, AndroidLogo } from "./GetApp.jsx";
 import { isStandalone, platform, installPath } from "./install.js";
 
 /* ------------------------------------------------------------------ */
@@ -2877,8 +2877,12 @@ export default function App() {
           <div className="flex items-center gap-2">
           {!isStandalone() && (
             <a href={installPath(platform())} aria-label="Get the app"
-              className={`u-keep inline-flex h-9 items-center gap-1.5 rounded-full px-2.5 text-sm font-semibold transition-colors sm:px-3 ${dark ? "text-slate-200 ring-1 ring-white/15 hover:bg-white/10" : "text-gray-700 ring-1 ring-slate-200 hover:bg-gray-50"}`}>
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.8" /><path d="M12 8.5v6m-2.5-2.5L12 14.5l2.5-2.5" /></svg>
+              className="u-keep group inline-flex h-9 items-center gap-2 rounded-full bg-black pl-2.5 pr-2.5 text-[13px] font-semibold text-white shadow-[0_6px_18px_-8px_rgba(0,0,0,0.55)] ring-1 ring-white/15 transition-all duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.7)] active:scale-95 sm:pr-3.5">
+              <span className="flex items-center gap-1.5" aria-hidden="true">
+                <AppleLogo className="h-[15px] w-[15px] -mt-px" />
+                <span className="h-3.5 w-px bg-white/25" />
+                <AndroidLogo className="h-[15px] w-[15px] text-[#3DDC84]" />
+              </span>
               <span className="hidden sm:inline">Get the app</span>
             </a>
           )}
@@ -3132,7 +3136,7 @@ export default function App() {
         </div>
 
         <footer className="mt-12 text-center text-xs text-slate-400">
-          {!isStandalone() && <div className="mb-6"><GetAppBadges heading="Get the Unite app" qr /></div>}
+          {!isStandalone() && <div className="mb-6"><GetAppBadges heading="Get the Unite app" /></div>}
           Unite · uniteuow.com · A student-built platform for UOWD · Payments via Ziina (demo mode)
         </footer>
       </main>

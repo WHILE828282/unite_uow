@@ -1,34 +1,43 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { platform, isIOS, isAndroid, isMobile, isStandalone, inAppBrowser, iosNotSafari, canPrompt, onPromptChange, promptInstall,
   bannerSnoozed, snoozeBanner, installPath, INSTALL_URL } from "./install.js";
 
-const QrCode = lazy(() => import("./QrCode.jsx"));
 
-/* Icons drawn for Unite (not store or brand logos): a phone for iPhone, the Android robot head (CC BY 3.0, Google). */
-export const IPhoneGlyph = ({ className = "h-7 w-7" }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-    <rect x="6" y="1.75" width="12" height="20.5" rx="3.2" stroke="currentColor" strokeWidth="1.6" />
-    <rect x="9.6" y="3.4" width="4.8" height="1.4" rx=".7" fill="currentColor" />
-    <path d="M12 9.2v6m0-6l-2.4 2.4M12 9.2l2.4 2.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+/* Brand marks (vector, no raster watermarks): Apple, Google Play, Android. */
+export const AppleLogo = ({ className = "h-7 w-7" }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
   </svg>
 );
-export const AndroidGlyph = ({ className = "h-7 w-7" }) => (
+export const PlayLogo = ({ className = "h-7 w-7" }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-    <path fill="#3DDC84" d="M17.6 9.48l1.84-3.18a.38.38 0 00-.66-.38l-1.86 3.22A11.3 11.3 0 0012 8.1c-1.77 0-3.43.38-4.92 1.04L5.22 5.92a.38.38 0 10-.66.38L6.4 9.48A10.8 10.8 0 001 18h22a10.8 10.8 0 00-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z" />
+    <path fill="#00C3FF" d="M2.2 1.4 12.6 12 2.2 22.6c-.35-.27-.55-.7-.55-1.2V2.6c0-.5.2-.93.55-1.2z" />
+    <path fill="#00E676" d="M2.2 1.4c.42-.32 1-.38 1.55-.08L16.2 8.4 12.6 12z" />
+    <path fill="#FFC400" d="M16.2 8.4l4.2 2.38c.95.54.95 1.9 0 2.44L16.2 15.6 12.6 12z" />
+    <path fill="#FF3D57" d="M12.6 12l3.6 3.6-12.45 7.08c-.55.3-1.13.24-1.55-.08z" />
+  </svg>
+);
+export const AndroidLogo = ({ className = "h-5 w-5" }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M17.523 15.341c-.5 0-.906-.406-.906-.906s.406-.906.906-.906.906.406.906.906-.406.906-.906.906m-11.046 0c-.5 0-.906-.406-.906-.906s.406-.906.906-.906.906.406.906.906-.406.906-.906.906m11.405-6.02l1.997-3.459a.416.416 0 00-.152-.567.416.416 0 00-.568.152L17.137 8.95C15.627 8.252 13.904 7.86 12 7.86s-3.627.392-5.137 1.09L4.841 5.447a.416.416 0 00-.568-.152.416.416 0 00-.152.567l1.997 3.459C2.689 11.187.343 14.659 0 18.761h24c-.344-4.102-2.69-7.574-6.118-9.44" />
   </svg>
 );
 
-/* Store-style download badge (black, rounded, icon + two lines). Honest labels: Unite installs from the browser. */
+/* App Store / Google Play style badges (black, grey hairline, logo + two lines), drawn in vector. */
 export function InstallBadge({ kind, size = "md", onClick, className = "" }) {
   const big = size === "lg";
+  const ios = kind === "ios";
   return (
     <button type="button" onClick={onClick}
-      className={`u-keep group inline-flex select-none items-center rounded-[11px] bg-black text-left text-white ring-1 ring-[#a6a6a6]/70 transition-all duration-200 hover:bg-[#111] hover:ring-white/80 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 ${big ? "h-[56px] gap-3 px-4" : "h-[46px] gap-2.5 px-3"} ${className}`}
-      aria-label={kind === "ios" ? "Get the app on iPhone" : "Get the app on Android"}>
-      {kind === "ios" ? <IPhoneGlyph className={big ? "h-8 w-8" : "h-7 w-7"} /> : <AndroidGlyph className={big ? "h-8 w-8" : "h-7 w-7"} />}
+      className={`u-keep group inline-flex select-none items-center rounded-[10px] bg-black text-left text-white shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] ring-1 ring-[#a6a6a6] transition-all duration-200 hover:-translate-y-px hover:bg-[#0d0d0d] hover:shadow-[0_14px_30px_-12px_rgba(0,0,0,0.7)] active:translate-y-0 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 ${big ? "h-[56px] gap-2.5 pl-3.5 pr-4" : "h-[46px] gap-2 pl-3 pr-3.5"} ${className}`}
+      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
+      aria-label={ios ? "Install Unite on iPhone" : "Install Unite on Android"}>
+      {ios ? <AppleLogo className={big ? "h-[30px] w-[30px] -mt-0.5" : "h-[25px] w-[25px] -mt-0.5"} /> : <PlayLogo className={big ? "h-[27px] w-[27px]" : "h-[22px] w-[22px]"} />}
       <span className="flex flex-col leading-none">
-        <span className={`${big ? "text-[11px]" : "text-[10px]"} font-medium tracking-wide text-white/85`}>Get the app on</span>
-        <span className={`${big ? "mt-1 text-[22px]" : "mt-[3px] text-[18px]"} font-semibold tracking-tight`}>{kind === "ios" ? "iPhone" : "Android"}</span>
+        {ios
+          ? <span className={`${big ? "text-[11.5px]" : "text-[10px]"} font-medium tracking-[0.01em]`}>Download on the</span>
+          : <span className={`${big ? "text-[10.5px]" : "text-[9px]"} font-medium uppercase tracking-[0.06em]`}>Get it on</span>}
+        <span className={`${big ? "mt-[3px] text-[23px]" : "mt-[2px] text-[19px]"} font-semibold tracking-[-0.02em]`}>{ios ? "App Store" : "Google Play"}</span>
       </span>
     </button>
   );
@@ -72,14 +81,6 @@ export function InAppCard({ compact = false }) {
   );
 }
 
-export function InstallQr({ size = 132 }) {
-  return (
-    <Suspense fallback={<span className="block rounded-xl bg-white" style={{ width: size, height: size }} />}>
-      <QrCode value={INSTALL_URL} size={size} />
-    </Suspense>
-  );
-}
-
 const go = (p) => { window.location.assign(installPath(p)); };
 // Android badge: Chrome's one-tap install when available, otherwise the guide.
 export const installAndroid = async (onInstalled) => {
@@ -105,7 +106,7 @@ export function InstalledToast({ show, onDone }) {
 }
 
 /* Badges for the app (sign-in, header area, footer). Device-aware order, hidden in the installed app. */
-export function GetAppBadges({ qr = false, align = "center", heading }) {
+export function GetAppBadges({ align = "center", heading }) {
   const [done, setDone] = useState(false);
   if (isStandalone()) return null;
   const p = platform();
@@ -125,12 +126,6 @@ export function GetAppBadges({ qr = false, align = "center", heading }) {
           {p === "desktop" && (<>
             <InstallBadge kind="ios" onClick={() => go("ios")} />
             <InstallBadge kind="android" onClick={() => go("android")} />
-            {qr && (
-              <a href={installPath()} className="u-keep flex items-center gap-3 rounded-xl bg-white p-2 pr-3 ring-1 ring-slate-200" aria-label="Scan to install Unite on your phone">
-                <InstallQr size={72} />
-                <span className="max-w-[7rem] text-left text-xs font-medium leading-snug text-slate-600">Scan with your phone camera to install</span>
-              </a>
-            )}
           </>)}
         </div>
       )}

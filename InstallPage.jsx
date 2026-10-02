@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { platform, isIOS, isMobile, isStandalone, inAppBrowser, iosNotSafari, promptInstall } from "./install.js";
-import { InstallBadge, InAppCard, InstallQr, InstalledToast, useCanPrompt } from "./GetApp.jsx";
+import { InstallBadge, InAppCard, InstalledToast, useCanPrompt } from "./GetApp.jsx";
 
 /* ------------------------------------------------------------------ */
 /*  Install steps: real screenshots from public/install (.webp, .png fallback) */
 /* ------------------------------------------------------------------ */
 // img: file name in public/install; w/h: the image's own size (keeps the aspect ratio, no layout jump).
-// optional: shown only once the file exists (the card stays text-only until then).
 const STEPS = {
   ios: [
     { title: "Tap the ••• button", text: "In Safari, tap the ••• button at the bottom right.", img: "ios-step-1-more", w: 736, h: 182,
@@ -15,8 +14,6 @@ const STEPS = {
       alt: "Safari menu with Share highlighted at the top" },
     { title: "Tap Add to Home Screen", text: "Scroll down (tap View More if you see it) and tap Add to Home Screen.", img: "ios-step-3-add-to-home", w: 736, h: 1210,
       alt: "iPhone share sheet for Unite with Add to Home Screen highlighted at the bottom of the list" },
-    { title: "Tap Add", text: "Keep Open as Web App switched on and tap Add in the top right.", img: "ios-step-4-confirm", optional: true,
-      alt: "Add to Home Screen screen with Open as Web App switched on and the Add button in the top right" },
     { title: "Done!", text: "Unite is now on your home screen. Open it like any other app.", img: "ios-step-5-done", w: 980, h: 300,
       alt: "iPhone home screen with the Unite app icon highlighted" },
   ],
@@ -34,17 +31,14 @@ const STEPS = {
 
 /* One step image: WebP with PNG fallback, natural aspect ratio, about 340px wide at most on phones. */
 function StepImage({ step, eager }) {
-  const [missing, setMissing] = useState(false);
-  if (!step.img || missing) return null;
   const src = `/install/${step.img}`;
   return (
-    <div className="flex justify-center bg-[#0b1730] px-5 pt-5">
+    <div className="flex items-center justify-center bg-[#0b1730] p-5">
       <picture className="block w-full max-w-[340px]">
         <source srcSet={`${src}.webp`} type="image/webp" />
         <img src={`${src}.png`} alt={step.alt} width={step.w} height={step.h}
           loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} decoding="async"
-          onError={() => step.optional && setMissing(true)}
-          className="mx-auto block h-auto max-h-[460px] w-auto max-w-full rounded-xl" />
+          className="mx-auto block h-auto max-h-[460px] w-auto max-w-full rounded-xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] ring-1 ring-white/10" />
       </picture>
     </div>
   );
@@ -111,15 +105,6 @@ export default function InstallPage() {
                 <InstallBadge kind="ios" size="lg" onClick={() => showSteps("ios")} />
                 <InstallBadge kind="android" size="lg" onClick={() => showSteps("android")} />
               </>)}
-            </div>
-          )}
-          {device === "desktop" && !installed && (
-            <div className="mx-auto mt-6 flex max-w-sm items-center gap-4 rounded-2xl bg-white/[0.04] p-4 text-left ring-1 ring-white/10">
-              <InstallQr size={112} />
-              <div>
-                <p className="font-semibold">Scan to install on your phone</p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-400">Point your phone's camera at the code. It opens this guide for your device.</p>
-              </div>
             </div>
           )}
         </section>
