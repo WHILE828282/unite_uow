@@ -57,3 +57,14 @@ Setup in Vercel → Settings → Environment Variables, then redeploy:
 - `OTP_SECRET` (optional): signing key for the challenge; defaults to one derived from the Resend key.
 
 Party pitches sent to Telegram say whether the organizer verified their email or used the demo login.
+
+## Moderation buttons and My Events
+
+Each party application arrives in the admin Telegram chat with three buttons under the photo: **✅ Approve**, **🔍 Additional Check** and **❌ Reject**. A click calls the webhook `/api/telegram`, which saves the status (`approved`, `under_review` or `rejected`) in the database and marks the chosen button with who decided and when. Decisions can be changed by tapping another button.
+
+- Approved events appear on Student Parties for everyone (`GET /api/events`; no email or Student ID is ever exposed).
+- The organizer's **My Events** tab (shown once they've applied) splits their events into **Pending Moderation** and **Live Events** and updates every 15 seconds.
+
+**One-time setup — connect a database:** Vercel → your project → **Storage** → **Create Database** → **Upstash for Redis** (free) → **Connect** to the project, then redeploy. It adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`). Then open `https://<your-site>/api/pitch`: it registers the Telegram webhook and should say "Moderation buttons are on."
+
+Without a database, pitches still reach Telegram (without buttons) and the app keeps its 2-hour demo review.

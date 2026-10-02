@@ -2,9 +2,9 @@
    The bot token stays server-side (set TELEGRAM_BOT_TOKEN in the Vercel project settings); it must
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
-// Unite admin moderation chat (TELEGRAM_CHAT_ID in Vercel overrides it without a code change).
-// Stray spaces or quotes from pasting are ignored.
-const CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim().replace(/^["']|["']$/g, "").trim() || "8951261399";
+import crypto from "node:crypto";
+import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, moderationKeyboard, ensureWebhook } from "./_lib.js";
+
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
@@ -57,46 +57,15 @@ function buildParts(p) {
     "📝 <b>Detailed Description:</b>",
     esc(p.pitch),
     "",
+    p.moderated ? "👇 <b>Decide with the buttons under the photo below.</b>" : null,
+    p.moderated ? "" : null,
     `<i>Ref ${esc(p.ref)} · submitted by ${esc(p.account || p.email)}${p.verified ? " (✅ email verified)" : " (demo login, email not verified)"}</i>`,
   ].filter((x) => x !== null);
   return parts.join("\n");
 }
 
-// Trim stray spaces/newlines from a pasted token.
-// Accepts the usual naming slips (stray spaces or quotes, different case, a VITE_ prefix, TELEGRAM_TOKEN/BOT_TOKEN).
-const TOKEN_NAMES = ["TELEGRAM_BOT_TOKEN", "VITE_TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN", "BOT_TOKEN"];
-const tokenVar = () => {
-  const keys = Object.keys(process.env);
-  for (const want of TOKEN_NAMES) {
-    const key = keys.find((k) => k.trim().toUpperCase() === want && String(process.env[k] || "").trim());
-    if (key) return key;
-  }
-  return null;
-};
-const readToken = () => {
-  const key = tokenVar();
-  return key ? String(process.env[key]).trim().replace(/^["']|["']$/g, "").trim() : "";
-};
-// Names only (never values) of variables that look Telegram-related, so the setup check can show what Vercel passed in.
-const telegramVarNames = () => Object.keys(process.env).filter((k) => /TELEGRAM|BOT/i.test(k));
-const deployment = () => ({ environment: process.env.VERCEL_ENV || "unknown", host: process.env.VERCEL_URL || "unknown" });
-const tg = async (token, method, body) => {
-  const r = await fetch(`https://api.telegram.org/bot${token}/${method}`, body instanceof FormData
-    ? { method: "POST", body }
-    : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
-  const data = await r.json().catch(() => ({}));
-  return { ok: r.ok && data.ok, status: r.status, data };
-};
-// Plain-English explanation of a Telegram error (no secrets included).
-const explain = (d, token) => {
-  const m = String((d && d.description) || "");
-  if (token && token.startsWith(`${CHAT_ID}:`)) return `${CHAT_ID} is the bot's own ID (the number at the start of its token), not your chat ID, and a bot can't message itself. Message @userinfobot in Telegram to get your personal ID, then add it in Vercel as TELEGRAM_CHAT_ID and redeploy.`;
-  if (/bots can't send messages to bots/i.test(m)) return `Chat ${CHAT_ID} belongs to a bot, and bots can't message other bots. Message @userinfobot in Telegram to get your personal ID, then add it in Vercel as TELEGRAM_CHAT_ID and redeploy.`;
-  if (/unauthorized|not found: 404/i.test(m) || (d && d.error_code === 401)) return "The bot token is invalid. Copy it again from @BotFather and update TELEGRAM_BOT_TOKEN in Vercel, then redeploy.";
-  if (/chat not found|bot can't initiate|user is deactivated/i.test(m)) return `The bot can't message chat ${CHAT_ID} yet. Open the bot in Telegram from that account and press Start.`;
-  if (/blocked by the user/i.test(m)) return "The admin account has blocked the bot. Unblock it in Telegram and press Start.";
-  return m || "Telegram rejected the request.";
-};
+const MAX_STORED_IMAGE = 950_000; // database request limit is ~1 MB; larger artwork stays in Telegram only
+const newRef = () => "UN-" + Array.from(crypto.randomBytes(6), (x) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x % 32]).join("");
 
 export default async function handler(req, res) {
   const token = readToken();
@@ -116,9 +85,23 @@ export default async function handler(req, res) {
       const me = await tg(token, "getMe");
       if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data, token) });
       const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
+      // Moderation buttons: need the database, and Telegram must know where to send clicks.
+      let moderation = { database: storeConfigured() };
+      if (moderation.database) {
+        try { await kv("PING"); } catch (e) { moderation = { database: false, databaseError: e.message }; }
+      }
+      if (moderation.database) {
+        const hook = await ensureWebhook(token, req, "force" in (req.query || {}));
+        const info = await tg(token, "getWebhookInfo");
+        moderation = { ...moderation, webhook: (info.ok && info.data.result.url) || null, webhookError: hook.ok ? (info.ok && info.data.result.last_error_message) || null : hook.error };
+      }
+      const modHelp = !moderation.database
+        ? " Moderation buttons are off: connect a database (Vercel → Storage → Upstash for Redis → Connect to this project), then redeploy."
+        : moderation.webhookError ? ` Moderation buttons: ${moderation.webhookError}` : " Moderation buttons are on.";
       return res.status(200).json({
         configured: true, variable: tokenVar(), deployment: deployment(), tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
-        help: chat.ok ? "All set: party pitches will be delivered." : explain(chat.data, token),
+        moderation,
+        help: chat.ok ? `All set: party pitches will be delivered.${modHelp}` : explain(chat.data, token),
       });
     } catch (e) {
       return res.status(200).json({ configured: true, help: "Couldn't reach Telegram from the server. Try again in a minute." });
@@ -160,6 +143,16 @@ export default async function handler(req, res) {
   if (p.mapsUrl && !isHttps(p.mapsUrl)) missing.push("Google Maps URL");
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
+  // Moderation needs the database: the application is stored with status "pending" and the admin decides
+  // with inline buttons (handled by /api/telegram). Without a database the app falls back to its 2-hour demo review.
+  let moderated = storeConfigured();
+  if (moderated) {
+    p.ref = newRef();
+    try { for (let i = 0; i < 4 && (await kv("EXISTS", K.pitch(p.ref))) === 1; i++) p.ref = newRef(); }
+    catch (e) { console.error("Database unavailable, moderation buttons skipped:", e.message); moderated = false; }
+  }
+  p.moderated = moderated;
+
   // Fail-safe delivery: the student's submission always completes. Every Telegram rejection is logged with
   // Telegram's exact JSON so size/format problems can be diagnosed in the Vercel logs.
   const text = buildMessage(p);
@@ -176,26 +169,54 @@ export default async function handler(req, res) {
   } catch (e) { console.error("Telegram sendMessage error:", e && e.message); }
   if (!delivered) console.error(`Pitch NOT delivered to chat ${CHAT_ID}; full text follows so it isn't lost:\n${plain}`);
 
+  // Save the application (status "pending") and make sure button clicks are routed back to this site.
+  if (delivered && moderated) {
+    try {
+      const { moderated: _m, ...rec } = p;
+      await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), hasCover: false, hasLogo: false }), "EX", TTL_S);
+      const stored = {};
+      for (const [kind, raw] of [["cover", b.cover], ["logo", b.logo]]) {
+        if (!raw || raw.length > MAX_STORED_IMAGE) continue;
+        try { await kv("SET", K.img(p.ref, kind), raw, "EX", TTL_S); stored[kind] = true; }
+        catch (e) { console.error(`Database: ${kind} image not stored:`, e.message); }
+      }
+      if (stored.cover || stored.logo) {
+        await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), hasCover: !!stored.cover, hasLogo: !!stored.logo }), "EX", TTL_S);
+      }
+      const hook = await ensureWebhook(token, req);
+      if (!hook.ok) console.error("Moderation webhook not registered:", hook.error);
+    } catch (e) { console.error("Database save failed, moderation buttons skipped:", e.message); moderated = false; }
+  }
+  const keyboard = moderated ? JSON.stringify(moderationKeyboard(p.ref)) : null;
+
   // Artwork: each photo is optional. If Telegram rejects one, the text pitch above still stands, plus a note.
+  // The moderation buttons go under the last photo; if no photo got through they follow as their own message.
+  let buttonsPlaced = false;
   if (delivered) {
     const failed = [];
-    for (const [img, label] of [[cover, "Cover"], [logo, "Logo"]]) {
-      if (!img) continue;
+    const photos = [[cover, "Cover"], [logo, "Logo"]].filter(([img]) => img);
+    for (const [i, [img, label]] of photos.entries()) {
+      const last = i === photos.length - 1;
       try {
         const form = new FormData();
         form.append("chat_id", CHAT_ID);
         form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
+        if (keyboard && last) form.append("reply_markup", keyboard);
         form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
         const pr = await tg(token, "sendPhoto", form);
-        if (!pr.ok) { failed.push(label); console.error(`Telegram sendPhoto (${label}, ${img.type}, ${img.data.length} bytes) rejected:`, JSON.stringify(pr.data)); }
+        if (pr.ok) { if (keyboard && last) buttonsPlaced = true; }
+        else { failed.push(label); console.error(`Telegram sendPhoto (${label}, ${img.type}, ${img.data.length} bytes) rejected:`, JSON.stringify(pr.data)); }
       } catch (e) { failed.push(label); console.error(`Telegram sendPhoto (${label}) error:`, e && e.message); }
     }
-    if (failed.length) {
-      try { await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `⚠️ ${failed.join(" and ")} for "${p.title}" (${p.ref}) couldn't be attached. Ask the organizer at ${p.email}.` }); }
-      catch (e) { console.error("Telegram artwork note error:", e && e.message); }
+    if (failed.length || (keyboard && !buttonsPlaced)) {
+      const note = failed.length ? `⚠️ ${failed.join(" and ")} for "${p.title}" (${p.ref}) couldn't be attached. Ask the organizer at ${p.email}.` : `Decision for "${p.title}" (${p.ref}):`;
+      try {
+        const r = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: note, ...(keyboard && !buttonsPlaced ? { reply_markup: JSON.parse(keyboard) } : {}) });
+        if (!r.ok) console.error("Telegram note rejected:", JSON.stringify(r.data));
+      } catch (e) { console.error("Telegram artwork note error:", e && e.message); }
     }
   }
-  return res.status(200).json({ ok: true, delivered });
+  return res.status(200).json({ ok: true, delivered, moderated: delivered && moderated, ...(delivered && moderated ? { ref: p.ref, key: ownerKey(p.ref) } : {}) });
 }
 
 export { buildMessage };

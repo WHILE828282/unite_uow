@@ -926,11 +926,18 @@ const submissionToParty = (sub) => ({
   id: sub.at, lang: sub.lang, title: sub.title, emoji: TYPE_EMOJI[sub.category] || "🎉", category: sub.category,
   date: sub.date, time: fmtTime(sub.start), where: sub.room ? `${sub.venueName}, ${sub.room}` : sub.venueName,
   address: sub.venueName, maps: sub.venueName, mapsUrl: sub.mapsUrl, price: sub.price, spots: sub.spots, taken: 0, wait: 0, vibe: null,
-  host: "you", own: true, cover: sub.cover, logo: sub.logo,
+  host: "you", own: true, dyn: true, ref: sub.ref, cover: sub.cover, logo: sub.logo,
   contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
   desc: sub.pitch || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
   perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
 });
+/* An approved event from another student, loaded from the moderation database (no email exposed). */
+const eventImg = (ref, kind, key) => `/api/events?img=${ref}&kind=${kind}${key ? `&k=${key}` : ""}`;
+const campusToParty = (e) => ({
+  ...submissionToParty({ ...e, email: "", cover: e.hasCover ? eventImg(e.ref, "cover") : null, logo: e.hasLogo ? eventImg(e.ref, "logo") : null }),
+  host: "student", own: false, contact: { name: "Organizer", role: "Student host", whatsapp: e.whatsapp, telegram: e.telegram },
+});
+const MOD_STATUSES = ["pending", "under_review", "approved", "rejected"];
 const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
 const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
@@ -1113,12 +1120,12 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={DK.label} htmlFor="c-spots">Capacity</label>
-                  <input id="c-spots" type="number" min="1" value={f.spots} onChange={set("spots")} className={DK.input(!!errors.spots)} />
+                  <input id="c-spots" type="number" inputMode="numeric" min="1" value={f.spots} onChange={set("spots")} className={DK.input(!!errors.spots)} />
                   <E k="spots" />
                 </div>
                 <div>
                   <label className={DK.label} htmlFor="c-price">Ticket price (AED)</label>
-                  <input id="c-price" type="number" min="0" value={f.price} onChange={set("price")} className={DK.input(!!errors.price)} />
+                  <input id="c-price" type="number" inputMode="decimal" min="0" value={f.price} onChange={set("price")} className={DK.input(!!errors.price)} />
                   {errors.price ? <E k="price" /> : <p className={DK.hint}>{Number(f.price) > 0 ? "Paid securely via Ziina." : "0 means free entry."}</p>}
                 </div>
               </div>
@@ -1527,12 +1534,24 @@ function ReviewModal({ sub: s, r, onClose }) {
         {s.cover && (<><img src={s.cover} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: "16 / 9" }} /><span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" aria-hidden="true" /></>)}
         <span className={`relative block ${s.cover ? "pt-12" : ""}`}>{s.logo ? <EventLogo p={s} className="h-14 w-14 ring-2 ring-white/80 shadow-lg" /> : <span className="text-4xl">{TYPE_EMOJI[s.category] || "🎉"}</span>}</span>
         <h2 className="relative mt-2 pr-8 text-xl font-bold leading-tight">{s.title}</h2>
-        <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Party Under Review · ~{r.left} left</span>
+        {r.status === "rejected" ? (
+          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-semibold text-white">✕ Not approved</span>
+        ) : (
+          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">{!s.moderated ? `⏳ Party Under Review · ~${r.left} left` : s.mod === "under_review" ? "🔍 Additional check in progress" : "⏳ Pending moderation"}</span>
+        )}
       </div>
       <div className="space-y-4 p-5">
-        <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
-          Our admin team is verifying your event's safety. Once approved (within 2 hours) it goes live on Student Parties and you'll be notified at <span className="font-semibold">{s.email}</span>.
-        </p>
+        {r.status === "rejected" ? (
+          <p className="rounded-xl bg-rose-50 px-3 py-2.5 text-sm leading-relaxed text-rose-800 ring-1 ring-inset ring-rose-200">
+            The admin team didn't approve this event, so it won't be published. You're welcome to adjust the plan and submit a new application.
+          </p>
+        ) : (
+          <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
+            {s.mod === "under_review"
+              ? <>The admin team is running an additional safety check and may contact you at <span className="font-semibold">{s.email}</span>. It goes live on Student Parties once approved.</>
+              : <>Our admin team is verifying your event's safety. Once approved (usually within 2 hours) it goes live on Student Parties. This page updates automatically.</>}
+          </p>
+        )}
         <dl className="space-y-2 rounded-2xl border border-slate-200/50 bg-slate-50 p-4 text-sm">
           {rows.map(([k, v]) => (
             <div key={k} className="flex items-start justify-between gap-4"><dt className="shrink-0 text-slate-500">{k}</dt><dd className="min-w-0 text-right font-medium text-slate-800">{v}</dd></div>
@@ -1708,9 +1727,69 @@ function layoutDay(items) {
 const ReviewBadge = ({ r }) =>
   r.status === "approved" ? (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-3 w-3" /> Approved · Live</span>
+  ) : r.status === "rejected" ? (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">✕ Not approved</span>
+  ) : r.moderated ? (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">{r.mod === "under_review" ? "🔍 Additional check" : "⏳ Pending moderation"}</span>
   ) : (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Party Under Review · ~{r.left}</span>
   );
+
+/* My Events: the host's own applications, split into "Pending Moderation" and "Live Events". */
+function MyEventCard({ s, r, onOpen }) {
+  const [imgOk, setImgOk] = useState(true);
+  return (
+    <button onClick={() => onOpen(s)} className="u-card group flex flex-col overflow-hidden rounded-2xl border border-slate-200/50 bg-white text-left shadow-sm">
+      <span className={`relative block aspect-[16/9] w-full bg-gradient-to-br ${GRADIENTS[s.category] || GRADIENTS.Party}`}>
+        {s.cover && imgOk ? <img src={s.cover} alt="" loading="lazy" decoding="async" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" />
+          : <span className="absolute inset-0 flex items-center justify-center text-5xl" aria-hidden="true">{TYPE_EMOJI[s.category] || "🎉"}</span>}
+        <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden="true" />
+        <span className="absolute left-3 top-3"><ReviewBadge r={r} /></span>
+      </span>
+      <span className="block p-4">
+        <span className="block truncate font-semibold text-slate-900">{s.title}</span>
+        <span className="mt-0.5 block text-sm text-slate-500">{fmtDate(s.date)} · {fmtRange(s.start, s.end)}</span>
+        <span className="mt-2 flex flex-wrap items-center gap-1.5"><VenueChip where={s.room ? `${s.venueName}, ${s.room}` : s.venueName} /><LangBadge lang={s.lang} /></span>
+        <span className="mt-2 block font-mono text-[11px] text-slate-400">{s.ref}</span>
+      </span>
+    </button>
+  );
+}
+
+function MyEvents({ items, onOpen, onHost }) {
+  const pending = items.filter(({ r }) => r.status === "review");
+  const live = items.filter(({ r }) => r.status === "approved");
+  const declined = items.filter(({ r }) => r.status === "rejected");
+  const Grid = ({ list }) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, r }) => <MyEventCard key={s.ref} s={s} r={r} onOpen={onOpen} />)}</div>
+  );
+  const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">{children}</div>;
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900">My Events</h2>
+          <p className="mt-0.5 text-sm text-slate-500">Everything you host on Unite. Decisions from the admin team appear here automatically.</p>
+        </div>
+        <button onClick={onHost} className="u-btn rounded-xl bg-crimson-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-crimson-600 active:scale-95">+ Host another event</button>
+      </div>
+      <section>
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Pending Moderation <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">{pending.length}</span></h3>
+        {pending.length ? <Grid list={pending} /> : <Empty>Nothing waiting for review.</Empty>}
+      </section>
+      <section>
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Live Events <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{live.length}</span></h3>
+        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and on Student Parties for the whole campus.</Empty>}
+      </section>
+      {declined.length > 0 && (
+        <section>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Not approved</h3>
+          <Grid list={declined} />
+        </section>
+      )}
+    </div>
+  );
+}
 
 function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, onOpenReview, onBrowse, onExport }) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -2167,7 +2246,11 @@ export default function App() {
   const [clock, setClock] = useState(Date.now());
   const [parties, setParties] = useState(PARTIES);
   const [bookings, setBookings] = useState([]);
-  const [submissions, setSubmissions] = useState([]); // party applications: under review for 2h, then published
+  // Party applications. Moderated ones (database connected) carry { moderated, mod: status, key } and follow the
+  // admin's Telegram decision; otherwise the 2-hour demo review applies. Saved per account in this browser.
+  const [submissions, setSubmissions] = useState([]);
+  const [campus, setCampus] = useState([]); // approved student events from the database, visible to everyone
+  const seenRef = useRef({}); // last review status shown per application, to announce changes once
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState({});
@@ -2196,14 +2279,90 @@ export default function App() {
   useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
 
   useEffect(() => { const t = setInterval(() => setClock(Date.now()), 60000); return () => clearInterval(t); }, []);
+  const reviewOf = (sub) => {
+    if (sub.moderated) return sub.mod === "approved" ? "approved" : sub.mod === "rejected" ? "rejected" : "review";
+    return clock - sub.at >= REVIEW_MS ? "approved" : "review";
+  };
+  // Announce review decisions once (approved / extra check / not approved).
   useEffect(() => {
-    const due = submissions.filter((sub) => !sub.live && clock - sub.at >= REVIEW_MS);
-    if (!due.length) return;
-    setParties((ps) => [...ps, ...due.map(submissionToParty)]);
-    setSubmissions((xs) => xs.map((sub) => (due.some((d) => d.ref === sub.ref) ? { ...sub, live: true } : sub)));
-    notify({ title: "Your party is approved 🎉", body: `"${due[0].title}" passed the safety review and is now live on Student Parties.` }, 5000);
+    submissions.forEach((sub) => {
+      const st = reviewOf(sub) + (sub.mod === "under_review" ? ":check" : "");
+      const prev = seenRef.current[sub.ref];
+      seenRef.current[sub.ref] = st;
+      if (prev === undefined || prev === st) return;
+      if (st === "approved") notify({ title: "Your party is approved 🎉", body: `"${sub.title}" passed the safety review and is now live on Student Parties.` }, 5000);
+      else if (st === "rejected") notify({ title: "Application not approved", body: `The admin team didn't approve "${sub.title}". See My Events for details.` }, 5000);
+      else if (st === "review:check") notify({ title: "Additional check 🔍", body: `The admin team is taking a closer look at "${sub.title}".` }, 4500);
+    });
     // eslint-disable-next-line
   }, [clock, submissions]);
+
+  // Live student events in the feed: your approved applications plus everyone else's from the database.
+  const ownLive = submissions.filter((sub) => reviewOf(sub) === "approved");
+  const liveKey = ownLive.map((x) => x.ref).join() + "|" + campus.map((e) => e.ref).join();
+  useEffect(() => {
+    const mine = new Set(submissions.map((x) => x.ref));
+    const want = [...ownLive.map(submissionToParty), ...campus.filter((e) => !mine.has(e.ref)).map(campusToParty)];
+    setParties((ps) => {
+      const prev = new Map(ps.filter((x) => x.dyn).map((x) => [x.id, x]));
+      if (want.length === prev.size && want.every((x) => prev.has(x.id))) return ps;
+      // Keep ticket and waitlist counts for events that stay.
+      return [...ps.filter((x) => !x.dyn), ...want.map((x) => (prev.has(x.id) ? { ...x, taken: prev.get(x.id).taken, wait: prev.get(x.id).wait } : x))];
+    });
+    // eslint-disable-next-line
+  }, [liveKey]);
+
+  // Campus feed of approved student events (refreshed every minute).
+  useEffect(() => {
+    let stop = false;
+    const load = async () => {
+      try {
+        const d = await (await fetch("/api/events")).json();
+        if (!stop && d && Array.isArray(d.events)) setCampus((old) => (JSON.stringify(old) === JSON.stringify(d.events) ? old : d.events));
+      } catch (e) { /* offline or no database: keep what we have */ }
+    };
+    load();
+    const t = setInterval(load, 60000);
+    return () => { stop = true; clearInterval(t); };
+  }, []);
+
+  // Follow the admin's decisions on your own applications (every 15 s while signed in).
+  const modKey = submissions.filter((x) => x.moderated && x.key).map((x) => `${x.ref}.${x.key}`).join(",");
+  useEffect(() => {
+    if (!user || !modKey) return;
+    let stop = false;
+    const poll = async () => {
+      try {
+        const d = await (await fetch(`/api/events?mine=${encodeURIComponent(modKey)}`, { cache: "no-store" })).json();
+        if (stop || !d || !Array.isArray(d.mine)) return;
+        setSubmissions((xs) => {
+          let changed = false;
+          const next = xs.map((x) => {
+            const m = d.mine.find((y) => y.ref === x.ref);
+            if (!m || !MOD_STATUSES.includes(m.status) || m.status === x.mod) return x;
+            changed = true;
+            return { ...x, mod: m.status };
+          });
+          return changed ? next : xs;
+        });
+      } catch (e) { /* try again next tick */ }
+    };
+    poll();
+    const t = setInterval(poll, 15000);
+    return () => { stop = true; clearInterval(t); };
+  }, [user, modKey]);
+
+  // Remember applications per account in this browser (artwork as server links, not raw uploads).
+  useEffect(() => {
+    if (!user) return;
+    try {
+      localStorage.setItem(`unite-events:${user}`, JSON.stringify(submissions.map((x) => ({
+        ...x,
+        cover: x.moderated ? eventImg(x.ref, "cover", x.key) : null,
+        logo: x.moderated && x.logo ? eventImg(x.ref, "logo", x.key) : null,
+      }))));
+    } catch (e) { /* storage full or blocked */ }
+  }, [user, submissions]);
 
   const notify = (m, ms = 2400) => { setToast(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), ms); };
   const closeModal = () => setModal(null);
@@ -2213,6 +2372,10 @@ export default function App() {
     const action = modal && modal.action;
     studentIdRef.current = sid || "";
     verifiedRef.current = !!verified;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`unite-events:${email}`) || "[]");
+      setSubmissions(Array.isArray(saved) ? saved : []);
+    } catch (e) { setSubmissions([]); }
     setUser(email);
     setModal(null);
     notify(verified ? { title: "Email verified", body: "Welcome to Unite! Signed in as " + email } : "Signed in as " + email, verified ? 3500 : 2400);
@@ -2246,7 +2409,6 @@ export default function App() {
     if (pending) notify(`Registration form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
     else notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
-  const reviewOf = (sub) => (clock - sub.at >= REVIEW_MS ? "approved" : "review");
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
   // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
   // queues it for review locally. Throws with a readable message if it couldn't be delivered.
@@ -2254,6 +2416,7 @@ export default function App() {
     // Fail-safe: whatever happens on the way to Telegram, the student's submission completes.
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 20000);
+    let saved = sub;
     try {
       const res = await fetch("/api/pitch", {
         method: "POST",
@@ -2263,10 +2426,11 @@ export default function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.delivered) console.warn("Pitch forwarding issue", res.status, data);
+      if (data.moderated && data.ref && data.key) saved = { ...sub, ref: data.ref, key: data.key, moderated: true, mod: "pending" };
     } catch (e) {
       console.warn("Pitch forwarding failed", e);
     } finally { clearTimeout(timer); }
-    setSubmissions((x) => [sub, ...x]);
+    setSubmissions((x) => [saved, ...x]);
     setModal(null);
     notify({ title: "Application Submitted!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
   };
@@ -2377,7 +2541,12 @@ export default function App() {
     .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
 
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"]];
+  const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
+  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
+    ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
+  const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
+  useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);
+  const openOwn = (sub) => (reviewOf(sub) === "approved" ? setModal({ type: "detail", id: sub.at }) : setModal({ type: "review", ref: sub.ref }));
 
   return (
     <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
@@ -2396,7 +2565,7 @@ export default function App() {
           {user ? (
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={studentIdRef.current ? `${user} · ID ${studentIdRef.current}` : user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setTab("clubs"); notify("Signed out"); }}
+              <button onClick={() => { setUser(null); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); }}
                 className={`u-keep rounded-lg px-2.5 py-1.5 text-sm ${dark ? "text-slate-300 hover:bg-white/10 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>Sign out</button>
             </div>
           ) : (
@@ -2436,13 +2605,14 @@ export default function App() {
 
       {/* Content */}
       <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
-        <div id="tabs" className="relative mb-5 grid grid-cols-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
+        <div id="tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="relative mb-5 grid rounded-2xl border border-slate-200/50 bg-white shadow-sm p-1.5 shadow-sm" role="tablist">
           <div className="u-keep absolute rounded-xl bg-crimson-700 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
               className={`relative z-10 whitespace-nowrap rounded-xl px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "text-white" : "text-slate-500 hover:text-slate-800"}`}>
               <span className="sm:hidden">{short}</span><span className="hidden sm:inline">{l}</span>
               {k === "tickets" && user && bookings.length > 0 && <span className="ml-1 rounded-full bg-indigo-500 px-1.5 py-0.5 text-xs text-white">{bookings.length}</span>}
+              {k === "events" && myEventItems.some(({ r }) => r.status === "review") && <span className="ml-1 hidden rounded-full bg-amber-500 px-1.5 py-0.5 text-xs text-white sm:inline">{myEventItems.filter(({ r }) => r.status === "review").length}</span>}
               {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
             </button>
           ))}
@@ -2583,13 +2753,16 @@ export default function App() {
               sessions={sessions}
               events={bookings}
               onOpenClub={(c) => setModal({ type: "club", id: c.id })}
-              reviews={submissions.map((sub) => ({ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }))}
-              onOpenReview={(r) => (r.live ? setModal({ type: "detail", id: r.at }) : setModal({ type: "review", ref: r.ref }))}
+              reviews={submissions.filter((sub) => reviewOf(sub) !== "rejected").map((sub) => ({ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }))}
+              onOpenReview={openOwn}
               onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
               onBrowse={changeTab}
               onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}
             />
           ))}
+
+        {/* My events (hosts only) */}
+        {tab === "events" && showMyEvents && <MyEvents items={myEventItems} onOpen={openOwn} onHost={hostEvent} />}
 
         {/* My tickets */}
         {tab === "tickets" &&
@@ -2648,29 +2821,17 @@ export default function App() {
                 </section>
               )}
               <section>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Event applications</h3>
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Hosting</h3>
                 {submissions.length === 0 ? (
                   <div className="rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 text-sm text-slate-500">
-                    Parties you submit appear here while the admin team reviews them (usually within 2 hours).
+                    Want to run your own party or meetup? The admin team reviews every application for safety.
                     <button onClick={hostEvent} className="ml-1 font-semibold text-indigo-600 hover:underline">Host an event</button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {submissions.map((s) => {
-                      const r = { ...s, status: reviewOf(s), left: reviewLeft(s) };
-                      return (
-                        <button key={s.ref} onClick={() => (s.live ? setModal({ type: "detail", id: s.at }) : setModal({ type: "review", ref: s.ref }))}
-                          className="u-card flex w-full flex-col gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                          <span className="min-w-0">
-                            <span className="block truncate font-semibold">{s.title}</span>
-                            <span className="block text-sm text-slate-500">{s.category} · {fmtDate(s.date)} · {fmtRange(s.start, s.end)} · <span className="font-mono">{s.ref}</span></span>
-                            <span className="mt-1 flex flex-wrap items-center gap-1.5"><VenueChip where={s.venueName} /><LangBadge lang={s.lang} />{s.dress && <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Dress: {s.dress}</span>}</span>
-                          </span>
-                          <ReviewBadge r={r} />
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <button onClick={() => changeTab("events")} className="u-card flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left text-sm shadow-sm">
+                    <span><span className="font-semibold text-slate-900">Your events moved to My Events</span><span className="block text-slate-500">Pending moderation and live events, side by side.</span></span>
+                    <span className="font-semibold text-indigo-600">Open →</span>
+                  </button>
                 )}
               </section>
             </div>
