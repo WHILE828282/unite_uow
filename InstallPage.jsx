@@ -3,137 +3,52 @@ import { platform, isIOS, isMobile, isStandalone, inAppBrowser, iosNotSafari, pr
 import { InstallBadge, InAppCard, InstallQr, InstalledToast, useCanPrompt } from "./GetApp.jsx";
 
 /* ------------------------------------------------------------------ */
-/*  Step illustrations: a simplified phone with the tap target in crimson */
+/*  Install steps: real screenshots from public/install (.webp, .png fallback) */
 /* ------------------------------------------------------------------ */
-const C = { crimson: "#c0394f", crimsonSoft: "#a83446", screen: "#0f1d36", ui: "#1a2c4d", line: "#2a3d61", text: "#9fb0cc", white: "#e8eefb" };
-const Ping = ({ x, y, r = 12 }) => (<><circle className="u-ping" cx={x} cy={y} r={r} fill={C.crimson} /><circle cx={x} cy={y} r={r * 0.55} fill="none" stroke={C.crimson} strokeWidth="2" /></>);
-// Fingertip that taps the target.
-const Tap = ({ x, y }) => (
-  <g className="u-tap" style={{ transformOrigin: `${x}px ${y}px` }}>
-    <circle cx={x + 9} cy={y + 13} r="7.5" fill="#f4f6fb" stroke="#0a192f" strokeWidth="1.5" />
-  </g>
-);
-const Phone = ({ children }) => (
-  <svg viewBox="22 2 116 216" className="h-full w-full" aria-hidden="true">
-    <defs><linearGradient id="ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#14264a" /><stop offset="1" stopColor="#0c182e" /></linearGradient></defs>
-    <rect x="30" y="6" width="100" height="208" rx="18" fill="#060d1a" stroke="#2c4066" strokeWidth="1.5" />
-    <rect x="35" y="11" width="90" height="198" rx="14" fill="url(#ph)" />
-    <rect x="66" y="15" width="28" height="7" rx="3.5" fill="#060d1a" />
-    {children}
-  </svg>
-);
-const Txt = ({ x, y, children, size = 6.5, fill = C.text, weight = 500, anchor = "start" }) => (
-  <text x={x} y={y} fontSize={size} fill={fill} fontWeight={weight} textAnchor={anchor} fontFamily="system-ui, -apple-system, sans-serif">{children}</text>
-);
-const Rows = ({ y0 = 40, n = 4 }) => Array.from({ length: n }, (_, i) => <rect key={i} x="44" y={y0 + i * 14} width={i % 2 ? 56 : 70} height="5" rx="2.5" fill={C.ui} />);
-const ShareIcon = ({ x, y, color = C.white }) => (
-  <g stroke={color} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <path d={`M${x} ${y - 5}v8M${x - 3} ${y - 2}l3-3 3 3`} /><path d={`M${x - 4} ${y}h-1.5v6.5h11V${y}H${x + 4}`} />
-  </g>
-);
-
-const IOS_ART = [
-  // 1. Safari with uniteuow.com in the address bar
-  <Phone key="1">
-    <Rows y0={34} n={6} />
-    <circle cx="80" cy="132" r="17" fill="#e8eefb" /><circle cx="80" cy="132" r="14" fill="#2f7cf6" />
-    <path d="M80 121l3.2 11H76.8z" fill="#ff5b4f" /><path d="M80 143l-3.2-11h6.4z" fill="#fff" />
-    <rect x="41" y="183" width="78" height="15" rx="7.5" fill={C.ui} stroke={C.crimson} strokeWidth="1.6" />
-    <Txt x={80} y={193} anchor="middle" fill={C.white} weight={600}>uniteuow.com</Txt>
-    <Ping x={118} y={190} r={6} />
-  </Phone>,
-  // 2. Share button in Safari's toolbar (or inside •••)
-  <Phone key="2">
-    <Rows y0={34} n={8} />
-    <rect x="41" y="164" width="78" height="13" rx="6.5" fill={C.ui} /><Txt x={80} y={173} anchor="middle" fill={C.white}>uniteuow.com</Txt>
-    <Txt x={112} y={173.5} anchor="middle" fill={C.text} size={7} weight={700}>•••</Txt>
-    <g fill="none" stroke={C.text} strokeWidth="1.5" strokeLinecap="round"><path d="M50 190l-3 3 3 3" /><path d="M64 190l3 3-3 3" /><rect x="102" y="188" width="9" height="9" rx="2" /></g>
-    <Ping x={80} y={192} r={11} />
-    <ShareIcon x={80} y={192} color="#fff" />
-    <Tap x={80} y={192} />
-  </Phone>,
-  // 3. Share sheet: Add to Home Screen (+ Open as Web App on)
-  <Phone key="3">
-    <rect x="35" y="60" width="90" height="149" rx="14" fill="#16284a" />
-    <rect x="72" y="65" width="16" height="3" rx="1.5" fill={C.line} />
-    {["Copy", "Add to Reading List"].map((t, i) => (<g key={t}><rect x="42" y={76 + i * 18} width="76" height="14" rx="4" fill={C.ui} /><Txt x={47} y={85 + i * 18}>{t}</Txt></g>))}
-    <rect x="42" y="112" width="76" height="16" rx="4" fill={C.crimsonSoft} stroke={C.crimson} strokeWidth="1.4" />
-    <Txt x={47} y={122.5} fill="#fff" weight={700}>Add to Home Screen</Txt>
-    <rect x="107" y="115.5" width="8" height="8" rx="2" fill="none" stroke="#fff" strokeWidth="1.2" /><path d="M111 117.5v4M109 119.5h4" stroke="#fff" strokeWidth="1.2" />
-    <rect x="42" y="134" width="76" height="16" rx="4" fill={C.ui} /><Txt x={47} y={144.5} fill={C.white}>Open as Web App</Txt>
-    <rect x="100" y="138" width="14" height="8" rx="4" fill="#34c759" /><circle cx="110" cy="142" r="3.2" fill="#fff" />
-    <Tap x={78} y={120} />
-  </Phone>,
-  // 4. Add → Unite on the home screen
-  <Phone key="4">
-    <Txt x={44} y={36} fill={C.text}>Cancel</Txt>
-    <Txt x={80} y={36} anchor="middle" fill={C.white} weight={600} size={6}>Add to Home</Txt>
-    <Ping x={113} y={34} r={9} /><Txt x={113} y={36.5} anchor="middle" fill="#fff" weight={800} size={7.5}>Add</Txt>
-    {Array.from({ length: 12 }, (_, i) => <rect key={i} x={44 + (i % 4) * 19} y={56 + Math.floor(i / 4) * 24} width="14" height="14" rx="4" fill={C.ui} />)}
-    <rect x="61" y="134" width="38" height="38" rx="9" fill="none" stroke={C.crimson} strokeWidth="2" />
-    <image href="/icons/icon-192.png" x="64" y="137" width="32" height="32" clipPath="inset(0 round 7px)" />
-    <Txt x={80} y={182} anchor="middle" fill={C.white} weight={600}>Unite</Txt>
-  </Phone>,
-];
-
-const ANDROID_ART = [
-  // 1. Chrome with uniteuow.com
-  <Phone key="1">
-    <rect x="40" y="27" width="62" height="13" rx="6.5" fill={C.ui} stroke={C.crimson} strokeWidth="1.6" />
-    <Txt x={71} y={36} anchor="middle" fill={C.white} weight={600}>uniteuow.com</Txt>
-    <Txt x={114} y={37} anchor="middle" fill={C.text} size={9} weight={700}>⋮</Txt>
-    <Rows y0={52} n={6} />
-    <circle cx="80" cy="150" r="17" fill="none" stroke="#e8eefb" strokeWidth="3" /><path d="M63 150h34M80 133c6 6 6 28 0 34M80 133c-6 6-6 28 0 34" stroke="#e8eefb" strokeWidth="1.6" fill="none" />
-    <Ping x={44} y={33} r={6} />
-  </Phone>,
-  // 2. ⋮ menu top right
-  <Phone key="2">
-    <rect x="40" y="27" width="62" height="13" rx="6.5" fill={C.ui} /><Txt x={71} y={36} anchor="middle" fill={C.white}>uniteuow.com</Txt>
-    <Ping x={114} y={33} r={10} />
-    <Txt x={114} y={37.5} anchor="middle" fill="#fff" size={11} weight={800}>⋮</Txt>
-    <Rows y0={56} n={9} />
-    <Tap x={114} y={33} />
-  </Phone>,
-  // 3. Install app in the menu
-  <Phone key="3">
-    <rect x="40" y="27" width="62" height="13" rx="6.5" fill={C.ui} /><Txt x={71} y={36} anchor="middle" fill={C.white}>uniteuow.com</Txt>
-    <rect x="66" y="30" width="56" height="112" rx="6" fill="#16284a" stroke={C.line} />
-    {["New tab", "History", "Bookmarks"].map((t, i) => <Txt key={t} x={72} y={44 + i * 15}>{t}</Txt>)}
-    <rect x="68" y="83" width="52" height="15" rx="4" fill={C.crimsonSoft} stroke={C.crimson} strokeWidth="1.4" />
-    <Txt x={72} y={93} fill="#fff" weight={700}>Install app</Txt>
-    {["Share…", "Settings"].map((t, i) => <Txt key={t} x={72} y={112 + i * 15}>{t}</Txt>)}
-    <Tap x={92} y={90} />
-  </Phone>,
-  // 4. Install dialog
-  <Phone key="4">
-    <Rows y0={34} n={8} />
-    <rect x="35" y="84" width="90" height="125" fill="#060d1a" opacity=".55" />
-    <rect x="42" y="112" width="76" height="72" rx="9" fill="#1b2f54" />
-    <image href="/icons/icon-192.png" x="49" y="119" width="20" height="20" clipPath="inset(0 round 5px)" />
-    <Txt x={74} y={128} fill={C.white} weight={700}>Install app?</Txt>
-    <Txt x={74} y={137} fill={C.text} size={5.5}>Unite · uniteuow.com</Txt>
-    <Txt x={64} y={172} fill={C.text} anchor="middle">Cancel</Txt>
-    <rect x="84" y="163" width="28" height="13" rx="6.5" fill={C.crimson} />
-    <Txt x={98} y={172} anchor="middle" fill="#fff" weight={700}>Install</Txt>
-    <Ping x={98} y={169.5} r={10} />
-    <Tap x={98} y={169} />
-  </Phone>,
-];
-
+// img: file name in public/install; w/h: the image's own size (keeps the aspect ratio, no layout jump).
+// optional: shown only once the file exists (the card stays text-only until then).
 const STEPS = {
   ios: [
-    ["Open in Safari", "Open uniteuow.com in Safari, Apple's browser on your iPhone."],
-    ["Tap Share", "Tap the Share button (a square with an arrow pointing up). On newer iOS versions it may be inside the “•••” menu."],
-    ["Add to Home Screen", "Scroll down and tap “Add to Home Screen”. If you see “Open as Web App”, keep it switched on."],
-    ["Tap Add", "Tap “Add”. Unite appears on your home screen like a normal app."],
+    { title: "Tap the ••• button", text: "In Safari, tap the ••• button at the bottom right.", img: "ios-step-1-more", w: 736, h: 182,
+      alt: "Safari's address bar showing uniteuow.com, with the ••• button at the right highlighted" },
+    { title: "Tap Share", text: "Choose Share from the menu.", img: "ios-step-2-share", w: 460, h: 606,
+      alt: "Safari menu with Share highlighted at the top" },
+    { title: "Tap Add to Home Screen", text: "Scroll down (tap View More if you see it) and tap Add to Home Screen.", img: "ios-step-3-add-to-home", w: 736, h: 1210,
+      alt: "iPhone share sheet for Unite with Add to Home Screen highlighted at the bottom of the list" },
+    { title: "Tap Add", text: "Keep Open as Web App switched on and tap Add in the top right.", img: "ios-step-4-confirm", optional: true,
+      alt: "Add to Home Screen screen with Open as Web App switched on and the Add button in the top right" },
+    { title: "Done!", text: "Unite is now on your home screen. Open it like any other app.", img: "ios-step-5-done", w: 980, h: 300,
+      alt: "iPhone home screen with the Unite app icon highlighted" },
   ],
   android: [
-    ["Open in Chrome", "Open uniteuow.com in Chrome."],
-    ["Tap the ⋮ menu", "Tap the ⋮ menu in the top-right corner."],
-    ["Install app", "Tap “Install app” (or “Add to Home screen”)."],
-    ["Tap Install", "Tap “Install”. Unite appears on your home screen."],
+    { title: "Tap the ⋮ menu", text: "In Chrome, tap the ⋮ button in the top-right corner.", img: "android-step-1-menu", w: 1472, h: 300,
+      alt: "Chrome's address bar showing uniteuow.com, with the ⋮ menu button highlighted" },
+    { title: "Tap Add to Home screen", text: "Choose Add to Home screen (on some phones it's called Install app).", img: "android-step-2-add", w: 920, h: 1544,
+      alt: "Chrome menu with Add to Home screen highlighted" },
+    { title: "Tap Install", text: "Confirm by tapping Install.", img: "android-step-3-install", w: 1120, h: 660,
+      alt: "Install app dialog for Unite with the Install button highlighted" },
+    { title: "Done!", text: "Unite is now on your home screen. Open it like any other app.", img: "android-step-4-done", w: 980, h: 300,
+      alt: "Android home screen with the Unite app icon highlighted" },
   ],
 };
+
+/* One step image: WebP with PNG fallback, natural aspect ratio, about 340px wide at most on phones. */
+function StepImage({ step, eager }) {
+  const [missing, setMissing] = useState(false);
+  if (!step.img || missing) return null;
+  const src = `/install/${step.img}`;
+  return (
+    <div className="flex justify-center bg-[#0b1730] px-5 pt-5">
+      <picture className="block w-full max-w-[340px]">
+        <source srcSet={`${src}.webp`} type="image/webp" />
+        <img src={`${src}.png`} alt={step.alt} width={step.w} height={step.h}
+          loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} decoding="async"
+          onError={() => step.optional && setMissing(true)}
+          className="mx-auto block h-auto max-h-[460px] w-auto max-w-full rounded-xl" />
+      </picture>
+    </div>
+  );
+}
 
 export default function InstallPage() {
   const params = new URLSearchParams(window.location.search);
@@ -178,7 +93,7 @@ export default function InstallPage() {
         <a href="/" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
       </header>
 
-      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: "calc(7rem + var(--sab))" }}>
+      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint ? "calc(10rem + var(--sab))" : "calc(7rem + var(--sab))" }}>
         {inApp && <div className="u-inst-rise mb-6"><InAppCard /></div>}
 
         {/* Hero */}
@@ -219,14 +134,14 @@ export default function InstallPage() {
             ))}
           </div>
           <ol key={tab} className="mt-6 grid gap-4 sm:grid-cols-2">
-            {STEPS[tab].map(([title, text], i) => (
-              <li key={title} className="u-inst-rise overflow-hidden rounded-3xl bg-gradient-to-b from-[#112240] to-[#0d1c36] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.7)] ring-1 ring-white/[0.08]" style={{ animationDelay: `${i * 80}ms` }}>
-                <div className="h-52 bg-[#0b1730] px-6 pt-3">{(tab === "ios" ? IOS_ART : ANDROID_ART)[i]}</div>
+            {STEPS[tab].map((step, i) => (
+              <li key={step.title} className="u-inst-rise overflow-hidden rounded-3xl bg-gradient-to-b from-[#112240] to-[#0d1c36] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.7)] ring-1 ring-white/[0.08]" style={{ animationDelay: `${i * 80}ms` }}>
+                <StepImage step={step} eager={i === 0} />
                 <div className="flex gap-4 p-5">
                   <span className="text-4xl font-extrabold leading-none tabular-nums text-crimson-400">{i + 1}</span>
                   <div>
-                    <h3 className="font-semibold">{title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{text}</p>
+                    <h3 className="font-semibold">{step.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-400">{step.text}</p>
                   </div>
                 </div>
               </li>
@@ -250,12 +165,13 @@ export default function InstallPage() {
 
       {/* iPhone: floating hint pointing at Safari's toolbar */}
       {hint && (
-        <div className="u-keep u-inst-rise fixed inset-x-0 z-40 flex flex-col items-center px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
-          <div className="relative flex w-full max-w-sm items-center gap-3 rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
-            <p className="min-w-0 flex-1 text-sm leading-snug">Tap <b>Share</b> <svg viewBox="0 0 24 24" className="inline h-4 w-4 -translate-y-px" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Share icon"><path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>, then <b>Add to Home Screen</b></p>
+        <div className="u-keep u-inst-rise fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
+          <div className="relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
+            <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
             <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">✕</button>
           </div>
-          <svg viewBox="0 0 24 24" className="u-bob mt-1 h-7 w-7 text-white drop-shadow" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6" /></svg>
+          {/* points at Safari's ••• button, bottom right */}
+          <svg viewBox="0 0 24 24" className="u-bob mr-3 mt-1 h-7 w-7 text-white drop-shadow" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6" /></svg>
         </div>
       )}
       <InstalledToast show={done} onDone={() => setDone(false)} />

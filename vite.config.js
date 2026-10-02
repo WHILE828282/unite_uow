@@ -42,7 +42,7 @@ export default defineConfig({
       workbox: {
         // App shell + static assets (JS, CSS, icons, team/party photos) are precached so the app opens fast.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
-        globIgnores: ["screenshots/**"], // only used by Chrome's install dialog
+        globIgnores: ["screenshots/**", "install/*.png"], // install dialog screenshots; PNG fallbacks of the WebP install steps
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
