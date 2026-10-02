@@ -247,6 +247,17 @@ function qrMatrix(text) {
   return m;
 }
 
+/* Installed iPhone app uses the black-translucent status bar (white text over the page): a navy strip the height of
+   the status bar keeps it readable over the light header. Zero height everywhere else. */
+const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(#0f172a 0 var(--sat), transparent var(--sat))" };
+
+/* Unite brand mark (logo pack): app icon with ~22% rounded corners. Empty alt when the word "unite" sits next to it. */
+const UniteIcon = ({ className = "h-9 w-9", alt = "" }) => (
+  <img src="/icons/unite-icon.svg" alt={alt} width="36" height="36" draggable="false" className={`${className} shrink-0 rounded-[22%]`} />
+);
+// Preloaded so the downloadable ticket can draw the icon synchronously.
+const TICKET_ICON = typeof Image !== "undefined" ? Object.assign(new Image(), { src: "/icons/icon-192.png" }) : null;
+
 /* Renders the ticket as a PNG and triggers a browser download. */
 function downloadTicket(b) {
   const W = 720, H = 1120;
@@ -260,7 +271,10 @@ function downloadTicket(b) {
   const grad = g.createLinearGradient(0, 0, W, 320);
   grad.addColorStop(0, "#4f46e5"); grad.addColorStop(1, "#7c3aed");
   g.fillStyle = grad; g.fillRect(0, 0, W, 300);
-  g.fillStyle = "#fff"; font(800, 46); g.fillText("Unite", 48, 92);
+  if (TICKET_ICON && TICKET_ICON.complete && TICKET_ICON.naturalWidth) {
+    g.save(); rr(48, 46, 60, 60, 13); g.clip(); g.drawImage(TICKET_ICON, 48, 46, 60, 60); g.restore();
+    g.fillStyle = "#fff"; font(800, 46); g.fillText("unite", 124, 92);
+  } else { g.fillStyle = "#fff"; font(800, 46); g.fillText("unite", 48, 92); }
   font(500, 22); g.fillStyle = "#c7d2fe"; g.fillText("uniteuow.com · UOWD", 48, 126);
   g.fillStyle = "#fff"; font(700, 40); g.fillText(clip(b.title, 26), 48, 206);
   font(500, 26); g.fillStyle = "#e0e7ff"; g.fillText(`${fmtDate(b.date)} · ${b.time}`, 48, 250);
@@ -548,8 +562,8 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
         <div className="relative overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200/60">
           <div className="u-keep flex items-center justify-between bg-slate-900 px-5 py-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-bold text-white">U</span>
-              <span className="text-sm font-bold text-white">Unite</span>
+              <UniteIcon className="h-6 w-6" />
+              <span className="text-sm font-extrabold tracking-tight text-white">unite</span>
               <span className="text-xs font-medium uppercase tracking-widest text-slate-400">· Admit one</span>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white"><Check className="h-3 w-3" /> Confirmed</span>
@@ -722,8 +736,11 @@ function AuthModal({ reason, onClose, onSignIn }) {
       <div key={step} className="u-slide p-6 pt-8">
         {step === "email" && (
           <>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-lg font-bold text-white shadow-lg">U</div>
-            <h2 className="mt-4 text-center text-xl font-bold text-slate-900">Campus Login</h2>
+            <div className="flex flex-col items-center">
+              <UniteIcon className="h-24 w-24 shadow-lg" />
+              <span className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">unite</span>
+            </div>
+            <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>
             <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
             <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">Email address</label>
@@ -2667,11 +2684,11 @@ export default function App() {
       <style>{CSS}</style>
 
       {/* Nav */}
-      <header className={`u-keep u-safe-top sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={dark ? glassDark : { backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+      <header className={`u-keep u-safe-top sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={{ backgroundColor: dark ? glassDark.background : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...STATUS_BAR_STRIP }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
-            <div className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-sm font-extrabold text-white shadow-sm ring-1 ring-crimson-500/60"><span className="text-crimson-400">U</span></div>
-            <span className={`text-lg font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>Unite</span>
+            <UniteIcon className="h-9 w-9" />
+            <span className={`text-xl font-extrabold tracking-tight ${dark ? "text-white" : "text-[#0f172a]"}`}>unite</span>
             <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-crimson-200" : "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">

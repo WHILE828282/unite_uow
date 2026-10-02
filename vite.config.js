@@ -2,8 +2,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// App background in the dark theme (navy-900 in tailwind.config.js, .u-dark in index.css).
-const APP_BG = "#0a192f";
+// Brand colours from the Unite logo pack.
+const BRAND_BG = "#0b1222"; // splash background (the icon's navy)
+const BRAND_THEME = "#0f172a"; // browser / status bar
 
 export default defineConfig({
   plugins: [
@@ -12,18 +13,18 @@ export default defineConfig({
       // A new Vercel deploy installs a fresh service worker and takes over on the next load: no manual cache clearing.
       registerType: "autoUpdate",
       injectRegister: false, // registered in main.jsx via virtual:pwa-register
-      includeAssets: ["favicon.ico", "icons/favicon.svg", "icons/apple-touch-icon.png"],
+      includeAssets: ["favicon.ico", "icons/*.png", "icons/unite-icon.svg"],
       manifest: {
-        name: "Unite · UOWD",
+        name: "Unite · UOWD clubs & events",
         short_name: "Unite",
-        description: "Join official UOWD clubs, discover verified student events and get tickets in seconds.",
+        description: "Join UOWD clubs and teams, discover verified student events and get tickets.",
         id: "/",
         start_url: "/",
         scope: "/",
         display: "standalone",
         orientation: "portrait",
-        background_color: APP_BG,
-        theme_color: APP_BG,
+        background_color: BRAND_BG,
+        theme_color: BRAND_THEME,
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
