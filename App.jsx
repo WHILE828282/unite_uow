@@ -254,8 +254,11 @@ function qrMatrix(text) {
 const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(#0f172a 0 var(--sat), transparent var(--sat))" };
 
 /* Unite brand mark (logo pack): app icon with ~22% rounded corners. Empty alt when the word "unite" sits next to it. */
-const UniteIcon = ({ className = "h-9 w-9", alt = "" }) => (
-  <img src="/icons/unite-icon.svg" alt={alt} width="36" height="36" draggable="false" className={`${className} shrink-0 rounded-[22%]`} />
+// Small sizes use a crisp variant (same figures and colours, without the soft fade, glow and shadow that blur at
+// ~36px) plus a hairline edge so the tile stays defined on the dark header. `full` keeps the original artwork.
+const UniteIcon = ({ className = "h-9 w-9", alt = "", full = false }) => (
+  <img src={full ? "/icons/unite-icon.svg" : "/icons/unite-icon-small.svg"} alt={alt} width="36" height="36" draggable="false"
+    className={`${className} shrink-0 rounded-[22%] ${full ? "" : "ring-1 ring-white/15"}`} />
 );
 // Preloaded so the downloadable ticket can draw the icon synchronously.
 const TICKET_ICON = typeof Image !== "undefined" ? Object.assign(new Image(), { src: "/icons/icon-192.png" }) : null;
@@ -739,7 +742,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
         {step === "email" && (
           <>
             <div className="flex flex-col items-center">
-              <UniteIcon className="h-24 w-24 shadow-lg" />
+              <UniteIcon full className="h-24 w-24 shadow-lg" />
               <span className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">unite</span>
             </div>
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>

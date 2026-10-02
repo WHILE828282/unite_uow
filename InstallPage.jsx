@@ -82,7 +82,7 @@ export default function InstallPage() {
       <div className="pointer-events-none fixed inset-x-0 top-0 h-[420px]" style={{ background: "radial-gradient(60% 70% at 50% 0%, rgba(168,52,70,0.28), transparent 70%)" }} aria-hidden="true" />
       <header className="relative mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
         <a href="/" className="inline-flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-slate-300 hover:text-white">
-          <img src="/icons/unite-icon.svg" alt="" className="h-7 w-7 rounded-[22%]" /> <span className="font-extrabold tracking-tight text-white">unite</span>
+          <img src="/icons/unite-icon-small.svg" alt="" className="h-7 w-7 rounded-[22%] ring-1 ring-white/15" /> <span className="font-extrabold tracking-tight text-white">unite</span>
         </a>
         <a href="/" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
       </header>
