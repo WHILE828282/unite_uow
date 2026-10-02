@@ -99,17 +99,6 @@ const DRESS_CODES = ["Casual", "Smart casual", "Business formal", "Sportswear", 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const LANGUAGES = ["English", "Arabic", "Russian", "Chinese", "Japanese", "French", "Hindi", "Urdu", "Spanish", "Persian", "Mixed / Multilingual"];
 
-const FEED = [
-  ["Sarah J.", "just registered for", "UOWD Futsal Tournament", "2 mins ago"],
-  ["Omar K.", "just bought a ticket for", "Rooftop Sunset Mixer", "just now"],
-  ["Maryam A.", "just joined", "Tech & E-sports Club", "5 mins ago"],
-  ["Ali H.", "just joined the waitlist for", "Halloween Costume Party", "1 min ago"],
-  ["Noor S.", "just bought a ticket for", "Post-Midterm Yacht Party", "3 mins ago"],
-  ["Daniel P.", "just reserved a spot at", "Finance Society Networking Night", "4 mins ago"],
-  ["Rashid T.", "just entered the", "PS5 Tournament", "6 mins ago"],
-  ["Fatima R.", "registered for tryouts with the", "Basketball Team", "7 mins ago"],
-];
-
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
@@ -1514,7 +1503,7 @@ function ClubDetail({ club: c, status, action, onClose }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Waitlist modal, live ticker                                        */
+/*  Waitlist modal                                                     */
 /* ------------------------------------------------------------------ */
 /* A submitted party while it waits for the admin safety review. */
 function ReviewModal({ sub: s, r, onClose }) {
@@ -1632,27 +1621,6 @@ function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
         <button onClick={onLeave} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-rose-600">Leave waitlist</button>
       </div>
     </Modal>
-  );
-}
-
-function Ticker({ onClose }) {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setI((x) => (x + 1) % FEED.length), 4500);
-    return () => clearInterval(t);
-  }, []);
-  const [name, verb, what, when] = FEED[i];
-  return (
-    <div className="fixed bottom-4 left-4 z-40 w-72" style={{ maxWidth: "calc(100vw - 2rem)" }}>
-      <div key={i} className="u-up flex items-center gap-3 rounded-2xl py-2.5 pl-3 pr-2 text-white shadow-xl" style={{ ...glassDark, border: "1px solid rgba(255,255,255,0.1)" }}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-sm font-bold">{name[0]}</div>
-        <div className="min-w-0 flex-1 text-xs leading-snug">
-          <p><span className="font-semibold">{name}</span> {verb} <span className="font-semibold">{what}</span></p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-slate-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {when}</p>
-        </div>
-        <button onClick={onClose} aria-label="Hide live activity" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 hover:text-white">✕</button>
-      </div>
-    </div>
   );
 }
 
@@ -2254,7 +2222,6 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState({});
-  const [tickerOn, setTickerOn] = useState(true);
   const [dark, setDark] = useState(() => {
     try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
   });
@@ -2926,7 +2893,6 @@ export default function App() {
         </div>
       )}
 
-      {tickerOn && <Ticker onClose={() => setTickerOn(false)} />}
     </div>
   );
 }
