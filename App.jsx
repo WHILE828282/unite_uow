@@ -453,26 +453,12 @@ function ThemeToggle({ dark, onToggle }) {
   );
 }
 
-const Badge = ({ kind, team }) =>
-  kind === "official" ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-semibold text-crimson-700 ring-1 ring-crimson-200">
-      <Check /> Official UOWD {team ? "Team" : "Club"}
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
-      <Check /> Verified Student Event
-    </span>
-  );
+const Badge = ({ team }) => (
+  <span className="inline-flex items-center gap-1 rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-semibold text-crimson-700 ring-1 ring-crimson-200">
+    <Check /> Official UOWD {team ? "Team" : "Club"}
+  </span>
+);
 
-function Vibe({ v }) {
-  if (!v)
-    return <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">✨ New event · be the first to rate</span>;
-  return (
-    <span className="inline-flex flex-wrap items-center gap-x-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
-      ⭐ {v.score}/5 <span className="font-normal text-amber-600">Vibe Score by {v.count} students</span>
-    </span>
-  );
-}
 
 const ShareBtn = ({ onClick }) => (
   <button onClick={onClick} aria-label="Share event" title="Share event"
@@ -1688,12 +1674,8 @@ function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
         </div>
       </div>
       <div className="p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="font-semibold text-slate-900">{p.title}</h3>
-          <Badge kind="verified" />
-        </div>
+        <h3 className="font-semibold text-slate-900">{p.title}</h3>
         <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
-        <div className="mt-2.5"><Vibe v={p.vibe} /></div>
         <div className="mt-3 space-y-1.5 text-sm text-slate-600">
           <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
           <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
@@ -1731,7 +1713,7 @@ function EventDetailBody({ p, onShare }) {
       </div>
 
       <div className="space-y-5 p-5">
-        <div className="flex flex-wrap items-center gap-2"><Badge kind="verified" /><LangBadge lang={p.lang} /><Vibe v={p.vibe} /></div>
+        <div className="flex flex-wrap items-center gap-2"><LangBadge lang={p.lang} /></div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
@@ -1816,7 +1798,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
       </div>
 
       <div className="space-y-5 p-5">
-        <Badge kind="official" team={c.category === "Sports"} />
+        <Badge team={c.category === "Sports"} />
         <div>
           <h3 className="text-sm font-semibold text-slate-900">About the club</h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{c.desc}</p>
@@ -2530,7 +2512,7 @@ function ClubCard({ c, i, open, members, button }) {
         style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <span className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/20 transition-opacity duration-300 group-hover:opacity-90" aria-hidden="true" />
         <div>
-          <Badge kind="official" team={c.category === "Sports"} />
+          <Badge team={c.category === "Sports"} />
           <h3 className="mt-2 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-slate-200">{c.desc}</p>
         </div>
@@ -2547,7 +2529,7 @@ function ClubCard({ c, i, open, members, button }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{c.name}</h3>
-            <Badge kind="official" team={c.category === "Sports"} />
+            <Badge team={c.category === "Sports"} />
           </div>
           <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
         </div>
