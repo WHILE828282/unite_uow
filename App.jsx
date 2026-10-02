@@ -779,10 +779,10 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
 
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
-              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Send verification code"}
+              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Email me a code"}
             </button>
             <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
-              Continue with a demo account
+              Try the demo instead
             </button>
 
             <ul className="mt-4 space-y-1.5 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
@@ -1258,7 +1258,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     setSendError("");
     setStep("preview");
   };
-  // Step 3: only after "Yes, submit".
+  // Step 3: only after "Submit".
   const send = async () => {
     const e = validate();
     if (FIELD_ORDER.some((k) => e[k])) { setErrors(e); setConfirm(false); setStep("form"); setFocusField(FIELD_ORDER.find((k) => e[k])); return; }
@@ -1444,13 +1444,13 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           {preview ? (
             <div className="flex flex-col-reverse gap-3 sm:flex-row">
               <button onClick={() => setStep("form")} disabled={submitting}
-                className="u-keep rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50 sm:w-auto">← Back to editing</button>
+                className="u-keep rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50 sm:w-auto">← Keep editing</button>
               <button onClick={() => setConfirm(true)} disabled={submitting}
-                className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">Submit application</button>
+                className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">Submit for review</button>
             </div>
           ) : (
             <button onClick={review}
-              className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98]">Preview my event →</button>
+              className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98]">Preview event →</button>
           )}
         </div>
 
@@ -1461,15 +1461,15 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
             <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
               className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sab)" }}>
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-xl ring-1 ring-inset ring-crimson-400/30" aria-hidden="true">📨</span>
-              <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit your application?</h3>
+              <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit for review?</h3>
               <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>
               {sendError && <p role="alert" className="mt-3 rounded-xl bg-rose-500/10 px-3 py-2 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
               <div className="mt-6 flex gap-3">
                 <button onClick={() => setConfirm(false)} disabled={submitting}
-                  className="u-keep flex-1 rounded-xl py-3 text-sm font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50">Cancel</button>
+                  className="u-keep flex-1 rounded-xl py-3 text-sm font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50">Not yet</button>
                 <button ref={yesRef} onClick={send} disabled={submitting}
                   className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white transition-all hover:bg-crimson-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-300 active:scale-[0.98] disabled:opacity-80">
-                  {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending…</>) : "Yes, submit"}
+                  {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending…</>) : "Submit"}
                 </button>
               </div>
             </div>
@@ -1655,7 +1655,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
         </dl>
 
         <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-700"}`}>
-          <Icon name="lock" className="h-4 w-4" /> Confirm Payment · {amount} AED
+          <Icon name="lock" className="h-4 w-4" /> Pay {amount} AED
         </button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Icon name="shield" className="h-3.5 w-3.5 text-emerald-600" /> Secured by Ziina · PCI DSS · 256-bit TLS</p>
         <p className="mt-1 text-center text-xs text-slate-400">Demo mode: no real charge. For card, try 4242 4242 4242 4242.</p>
@@ -1930,15 +1930,15 @@ function LeaveConfirm({ club: c, pending, onConfirm, onCancel }) {
     <Modal onClose={onCancel} size="sm">
       <div className="p-6 pt-8 text-center">
         <span className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-2xl ring-1 ring-inset ring-rose-200">{c.emoji}</span>
-        <h2 className="mt-4 text-lg font-bold text-slate-900">Are you sure you want to leave this {kind}?</h2>
+        <h2 className="mt-4 text-lg font-bold text-slate-900">{pending ? "Cancel your sign-up?" : `Leave this ${kind}?`}</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           {pending
-            ? <>Your pending tryout registration for <span className="font-semibold text-slate-900">{c.name}</span> will be cancelled and its sessions removed from My Schedule. To rejoin, you'd submit the UOWD form again.</>
+            ? <>Your pending sign-up for <span className="font-semibold text-slate-900">{c.name}</span> will be cancelled and its sessions removed from My Schedule. To rejoin, you'd submit the UOWD form again.</>
             : <>You'll leave <span className="font-semibold text-slate-900">{c.name}</span> and its weekly sessions ({scheduleLabel(c, true)}) will be removed from My Schedule.</>}
         </p>
         <div className="mt-6 grid grid-cols-2 gap-2">
-          <button onClick={onCancel} autoFocus className="u-btn rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
-          <button onClick={onConfirm} className="u-btn rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-700">Yes, Leave</button>
+          <button onClick={onCancel} autoFocus className="u-btn rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">{pending ? "Keep it" : "Stay"}</button>
+          <button onClick={onConfirm} className="u-btn rounded-xl bg-rose-600 py-3 text-sm font-semibold text-white hover:bg-rose-700">{pending ? "Cancel sign-up" : `Leave ${kind}`}</button>
         </div>
       </div>
     </Modal>
@@ -2429,7 +2429,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
         <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "max(0.75rem, var(--sat))", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
-              <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back to Feed
+              <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back
             </button>
             <div className="flex items-center gap-2">
               <a href={src} target="_blank" rel="noopener noreferrer" className="u-keep inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
@@ -2444,7 +2444,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
               <p className="inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-crimson-200 ring-1 ring-inset ring-crimson-400/40">
                 <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form
               </p>
-              <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">{isSports(c) ? "Sports Tryouts Registration" : "Club Registration"}</h2>
+              <h2 className="mt-1 truncate text-lg font-bold leading-tight text-white sm:text-xl">{isSports(c) ? "Tryout sign-up" : "Join the club"}</h2>
               <p className="truncate text-sm text-slate-400">For {c.name} · processed by UOWD Student Services</p>
             </div>
           </div>
@@ -2484,7 +2484,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
         {/* Footer: locked dark */}
         <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6 [@media(max-height:500px)]:py-2" style={{ paddingBottom: "max(0.75rem, var(--sab))", paddingLeft: "max(0.75rem, var(--sal))", paddingRight: "max(0.75rem, var(--sar))" }}>
           <button onClick={() => { if (sentRef.current) return; sentRef.current = true; onSent(); }} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
-            I've submitted the form
+            I've sent the form
             <span className="ml-1.5 font-normal text-white/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
           </button>
         </div>
@@ -2793,8 +2793,8 @@ export default function App() {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
     setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
-    if (pending) notify(`Registration form submitted for ${c.name}! ⏳ Student Services processes registrations within ~24 hours. ${scheduleLabel(c)} is in My Schedule as pending.${heads}`, 5200);
-    else notify(`Registered for ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
+    if (pending) notify(`Form sent for ${c.name}! ⏳ Student Services usually confirms within 24 hours. ${scheduleLabel(c)} is already in My Schedule as pending.${heads}`, 5200);
+    else notify(`You're in ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
   // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
@@ -2819,7 +2819,7 @@ export default function App() {
     } finally { clearTimeout(timer); }
     setSubmissions((x) => [saved, ...x]);
     setModal(null);
-    notify({ title: "Application Submitted!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
+    notify({ title: "Sent for review!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
   };
   const askLeave = (c) => setModal({ type: "leave", id: c.id });
   // Sports sections register through UOWD's official tryouts form; clubs join in one tap.
@@ -2827,13 +2827,13 @@ export default function App() {
   // "I've submitted the form" (pending, then registered once Student Services processes it).
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
-    requireAuth(`Sign in to register for ${c.name}`, () => setModal({ type: "tryout", id: c.id }));
+    requireAuth(`Sign in to join ${c.name}`, () => setModal({ type: "tryout", id: c.id }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
     setJoinedClubs((x) => { const n = { ...x }; delete n[c.id]; return n; });
     setModal(null);
-    notify(wasPending ? `Tryout registration for ${c.name} cancelled` : `You left ${c.name}`);
+    notify(wasPending ? `Sign-up for ${c.name} cancelled` : `You left ${c.name}`);
   };
 
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
@@ -2904,7 +2904,7 @@ export default function App() {
       : st === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
-        {st === "pending" ? `⏳ Pending · ~${pendingHours(c)}h` : st === "joined" ? "Registered ✓" : isSports(c) ? "Register · tryouts" : "Register · join club"}
+        {st === "pending" ? `⏳ In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team ✓" : "Member ✓") : isSports(c) ? "Join tryouts" : "Join the club"}
       </button>
     );
   };
@@ -2913,11 +2913,11 @@ export default function App() {
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
-    if (mine) { label = "View ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
+    if (mine) { label = "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
     else if (p.spots - p.taken <= 0) {
-      label = wl ? `On waitlist · #${wl}` : "Join Waitlist";
+      label = wl ? `Waitlisted · #${wl}` : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
-    } else { label = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve free spot"; cls = "bg-indigo-600 text-white hover:bg-indigo-700"; }
+    } else { label = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve a free spot"; cls = "bg-indigo-600 text-white hover:bg-indigo-700"; }
     return <button onClick={() => onParty(p)} className={`u-btn ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 
@@ -3078,7 +3078,7 @@ export default function App() {
                   </div>
                 </div>
                 <button onClick={() => onParty(hot)} className="u-btn shrink-0 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
-                  {hot.price > 0 ? `Get a ticket · ${hot.price} AED` : "Reserve my spot"}
+                  {hot.price > 0 ? `Buy ticket · ${hot.price} AED` : "Reserve a free spot"}
                 </button>
               </div>
             )}
@@ -3121,7 +3121,7 @@ export default function App() {
               <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
               <h3 className="mt-4 text-lg font-bold">Your campus week, in one place</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Sign in, pick club sessions and book events. They show up here as a weekly calendar you can export.</p>
-              <button onClick={() => setModal({ type: "auth", reason: "Sign in to see your schedule." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with your email</button>
+              <button onClick={() => setModal({ type: "auth", reason: "Sign in to see your schedule." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in</button>
             </div>
           ) : (
             <MySchedule
@@ -3146,7 +3146,7 @@ export default function App() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
               <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
               <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you sign in with your email.</p>
-              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in with your email</button>
+              <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in</button>
             </div>
           ) : (
             <div className="space-y-8">
@@ -3204,7 +3204,7 @@ export default function App() {
                   </div>
                 ) : (
                   <button onClick={() => changeTab("events")} className="u-card flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left text-sm shadow-sm">
-                    <span><span className="font-semibold text-slate-900">Your events moved to My Events</span><span className="block text-slate-500">Pending moderation and live events, side by side.</span></span>
+                    <span><span className="font-semibold text-slate-900">Your events are in My Events</span><span className="block text-slate-500">Pending moderation and live events, side by side.</span></span>
                     <span className="font-semibold text-indigo-600">Open →</span>
                   </button>
                 )}
@@ -3252,7 +3252,7 @@ export default function App() {
                     <span>Student Services is processing your tryout form. This usually takes about 24 hours (~{pendingHours(c)}h left). Your sessions already show in My Schedule as pending.</span>
                   </p>
                   <div className="flex gap-2">
-                    <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 py-3 text-sm font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Pending approval</span>
+                    <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 py-3 text-sm font-semibold text-amber-700 ring-1 ring-amber-200">⏳ In review</span>
                     <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Cancel request</button>
                   </div>
                 </div>
@@ -3260,8 +3260,8 @@ export default function App() {
             if (st === "joined")
               return (
                 <div className="flex gap-2">
-                  <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> Registered · in My Schedule</span>
-                  <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Leave</button>
+                  <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200"><Check className="h-4 w-4" /> {isSports(c) ? "You're on the team" : "You're a member"}</span>
+                  <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">{isSports(c) ? "Leave team" : "Leave club"}</button>
                 </div>
               );
             return clubBtn(c, "w-full py-3");
