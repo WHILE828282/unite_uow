@@ -87,7 +87,7 @@ export default function InstallPage() {
         <a href="/" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
       </header>
 
-      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint ? "calc(10rem + var(--sab))" : "calc(7rem + var(--sab))" }}>
+      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint && tab === "ios" ? "calc(10rem + var(--sab))" : "calc(7rem + var(--sab))" }}>
         {inApp && <div className="u-inst-rise mb-6"><InAppCard /></div>}
 
         {/* Hero */}
@@ -99,8 +99,9 @@ export default function InstallPage() {
             <div className="mx-auto mt-6 max-w-sm rounded-2xl bg-emerald-500/10 p-4 text-sm text-emerald-200 ring-1 ring-emerald-400/30">✓ You're using the installed app. <a href="/" className="font-semibold text-white underline underline-offset-4">Open Unite</a></div>
           ) : !inApp && (
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              {device === "ios" && <InstallBadge kind="ios" size="lg" onClick={() => { setHint(true); showSteps("ios"); }} />}
-              {device === "android" && <InstallBadge kind="android" size="lg" onClick={androidInstall} />}
+              {/* On a phone the badge follows the selected tab (an iPhone user can switch to Android and back). */}
+              {device !== "desktop" && tab === "ios" && <InstallBadge kind="ios" size="lg" onClick={() => { if (iosSafari) setHint(true); showSteps("ios"); }} />}
+              {device !== "desktop" && tab === "android" && <InstallBadge kind="android" size="lg" onClick={androidInstall} />}
               {device === "desktop" && (<>
                 <InstallBadge kind="ios" size="lg" onClick={() => showSteps("ios")} />
                 <InstallBadge kind="android" size="lg" onClick={() => showSteps("android")} />
@@ -149,7 +150,7 @@ export default function InstallPage() {
       </main>
 
       {/* iPhone: floating hint pointing at Safari's toolbar */}
-      {hint && (
+      {hint && tab === "ios" && (
         <div className="u-keep u-inst-rise fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
           <div className="relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
