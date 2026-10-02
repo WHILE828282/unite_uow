@@ -3025,13 +3025,13 @@ export default function App() {
         <div key={tab} className="u-tab">
         {(tab === "clubs" || tab === "parties") && (
           <div className="mb-5 flex items-center justify-between gap-3">
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
               {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
                 <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
               ))}
             </div>
             {tab === "parties" && (
-              <button onClick={hostEvent} className="u-btn hidden shrink-0 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 sm:block">+ Host event</button>
+              <button onClick={hostEvent} className="u-btn mb-1 shrink-0 whitespace-nowrap rounded-xl bg-indigo-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 sm:px-4">+ Host event</button>
             )}
           </div>
         )}
