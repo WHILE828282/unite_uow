@@ -59,7 +59,7 @@ function buildParts(p) {
     "",
     p.moderated ? "👇 <b>Decide with the buttons under the photo below.</b>" : null,
     p.moderated ? "" : null,
-    `<i>Ref ${esc(p.ref)} · submitted by ${esc(p.account || p.email)}${p.verified ? " (✅ email verified)" : " (demo login, email not verified)"}</i>`,
+    `<i>Ref ${esc(p.ref)} · submitted by ${p.accountName ? esc(p.accountName) + " · " : ""}${esc(p.account || p.email)}${p.verified ? " (✅ email verified)" : " (demo login, email not verified)"}</i>`,
   ].filter((x) => x !== null);
   return parts.join("\n");
 }
@@ -127,7 +127,7 @@ export default async function handler(req, res) {
     spots: Math.max(1, Math.min(100000, parseInt(b.spots, 10) || 1)), price: Math.max(0, Math.min(100000, Number(b.price) || 0)),
     venueName: str(b.venueName, 120), room: str(b.room, 120), mapsUrl: str(b.mapsUrl, 500),
     whatsapp: str(b.whatsapp, 30), telegram: str(b.telegram, 40).replace(/^@/, ""), email: str(b.email, 120),
-    studentId: str(b.studentId, 20), account: str(b.account, 120), verified: b.verified === true,
+    studentId: str(b.studentId, 20), account: str(b.account, 120), accountName: str(b.accountName, 80), verified: b.verified === true,
     dress: str(b.dress, 80), reqs: str(b.reqs, 300),
     pitch: str(b.pitch, 2500),
   };

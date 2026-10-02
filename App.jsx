@@ -193,6 +193,7 @@ const weekdayIdx = (d) => (d.getDay() + 6) % 7; // Monday = 0
 const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const clubDays = (c) => [...new Set(c.slots.map((s) => s.day))].sort().map((d) => DAYS[d].slice(0, 3)).join(" · ");
 const slotHours = (s) => (toMin(s.end) - toMin(s.start)) / 60;
+const nameInitials = (n) => n.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 const initials = (email) => (email || "??").slice(0, 2).toUpperCase();
 const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const makeId = (prefix, n = 6) =>
@@ -317,7 +318,7 @@ function downloadTicket(b) {
   font(600, 20); g.fillStyle = "#64748b"; g.fillText("BOOKING ID", W / 2, 700);
   font(800, 44); g.fillStyle = "#0f172a"; g.fillText(b.id, W / 2, 752);
   g.textAlign = "left";
-  const rows = [["Venue", clip(b.where, 30)], ["Attendee", clip(b.email, 30)], ["Amount", b.paid ? `${b.price} AED` : "Free"],
+  const rows = [["Venue", clip(b.where, 30)], ["Attendee", clip(b.name || b.email, 30)], ["Amount", b.paid ? `${b.price} AED` : "Free"],
     b.studentId ? ["Student ID", clip(b.studentId, 30)] : ["Status", "Confirmed"]];
   rows.forEach(([k, v], i) => { const y = 820 + i * 56; font(500, 24); g.fillStyle = "#64748b"; g.fillText(k, 80, y); g.textAlign = "right"; font(600, 26); g.fillStyle = "#0f172a"; g.fillText(v, W - 80, y); g.textAlign = "left"; });
   g.textAlign = "center"; font(500, 20); g.fillStyle = "#94a3b8"; g.fillText("Scan this code at the entrance", W / 2, 1040);
@@ -610,7 +611,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
             <p className="text-center font-mono text-lg font-bold tracking-wider text-slate-900">{b.id}</p>
 
             <dl className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm">
-              {[["Attendee", b.email], ...(b.studentId ? [["Student ID", b.studentId]] : []), ...(b.txn ? [["Ziina reference", b.txn]] : [])].map(([k, v]) => (
+              {[["Attendee", b.name || b.email], ...(b.name ? [["Email", b.email]] : []), ...(b.studentId ? [["Student ID", b.studentId]] : []), ...(b.txn ? [["Ziina reference", b.txn]] : [])].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <dt className="text-slate-500">{k}</dt>
                   <dd className="truncate text-right font-medium text-slate-800">{v}</dd>
@@ -640,6 +641,8 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
 /* ------------------------------------------------------------------ */
 function AuthModal({ reason, onClose, onSignIn }) {
   const [step, setStep] = useState("email"); // email | otp | success
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
   const [studentId, setStudentId] = useState("");
   const [error, setError] = useState("");
@@ -687,7 +690,9 @@ function AuthModal({ reason, onClose, onSignIn }) {
     setDigits(blank(6)); setSeconds(45); setStep("otp");
     return "";
   };
+  const cleanName = () => name.trim().replace(/\s+/g, " ").slice(0, 60);
   const sendCode = async (override) => {
+    if (typeof override !== "string" && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@gmail.com.");
     setEmail(v); setError("");
@@ -700,7 +705,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
   const finish = (verified) => {
     setVerifying(false);
     setStep("success");
-    later(() => onSignIn(email, studentId.trim(), verified), 1300);
+    later(() => onSignIn(email, studentId.trim(), verified, cleanName() || (mode === "demo" ? "Demo Student" : "")), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
@@ -764,9 +769,19 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>
             <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
-            <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">Email address</label>
+            <label htmlFor="auth-name" className="mt-5 block text-sm font-medium text-slate-700">Your name</label>
             <input
-              id="auth-email" type="email" inputMode="email" value={email} autoFocus autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
+              id="auth-name" value={name} autoFocus autoComplete="name" autoCapitalize="words" enterKeyHint="next"
+              onChange={(e) => { setName(e.target.value.slice(0, 60)); setNameError(""); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); document.getElementById("auth-email").focus(); } }}
+              placeholder="e.g., Layla Al Mansoori"
+              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${nameError ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+            />
+            {nameError && <p className="mt-1.5 text-sm text-rose-600">{nameError}</p>}
+
+            <label htmlFor="auth-email" className="mt-4 block text-sm font-medium text-slate-700">Email address</label>
+            <input
+              id="auth-email" type="email" inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="you@example.com"
@@ -2606,14 +2621,15 @@ export default function App() {
   });
   const toastTimer = useRef(null);
   const studentIdRef = useRef(saved ? saved.sid || "" : "");
+  const [name, setName] = useState(() => (saved && saved.name) || "");
   const verifiedRef = useRef(saved ? !!saved.verified : false); // true when the email was confirmed with a live code
 
   useEffect(() => {
     try {
       if (!user) localStorage.removeItem(SESSION_KEY);
-      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, sid: studentIdRef.current, verified: verifiedRef.current, joinedClubs, bookings, waitlist }));
+      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, joinedClubs, bookings, waitlist }));
     } catch (e) { /* storage full or blocked */ }
-  }, [user, joinedClubs, bookings, waitlist]);
+  }, [user, name, joinedClubs, bookings, waitlist]);
 
   useEffect(() => {
     document.title = "Unite · UOWD clubs & events";
@@ -2777,8 +2793,9 @@ export default function App() {
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
 
-  const signIn = (email, sid, verified) => {
+  const signIn = (email, sid, verified, fullName) => {
     const action = modal && modal.action;
+    setName(fullName || "");
     studentIdRef.current = sid || "";
     verifiedRef.current = !!verified;
     try {
@@ -2787,7 +2804,7 @@ export default function App() {
     } catch (e) { setSubmissions([]); }
     setUser(email);
     setModal(null);
-    notify(verified ? { title: "Email verified", body: "Welcome to Unite! Signed in as " + email } : "Signed in as " + email, verified ? 3500 : 2400);
+    notify(verified ? { title: "Email verified", body: `Welcome to Unite${fullName ? ", " + fullName.split(" ")[0] : ""}! Signed in as ${email}` } : "Signed in as " + email, verified ? 3500 : 2400);
     if (action) setTimeout(() => action(email), 250);
   };
 
@@ -2843,7 +2860,7 @@ export default function App() {
       const res = await fetch("/api/pitch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...sub, account: user, studentId: studentIdRef.current, verified: verifiedRef.current, website }),
+        body: JSON.stringify({ ...sub, account: user, accountName: name, studentId: studentIdRef.current, verified: verifiedRef.current, website }),
         signal: ctrl.signal,
       });
       const data = await res.json().catch(() => ({}));
@@ -2874,7 +2891,7 @@ export default function App() {
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
     setBookings((bs) => [b, ...bs]);
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
     return b;
@@ -3012,8 +3029,8 @@ export default function App() {
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={studentIdRef.current ? `${user} · ID ${studentIdRef.current}` : user}>{initials(user)}</div>
-              <button onClick={() => { setUser(null); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); }}
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={[name, user, studentIdRef.current && `ID ${studentIdRef.current}`].filter(Boolean).join(" · ")}>{name ? nameInitials(name) : initials(user)}</div>
+              <button onClick={() => { setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); }}
                 className={`u-keep rounded-lg px-2.5 py-1.5 text-sm ${dark ? "text-slate-300 hover:bg-white/10 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>Sign out</button>
             </div>
           ) : (
@@ -3030,7 +3047,7 @@ export default function App() {
         <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-14 pt-7 sm:pt-10" : "pb-16 pt-10 sm:pt-14"}`}>
           {user ? (
             <>
-              <h1 className={`max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl ${dark ? "text-white" : "text-gray-900"}`}>Hi, {firstName(user)} 👋</h1>
+              <h1 className={`max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
               <p className={`mt-2 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>{weekSummary}</p>
             </>
           ) : (
