@@ -1103,7 +1103,7 @@ function HostPreview({ sub, onEdit }) {
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-10">
-          <PreviewBlock title="Event card" note="Student Parties" onEdit={() => onEdit("logo")}>
+          <PreviewBlock title="Event card" note="Parties" onEdit={() => onEdit("logo")}>
             <div className="pointer-events-none select-none" aria-hidden="true">
               <PartyCard p={p} onShare={() => {}} actions={<>{fake(buy, true)}{fake("Details")}</>} />
             </div>
@@ -1653,7 +1653,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Event details                                                      */
 /* ------------------------------------------------------------------ */
-/* An event card as shown in Student Parties (also used in the host's preview). */
+/* An event card as shown in Parties (also used in the host's preview). */
 function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
   const left = p.spots - p.taken;
   return (
@@ -1879,8 +1879,8 @@ function ReviewModal({ sub: s, r, onClose }) {
         ) : (
           <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
             {s.mod === "under_review"
-              ? <>The admin team is running an additional safety check and may contact you at <span className="font-semibold">{s.email}</span>. It goes live on Student Parties once approved.</>
-              : <>Our admin team is verifying your event's safety. Once approved (usually within 2 hours) it goes live on Student Parties. This page updates automatically.</>}
+              ? <>The admin team is running an additional safety check and may contact you at <span className="font-semibold">{s.email}</span>. It goes live in Parties once approved.</>
+              : <>Our admin team is verifying your event's safety. Once approved (usually within 2 hours) it goes live in Parties. This page updates automatically.</>}
           </p>
         )}
         <dl className="space-y-2 rounded-2xl border border-slate-200/50 bg-slate-50 p-4 text-sm">
@@ -2089,7 +2089,7 @@ function MyEvents({ items, onOpen, onHost }) {
       </section>
       <section>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Live Events <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{live.length}</span></h3>
-        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and on Student Parties for the whole campus.</Empty>}
+        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and in Parties for the whole campus.</Empty>}
       </section>
       {declined.length > 0 && (
         <section>
@@ -2545,32 +2545,55 @@ function ClubCard({ c, i, open, members, button }) {
 /* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
+// Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
+// tickets, teams/clubs and waitlist spots.
+const SESSION_KEY = "unite-session";
+const loadSession = () => {
+  try { const s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); return s && s.user ? s : null; } catch (e) { return null; }
+};
+
 export default function App() {
-  const [user, setUser] = useState(null);
+  const [saved] = useState(loadSession);
+  const [user, setUser] = useState(() => (saved ? saved.user : null));
   const [tab, setTab] = useState("clubs");
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
   // clubId -> { status: "pending" | "joined", at }. Sports tryout forms start as pending and are processed by
   // Student Services within ~24h (never rejected); clubs without a form join straight away.
-  const [joinedClubs, setJoinedClubs] = useState({});
+  const [joinedClubs, setJoinedClubs] = useState(() => (saved && saved.joinedClubs) || {});
   const [clock, setClock] = useState(Date.now());
-  const [parties, setParties] = useState(PARTIES);
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState(() => (saved && Array.isArray(saved.bookings) ? saved.bookings : []));
+  // Seat and waitlist counts include your own saved tickets and waitlist spots.
+  const [parties, setParties] = useState(() => PARTIES.map((p) => ({
+    ...p,
+    taken: p.taken + bookings.filter((b) => b.partyId === p.id).length,
+    wait: p.wait + (saved && saved.waitlist && saved.waitlist[p.id] ? 1 : 0),
+  })));
   // Party applications. Moderated ones (database connected) carry { moderated, mod: status, key } and follow the
   // admin's Telegram decision; otherwise the 2-hour demo review applies. Saved per account in this browser.
-  const [submissions, setSubmissions] = useState([]);
+  const [submissions, setSubmissions] = useState(() => {
+    if (!saved) return [];
+    try { const x = JSON.parse(localStorage.getItem(`unite-events:${saved.user}`) || "[]"); return Array.isArray(x) ? x : []; } catch (e) { return []; }
+  });
   const [campus, setCampus] = useState([]); // approved student events from the database, visible to everyone
   const seenRef = useRef({}); // last review status shown per application, to announce changes once
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
-  const [waitlist, setWaitlist] = useState({});
+  const [waitlist, setWaitlist] = useState(() => (saved && saved.waitlist) || {});
   const [dark, setDark] = useState(() => {
     try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
   });
   const toastTimer = useRef(null);
-  const studentIdRef = useRef("");
-  const verifiedRef = useRef(false); // true when the email was confirmed with a live code
+  const studentIdRef = useRef(saved ? saved.sid || "" : "");
+  const verifiedRef = useRef(saved ? !!saved.verified : false); // true when the email was confirmed with a live code
+
+  useEffect(() => {
+    try {
+      if (!user) localStorage.removeItem(SESSION_KEY);
+      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, sid: studentIdRef.current, verified: verifiedRef.current, joinedClubs, bookings, waitlist }));
+    } catch (e) { /* storage full or blocked */ }
+  }, [user, joinedClubs, bookings, waitlist]);
 
   useEffect(() => {
     document.title = "Unite · UOWD clubs & events";
@@ -2656,7 +2679,7 @@ export default function App() {
       const prev = seenRef.current[sub.ref];
       seenRef.current[sub.ref] = st;
       if (prev === undefined || prev === st) return;
-      if (st === "approved") notify({ title: "Your party is approved 🎉", body: `"${sub.title}" passed the safety review and is now live on Student Parties.` }, 5000);
+      if (st === "approved") notify({ title: "Your party is approved 🎉", body: `"${sub.title}" passed the safety review and is now live in Parties.` }, 5000);
       else if (st === "rejected") notify({ title: "Application not approved", body: `The admin team didn't approve "${sub.title}". See My Events for details.` }, 5000);
       else if (st === "review:check") notify({ title: "Additional check 🔍", body: `The admin team is taking a closer look at "${sub.title}".` }, 4500);
     });
@@ -2757,7 +2780,12 @@ export default function App() {
     const el = document.getElementById("tabs");
     if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 76, behavior: "smooth" });
   };
-  const goHome = () => { changeTab("clubs"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  // Logo: reload the app from the top (also picks up a new version if one was deployed).
+  const goHome = () => {
+    try { window.history.scrollRestoration = "manual"; window.history.replaceState(null, "", "/"); } catch (e) { /* ignore */ }
+    window.scrollTo({ top: 0, behavior: "instant" });
+    window.location.reload();
+  };
 
   const statusOf = (c) => {
     const r = user && joinedClubs[c.id];
@@ -2916,7 +2944,7 @@ export default function App() {
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Student Parties", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
+  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Parties", "Parties"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
   useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);

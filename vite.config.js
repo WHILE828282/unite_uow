@@ -46,7 +46,7 @@ export default defineConfig({
           { src: "/screenshots/home.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Unite home: UOWD clubs, sport and events" },
           { src: "/screenshots/clubs.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Official UOWD teams and clubs" },
           { src: "/screenshots/team.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Team details and weekly schedule" },
-          { src: "/screenshots/events.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Student parties and tickets" },
+          { src: "/screenshots/events.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Parties and tickets" },
         ],
       },
       workbox: {
