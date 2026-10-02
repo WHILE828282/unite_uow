@@ -1,4 +1,5 @@
-import { StrictMode } from "react";
+import "./install.js"; // first: catches Chrome's one-time install prompt before anything else loads
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
@@ -45,8 +46,16 @@ if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
   if (window.visualViewport) window.visualViewport.addEventListener("resize", () => setTimeout(revealFocused, 50));
 }
 
+// /install is a standalone guide page (shareable link); everything else is the app.
+const InstallPage = lazy(() => import("./InstallPage.jsx"));
+const onInstallPage = /^\/install\/?$/.test(window.location.pathname);
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    {onInstallPage ? (
+      <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0a192f" }} />}><InstallPage /></Suspense>
+    ) : (
+      <App />
+    )}
   </StrictMode>
 );

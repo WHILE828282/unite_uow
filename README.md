@@ -75,5 +75,5 @@ Built with `vite-plugin-pwa` (`vite.config.js`): manifest "Unite · UOWD", stand
 
 - **Updates:** `registerType: "autoUpdate"`. Each Vercel deploy ships a new `sw.js` (served with no-cache headers from `vercel.json`) that activates on its own.
 - **Caching:** the app shell, JS/CSS, icons and photos are precached. `/api/*` is always network-only (OTP, pitches, moderation, events). Navigations fall back to `index.html`, so `/events/7` and `/sports/basketball` open from the home screen.
-- **Install prompt:** Chrome/Android shows an "Install Unite" banner; iPhone Safari shows "tap Share, then Add to Home Screen". Neither appears inside the installed app, and dismissing hides it for 30 days.
+- **Get the app:** store-style badges (sign-in, header "Get the app", footer with QR on desktop), a single small banner (7-day dismissal) and the `/install` guide page (`InstallPage.jsx`) with iPhone/Android tabs, illustrated steps, an Android one-tap install (beforeinstallprompt) and an "Open in Safari/Chrome" card for in-app browsers (Instagram, TikTok, …). Logic in `install.js`, UI in `GetApp.jsx`. Nothing shows inside the installed app. Manifest screenshots in `public/screenshots/` power Chrome's richer install dialog.
 - **Safe areas:** header, bottom sheets, full-screen forms and toasts respect the notch and home bar (`--sat`/`--sab` in `index.css`).

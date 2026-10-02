@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { GetAppBadges, InstallBanner } from "./GetApp.jsx";
+import { isStandalone, platform, installPath } from "./install.js";
 
 /* ------------------------------------------------------------------ */
 /*  Config & data                                                      */
@@ -775,6 +777,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
                 <li key={t} className="flex items-center gap-2"><span className="text-emerald-500"><Check /></span>{t}</li>
               ))}
             </ul>
+            {!isStandalone() && <div className="mt-5 border-t border-slate-100 pt-5"><GetAppBadges heading="Get the app" /></div>}
           </>
         )}
 
@@ -2520,72 +2523,6 @@ function ClubCard({ c, i, open, members, button }) {
 /* ------------------------------------------------------------------ */
 /*  Main app                                                           */
 /* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
-/*  Install as an app (PWA)                                            */
-/* ------------------------------------------------------------------ */
-/* Chrome / Android: offers the browser's install dialog. iPhone Safari has no install API, so it shows
-   the Share → Add to Home Screen hint instead. Hidden when already running as an installed app, and a
-   dismissal is remembered for 30 days. */
-const INSTALL_KEY = "unite-install-dismissed";
-const INSTALL_SNOOZE_MS = 30 * 24 * 3600 * 1000;
-const isStandalone = () => {
-  try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) { return false; }
-};
-const isIosSafari = () => {
-  const ua = navigator.userAgent || "";
-  const ios = /iP(hone|od|ad)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); // iPadOS reports as Mac
-  return ios && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram|Line\//.test(ua);
-};
-const installSnoozed = () => {
-  try { return Date.now() - Number(localStorage.getItem(INSTALL_KEY) || 0) < INSTALL_SNOOZE_MS; } catch (e) { return false; }
-};
-
-const ShareIcon = () => (
-  <svg viewBox="0 0 24 24" className="inline h-4 w-4 -translate-y-px" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Share">
-    <path d="M12 3v12M8 7l4-4 4 4" /><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-  </svg>
-);
-
-function InstallPrompt() {
-  const [mode, setMode] = useState(null); // "android" | "ios" | null
-  const deferred = useRef(null);
-  useEffect(() => {
-    if (isStandalone() || installSnoozed()) return;
-    let t;
-    const onPrompt = (e) => { e.preventDefault(); deferred.current = e; t = setTimeout(() => setMode("android"), 2500); };
-    const onInstalled = () => { deferred.current = null; setMode(null); };
-    window.addEventListener("beforeinstallprompt", onPrompt);
-    window.addEventListener("appinstalled", onInstalled);
-    if (isIosSafari()) t = setTimeout(() => setMode("ios"), 2500);
-    return () => { clearTimeout(t); window.removeEventListener("beforeinstallprompt", onPrompt); window.removeEventListener("appinstalled", onInstalled); };
-  }, []);
-  if (!mode) return null;
-  const dismiss = () => { try { localStorage.setItem(INSTALL_KEY, String(Date.now())); } catch (e) { /* ignore */ } setMode(null); };
-  const install = async () => {
-    const e = deferred.current;
-    if (!e) return setMode(null);
-    deferred.current = null;
-    try { e.prompt(); const { outcome } = await e.userChoice; if (outcome !== "accepted") dismiss(); else setMode(null); } catch (err) { setMode(null); }
-  };
-  return (
-    <div role="dialog" aria-label="Install Unite" className="u-keep u-up fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
-      <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 py-3 pl-3 pr-2 text-white shadow-2xl" style={{ background: "rgba(10,25,47,0.94)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-        <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
-        <div className="min-w-0 flex-1 text-sm leading-snug">
-          <p className="font-semibold">Install Unite</p>
-          {mode === "ios"
-            ? <p className="text-slate-300">Tap <ShareIcon /> Share, then <span className="font-semibold text-white">Add to Home Screen</span>.</p>
-            : <p className="text-slate-300">Open clubs, events and tickets straight from your home screen.</p>}
-        </div>
-        {mode === "android" && (
-          <button onClick={install} className="shrink-0 rounded-xl bg-crimson-700 px-4 py-2 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">Install</button>
-        )}
-        <button onClick={dismiss} aria-label="Dismiss install suggestion" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white">✕</button>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const [user, setUser] = useState(null);
   const [tab, setTab] = useState("clubs");
@@ -2938,6 +2875,13 @@ export default function App() {
             <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-crimson-200" : "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
+          {!isStandalone() && (
+            <a href={installPath(platform())} aria-label="Get the app"
+              className={`u-keep inline-flex h-9 items-center gap-1.5 rounded-full px-2.5 text-sm font-semibold transition-colors sm:px-3 ${dark ? "text-slate-200 ring-1 ring-white/15 hover:bg-white/10" : "text-gray-700 ring-1 ring-slate-200 hover:bg-gray-50"}`}>
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.8" /><path d="M12 8.5v6m-2.5-2.5L12 14.5l2.5-2.5" /></svg>
+              <span className="hidden sm:inline">Get the app</span>
+            </a>
+          )}
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
             <div className="flex items-center gap-2">
@@ -3188,11 +3132,12 @@ export default function App() {
         </div>
 
         <footer className="mt-12 text-center text-xs text-slate-400">
+          {!isStandalone() && <div className="mb-6"><GetAppBadges heading="Get the Unite app" qr /></div>}
           Unite · uniteuow.com · A student-built platform for UOWD · Payments via Ziina (demo mode)
         </footer>
       </main>
 
-      <InstallPrompt />
+      <InstallBanner />
 
       {/* Modals */}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} />}

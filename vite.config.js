@@ -17,7 +17,7 @@ export default defineConfig({
       manifest: {
         name: "Unite · UOWD clubs & events",
         short_name: "Unite",
-        description: "Join UOWD clubs and teams, discover verified student events and get tickets.",
+        description: "UOWD clubs, sport, events and parties in one app. Join clubs and teams, discover verified student events and get tickets.",
         id: "/",
         start_url: "/",
         scope: "/",
@@ -31,10 +31,18 @@ export default defineConfig({
           { src: "/icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
           { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
+        // Phone screenshots: Chrome on Android shows them in its larger, store-like install dialog.
+        screenshots: [
+          { src: "/screenshots/home.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Unite home: UOWD clubs, sport and events" },
+          { src: "/screenshots/clubs.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Official UOWD teams and clubs" },
+          { src: "/screenshots/team.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Team details and weekly schedule" },
+          { src: "/screenshots/events.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Student parties and tickets" },
+        ],
       },
       workbox: {
         // App shell + static assets (JS, CSS, icons, team/party photos) are precached so the app opens fast.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
+        globIgnores: ["screenshots/**"], // only used by Chrome's install dialog
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
