@@ -1019,8 +1019,7 @@ const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.
 
 const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
 const REVIEW_MS = 2 * 36e5; // admin safety review for student parties
-const PITCH_MIN_WORDS = 50;
-const wordCount = (t) => ((t || "").trim().match(/\S+/g) || []).length;
+const PITCH_MIN_CHARS = 50;
 /* Field order on the page, used to bring the first problem into view on submit. */
 const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "whatsapp", "telegram", "email"];
 
@@ -1180,8 +1179,8 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     if (!f.logo) e.logo = "Add a square logo for your event card.";
     if (!f.cover) e.cover = "Add a 16:9 cover for your event page.";
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
-    const words = wordCount(f.pitch);
-    if (words < PITCH_MIN_WORDS) e.pitch = `Please describe your event in more detail: at least ${PITCH_MIN_WORDS} words (you have ${words}).`;
+    const chars = f.pitch.trim().length;
+    if (chars < PITCH_MIN_CHARS) e.pitch = `Please describe your event in more detail: at least ${PITCH_MIN_CHARS} characters (you have ${chars}).`;
     if (!f.date) e.date = "Pick the date of your event.";
     else if (f.date < new Date(Date.now() + DUBAI_OFFSET_MS).toISOString().slice(0, 10)) e.date = "That date has already passed. Pick an upcoming date.";
     else if (f.date < earliest.date) e.date = "Events must be submitted at least 24 hours before they start.";
@@ -1233,7 +1232,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const edit = (field) => { setConfirm(false); setStep("form"); setFocusField(field); };
   const addReq = (r) => { if (!f.reqs.includes(r)) setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r }); };
   const E = ({ k }) => (errors[k] ? <p className={DK.err}>{errors[k]}</p> : null);
-  const words = wordCount(f.pitch);
+  const chars = f.pitch.trim().length;
   const preview = step === "preview";
   const dubai = <span className="ml-1 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-slate-300">Dubai time</span>;
 
@@ -1296,8 +1295,8 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   className={`${DK.input(!!errors.pitch)} resize-y leading-relaxed`} />
                 <div className="mt-2 flex items-start justify-between gap-4 text-xs">
                   {errors.pitch ? <span className="text-sm text-rose-300">{errors.pitch}</span> : <span className="text-slate-400">A thorough plan gets approved faster.</span>}
-                  <span aria-live="polite" className={`shrink-0 tabular-nums font-medium transition-colors ${words >= PITCH_MIN_WORDS ? "text-emerald-400" : "text-slate-400"}`}>
-                    {words >= PITCH_MIN_WORDS && "✓ "}{words} / {PITCH_MIN_WORDS} words minimum
+                  <span aria-live="polite" className={`shrink-0 tabular-nums font-medium transition-colors ${chars >= PITCH_MIN_CHARS ? "text-emerald-400" : "text-slate-400"}`}>
+                    {chars >= PITCH_MIN_CHARS && "✓ "}{chars} / {PITCH_MIN_CHARS} characters minimum
                   </span>
                 </div>
               </div>
