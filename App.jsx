@@ -506,11 +506,11 @@ function Modal({ children, onClose, locked, size = "md" }) {
 
   return (
     <div
-      className="u-fade fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
+      className="u-fade u-vv fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
       style={overlayStyle}
       onMouseDown={(e) => e.target === e.currentTarget && !locked && onClose()}
     >
-      <div className={`u-up relative w-full ${size === "lg" ? "max-w-lg" : size === "sm" ? "max-w-sm" : "max-w-md"} u-safe-sheet overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`} style={{ maxHeight: "92vh" }}>
+      <div className={`u-up relative w-full ${size === "lg" ? "max-w-lg" : size === "sm" ? "max-w-sm" : "max-w-md"} u-safe-sheet u-sheet-h overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`}>
         {!locked && (
           <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200">
             ✕
@@ -1237,21 +1237,21 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const dubai = <span className="ml-1 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-slate-300">Dubai time</span>;
 
   return (
-    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
+    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
-        className={`u-keep u-up u-safe-full relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:h-[92vh] sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
+        className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: "dark" }}>
         {/* Header */}
-        <div className="u-keep shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, env(safe-area-inset-top))" }}>
+        <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, var(--sat))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           <button onClick={onClose} disabled={submitting} aria-label="Close"
             className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">✕</button>
-          <p className="pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events{preview ? " · Step 2 of 2" : ""}</p>
-          <h2 id="host-title" className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{preview ? "Preview your event" : "Host an event"}</h2>
-          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
+          <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events{preview ? " · Step 2 of 2" : ""}</p>
+          <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : "Host an event"}</h2>
+          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
         </div>
 
         {/* Body */}
-        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10">
+        <div ref={bodyRef} className="u-scroll min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10" style={{ paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {preview ? (
             <div key="preview" className="u-slide"><HostPreview sub={buildSub()} onEdit={edit} /></div>
           ) : (
@@ -1397,7 +1397,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         </div>
 
         {/* Footer */}
-        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sab))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {sendError && !confirm && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
           {!preview && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
           {preview ? (
@@ -1418,7 +1418,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           <div className="u-keep u-fade absolute inset-0 z-20 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
             onMouseDown={(e) => e.target === e.currentTarget && !submitting && setConfirm(false)}>
             <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
-              className="u-up w-full max-w-sm rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
+              className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sab)" }}>
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-xl ring-1 ring-inset ring-crimson-400/30" aria-hidden="true">📨</span>
               <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit your application?</h3>
               <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>
@@ -2376,14 +2376,14 @@ function TryoutModal({ club: c, onSent, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
+    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={`UOWD registration for ${c.name}`}
-        className="u-keep u-up u-safe-full flex h-[100dvh] w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-3xl sm:rounded-3xl"
+        className="u-keep u-up u-full-h flex w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:max-w-3xl sm:rounded-3xl"
         style={{ colorScheme: "dark" }}>
 
         {/* Header: solid, locked dark */}
-        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "max(0.75rem, var(--sat))", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
               <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back to Feed
@@ -2395,7 +2395,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
               <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/10 hover:bg-white/20">✕</button>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-3">
+          <div className="u-short-hide mt-4 flex items-center gap-3">
             <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
             <div className="min-w-0">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-crimson-200 ring-1 ring-inset ring-crimson-400/40">
@@ -2405,7 +2405,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
               <p className="truncate text-sm text-slate-400">For {c.name} · processed by UOWD Student Services</p>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+          <div className="u-short-hide mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
             {picks.length > 0 && (
               <span className="inline-flex items-center gap-1.5">
                 Sport{picks.length > 1 ? "s" : ""}:
@@ -2418,7 +2418,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
         </div>
 
         {/* Form: the white Jotform sits on the dark frame */}
-        <div className="u-keep relative min-h-0 flex-1 bg-[#06101f] sm:p-3">
+        <div className="u-keep u-scroll relative min-h-0 flex-1 overflow-auto bg-[#06101f] sm:p-3 [@media(max-height:500px)]:p-0" style={{ paddingLeft: "var(--sal)", paddingRight: "var(--sar)" }}>
           {!loaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
               <span className="u-spin h-9 w-9 rounded-full border-4 border-white/10 border-t-crimson-400" />
@@ -2439,7 +2439,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
         </div>
 
         {/* Footer: locked dark */}
-        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6 [@media(max-height:500px)]:py-2" style={{ paddingBottom: "max(0.75rem, var(--sab))", paddingLeft: "max(0.75rem, var(--sal))", paddingRight: "max(0.75rem, var(--sar))" }}>
           <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
             I've submitted the form
             <span className="ml-1.5 font-normal text-white/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
@@ -2629,7 +2629,16 @@ export default function App() {
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   }, [dark]);
 
-  useEffect(() => { document.body.style.overflow = modal ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [modal]);
+  // Lock the page behind an open modal. iOS Safari ignores overflow:hidden on <body> for touch scrolling, so the
+  // body is pinned in place (position: fixed at the current scroll offset) and restored on close.
+  const modalOpen = !!modal;
+  useEffect(() => {
+    if (!modalOpen) return;
+    const y = window.scrollY, b = document.body.style;
+    const prev = { overflow: b.overflow, position: b.position, top: b.top, left: b.left, right: b.right, width: b.width };
+    Object.assign(b, { overflow: "hidden", position: "fixed", top: `-${y}px`, left: "0", right: "0", width: "100%" });
+    return () => { Object.assign(b, prev); window.scrollTo({ top: y, behavior: "instant" }); };
+  }, [modalOpen]);
 
   // Keep the address bar on the open team or club, so the link can be copied straight from the browser.
   useEffect(() => {

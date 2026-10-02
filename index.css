@@ -16,6 +16,35 @@ body { padding-left: var(--sal); padding-right: var(--sar); }
 .u-safe-bar { padding-bottom: calc(1rem + var(--sab)); }
 .u-safe-full { padding-top: var(--sat); padding-bottom: var(--sab); }
 .u-safe-toast { top: calc(5rem + var(--sat)); }
+/* ---- iPhone layout ----
+   --vvh / --vvtop: the visible screen (visualViewport, set from main.jsx). iOS Safari's 100vh is taller than the
+   visible area while its toolbars show, and the on-screen keyboard shrinks the visual viewport, so overlays and
+   full-screen panels size themselves to this instead. Falls back to 100dvh, then 100vh. */
+:root { --vvh: 100vh; --vvtop: 0px; }
+@supports (height: 100dvh) { :root { --vvh: 100dvh; } }
+.u-vv { top: var(--vvtop) !important; bottom: auto !important; height: 100vh; height: var(--vvh); }
+.u-sheet-h { max-height: 90vh; max-height: calc(var(--vvh) * 0.9); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.u-full-h { height: 100vh; height: var(--vvh); }
+.u-scroll { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+@media (min-width: 640px) { .u-full-h { height: calc(var(--vvh) * 0.92); } }
+/* Short screens (iPhone landscape): full-screen panels take the whole height and headers drop secondary lines. */
+@media (max-height: 500px) {
+  .u-full-h { height: var(--vvh) !important; border-radius: 0 !important; }
+  .u-full-pad { padding: 0 !important; }
+  .u-short-hide { display: none !important; }
+  .u-short-tight { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+}
+/* Touch screens: inputs at 16px so iOS doesn't zoom the page, and every control gets an invisible 44×44 tap area
+   (the visible size doesn't change). */
+@media (pointer: coarse) {
+  :is(input, select, textarea):is(.text-xs, .text-sm, .text-\[13px\], .text-\[15px\]) { font-size: 16px !important; }
+  select { min-height: 44px; } /* native pickers can't take a ::after tap area */
+  :is(button, a[href], [role="button"], [role="tab"], [role="switch"]):not(.absolute):not(.fixed):not(.sticky) { position: relative; }
+  :is(button, a[href], [role="button"], [role="tab"], [role="switch"])::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%);
+  }
+}
+
 @media (min-width: 640px) {
   .u-safe-sheet::after { display: none; }
   .u-safe-bar { padding-bottom: 1rem; }
