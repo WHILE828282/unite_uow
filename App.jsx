@@ -842,17 +842,23 @@ function AuthModal({ reason, onClose, onSignIn }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Event artwork: one upload becomes the cover and the logo           */
+/*  Event artwork: a square logo and a 16:9 cover, uploaded separately */
 /* ------------------------------------------------------------------ */
-/* Covers are stored at 1600x900 (16:9), logos at 512x512 (1:1). Uploads must be JPEG/PNG/WebP
-   under 10 MB and at least 800x450; they are centre-cropped, resized and re-encoded as WebP
-   (JPEG where WebP encoding is unavailable). The logo defaults to a square crop of the cover. */
+/* Uploads must be JPEG/PNG/WebP, at most 10 MB and at least the minimum size. They are centre-cropped to the
+   right shape in the browser and re-encoded as WebP (JPEG where WebP encoding is unavailable):
+   logo → 512×512, cover → 1600×900. */
 const IMAGE_SPECS = {
-  cover: { w: 1600, h: 900, minW: 800, minH: 450 },
-  logo: { w: 512, h: 512, minW: 128, minH: 128 },
+  logo: { w: 512, h: 512, minW: 512, minH: 512 },
+  cover: { w: 1600, h: 900, minW: 1600, minH: 900 },
 };
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+const PHOTO_COPY = {
+  logo: { title: "Event logo", where: "Shown on event cards", ratio: "1 / 1", empty: "Add a square logo",
+    specs: ["Square 1:1", "Recommended 1080 × 1080 px", "Minimum 512 × 512 px", "JPG, PNG or WebP · max 10 MB"] },
+  cover: { title: "Event cover", where: "Shown at the top of the event page", ratio: "16 / 9", empty: "Add a widescreen cover",
+    specs: ["Widescreen 16:9", "Recommended 1920 × 1080 px", "Minimum 1600 × 900 px", "JPG, PNG or WebP · max 10 MB"] },
+};
 
 const loadImage = (src) => new Promise((resolve, reject) => {
   const img = new Image();
@@ -875,15 +881,19 @@ const encodeCrop = (img, spec) => {
   return out.startsWith("data:image/webp") ? out : c.toDataURL("image/jpeg", 0.88);
 };
 
+// Returns { src, cropped }: cropped is true when the photo wasn't already the right shape (±1%).
 async function readImageFile(file, kind) {
   const spec = IMAGE_SPECS[kind];
-  if (!file || !IMAGE_TYPES.includes(file.type)) throw new Error("Use a JPG, PNG or WebP photo.");
-  if (file.size > IMAGE_MAX_BYTES) throw new Error("That photo is over 10 MB.");
+  if (!file || !IMAGE_TYPES.includes(file.type)) throw new Error("That file type isn't supported. Use a JPG, PNG or WebP photo.");
+  if (file.size > IMAGE_MAX_BYTES) throw new Error(`That photo is ${(file.size / 1048576).toFixed(1)} MB. The maximum is 10 MB.`);
   const url = URL.createObjectURL(file);
   try {
-    const img = await loadImage(url);
-    if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH) throw new Error(`Photo too small: at least ${spec.minW}×${spec.minH}px.`);
-    return kind === "cover" ? { cover: encodeCrop(img, IMAGE_SPECS.cover), logo: encodeCrop(img, IMAGE_SPECS.logo) } : { logo: encodeCrop(img, IMAGE_SPECS.logo) };
+    let img;
+    try { img = await loadImage(url); } catch (e) { throw new Error("We couldn't open that photo. Try another file."); }
+    if (img.naturalWidth < spec.minW || img.naturalHeight < spec.minH)
+      throw new Error(`Too small: ${img.naturalWidth} × ${img.naturalHeight} px. It needs to be at least ${spec.minW} × ${spec.minH} px.`);
+    const cropped = Math.abs(img.naturalWidth / img.naturalHeight - spec.w / spec.h) > 0.01 * (spec.w / spec.h);
+    return { src: encodeCrop(img, spec), cropped };
   } finally { URL.revokeObjectURL(url); }
 }
 
@@ -893,64 +903,60 @@ const PhotoIcon = ({ className }) => (
   </svg>
 );
 
-/* One dropzone for the event's artwork (locked dark styling). value = { cover, logo, logoCustom } */
-function ArtworkDrop({ value, onChange, error }) {
-  const [busy, setBusy] = useState("");
+/* One photo upload (locked dark styling): a frame in the photo's shape, live preview, Replace / Remove,
+   the requirements underneath and its own inline error. value = null | { src, cropped } */
+function PhotoDrop({ kind, value, onChange, error }) {
+  const copy = PHOTO_COPY[kind];
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [drag, setDrag] = useState(false);
-  const coverRef = useRef(null), logoRef = useRef(null);
-  const take = async (file, kind) => {
+  const inputRef = useRef(null);
+  const browse = () => inputRef.current && inputRef.current.click();
+  const take = async (file) => {
     if (!file) return;
-    setBusy(kind); setErr("");
-    try {
-      const out = await readImageFile(file, kind);
-      if (kind === "cover") onChange({ cover: out.cover, logo: value.logoCustom ? value.logo : out.logo, logoCustom: value.logoCustom });
-      else onChange({ ...value, logo: out.logo, logoCustom: true });
-    } catch (e) { setErr(e.message || "Couldn't use that photo."); }
-    finally { setBusy(""); }
+    setBusy(true); setErr("");
+    try { onChange(await readImageFile(file, kind)); }
+    catch (e) { setErr(e.message || "Couldn't use that photo."); }
+    finally { setBusy(false); }
   };
   const msg = err || error;
   return (
-    <div>
+    <div id={`c-${kind}`} tabIndex={-1} className="min-w-0 focus:outline-none">
+      <p className={DK.label}>{copy.title} <span className="font-normal text-slate-500">· {copy.where}</span></p>
       <div
-        role="button" tabIndex={0} aria-label={value.cover ? "Replace event photo" : "Upload event photo"}
-        onClick={() => coverRef.current && coverRef.current.click()}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); coverRef.current && coverRef.current.click(); } }}
+        role="button" tabIndex={0} aria-label={value ? `Replace ${copy.title.toLowerCase()}` : `Upload ${copy.title.toLowerCase()}`}
+        onClick={browse}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); browse(); } }}
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
-        onDrop={(e) => { e.preventDefault(); setDrag(false); take(e.dataTransfer.files && e.dataTransfer.files[0], "cover"); }}
-        className={`u-keep group relative w-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400/60 ${value.cover ? "ring-1 ring-white/10" : `border border-dashed ${drag ? "border-crimson-400 bg-crimson-400/[0.06]" : msg ? "border-rose-400/70 bg-white/[0.02]" : "border-white/20 bg-white/[0.02] hover:border-crimson-400/60 hover:bg-white/[0.04]"}`}`}
-        style={{ aspectRatio: "16 / 9" }}>
-        {value.cover ? (
+        onDrop={(e) => { e.preventDefault(); setDrag(false); take(e.dataTransfer.files && e.dataTransfer.files[0]); }}
+        className={`u-keep group relative mt-3 w-full cursor-pointer overflow-hidden rounded-2xl transition-all duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400/60 ${value ? "ring-1 ring-white/10" : `border border-dashed ${drag ? "border-crimson-400 bg-crimson-400/[0.06]" : msg ? "border-rose-400/70 bg-white/[0.02]" : "border-white/20 bg-white/[0.02] hover:border-crimson-400/60 hover:bg-white/[0.04]"}`}`}
+        style={{ aspectRatio: copy.ratio }}>
+        {value ? (
           <>
-            <img src={value.cover} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-100" aria-hidden="true" />
-            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">Replace photo</span>
+            <img src={value.src} alt={`${copy.title} preview`} draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+            {value.cropped && <span className="absolute left-2.5 top-2.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">✂ We'll crop it to fit</span>}
           </>
         ) : (
-          <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-            <span className={`flex h-14 w-14 items-center justify-center rounded-2xl ring-1 transition-colors ${drag ? "text-crimson-300 ring-crimson-400/50" : "text-slate-400 ring-white/10 group-hover:text-crimson-300 group-hover:ring-crimson-400/40"}`}><PhotoIcon className="h-7 w-7" /></span>
+          <span className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-3 text-center">
+            <span className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 transition-colors ${drag ? "text-crimson-300 ring-crimson-400/50" : "text-slate-400 ring-white/10 group-hover:text-crimson-300 group-hover:ring-crimson-400/40"}`}><PhotoIcon className="h-6 w-6" /></span>
             <span>
-              <span className="block text-base font-semibold text-white">{drag ? "Drop to upload" : "Add a cover photo"}</span>
-              <span className="mt-1 block text-sm text-slate-400">Drag a photo here, or click to browse</span>
+              <span className="block text-sm font-semibold text-white">{drag ? "Drop to upload" : copy.empty}</span>
+              <span className="mt-0.5 block text-xs text-slate-400">Drag a photo here, or click to browse</span>
             </span>
           </span>
         )}
-        {busy === "cover" && <span className="absolute inset-0 flex items-center justify-center bg-[#0a192f]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
-        {value.cover && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); logoRef.current && logoRef.current.click(); }}
-            aria-label="Change logo" title="Change logo"
-            className="u-keep absolute bottom-3 left-3 h-16 w-16 overflow-hidden rounded-2xl shadow-xl ring-2 ring-white/80 transition-transform active:scale-95">
-            <img src={value.logo} alt="" draggable={false} className="h-full w-full object-cover" />
-            <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wider text-white">Logo</span>
-            {busy === "logo" && <span className="absolute inset-0 flex items-center justify-center bg-black/50"><span className="u-spin h-5 w-5 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
-          </button>
-        )}
+        {busy && <span className="absolute inset-0 flex items-center justify-center bg-[#0a192f]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
       </div>
-      <input ref={coverRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
-        onChange={(e) => { take(e.target.files && e.target.files[0], "cover"); e.target.value = ""; }} />
-      <input ref={logoRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
-        onChange={(e) => { take(e.target.files && e.target.files[0], "logo"); e.target.value = ""; }} />
-      {msg && <p className="mt-2 text-sm text-rose-300">{msg}</p>}
+      <input ref={inputRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
+        onChange={(e) => { take(e.target.files && e.target.files[0]); e.target.value = ""; }} />
+      {value && (
+        <div className="mt-2.5 flex gap-2">
+          <button type="button" onClick={browse} className="u-keep rounded-lg px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/15 transition-colors hover:bg-white/10 active:scale-95">Replace</button>
+          <button type="button" onClick={() => { setErr(""); onChange(null); }} className="u-keep rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 ring-1 ring-white/10 transition-colors hover:bg-rose-500/10 hover:text-rose-200 active:scale-95">Remove</button>
+        </div>
+      )}
+      {msg && <p role="alert" className={DK.err}>{msg}</p>}
+      <ul className="mt-2.5 space-y-0.5 text-xs leading-relaxed text-slate-500">{copy.specs.map((t) => <li key={t}>{t}</li>)}</ul>
     </div>
   );
 }
@@ -963,10 +969,23 @@ const EventLogo = ({ p, className = "h-12 w-12 text-2xl" }) =>
 /* Contact helpers shared by the form and the event details. */
 const waDigits = (v) => (v || "").replace(/\D/g, "");
 const tgHandle = (v) => (v || "").trim().replace(/^@/, "").replace(/^https?:\/\/t\.me\//i, "");
+/* Google Maps links only: google.<tld>/maps, maps.google.<tld>, maps.app.goo.gl, goo.gl/maps.
+   Pasted links are tidied first: scheme added if missing, http upgraded to https. */
+const normalizeMapsUrl = (u) => {
+  const t = (u || "").trim();
+  if (!t) return "";
+  return /^https?:\/\//i.test(t) ? t.replace(/^http:\/\//i, "https://") : `https://${t}`;
+};
 const isGoogleMapsUrl = (u) => {
   try {
-    const x = new URL(u);
-    return /^https?:$/.test(x.protocol) && (/(^|\.)google\.[a-z.]+$/i.test(x.hostname) && /maps/.test(x.hostname + x.pathname) || /^(maps\.app\.goo\.gl|goo\.gl)$/i.test(x.hostname));
+    const x = new URL(normalizeMapsUrl(u));
+    const host = x.hostname.toLowerCase().replace(/^www\./, "");
+    if (x.protocol !== "https:") return false;
+    if (/^google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(host)) return /^\/maps(\/|$|\?)/.test(x.pathname + (x.search ? "?" : ""));
+    if (/^maps\.google\.[a-z]{2,3}(\.[a-z]{2})?$/.test(host)) return true;
+    if (host === "maps.app.goo.gl") return x.pathname.length > 1;
+    if (host === "goo.gl") return /^\/maps\//.test(x.pathname);
+    return false;
   } catch (e) { return false; }
 };
 /* Organizer-supplied Google Maps links are forced to English (short maps.app.goo.gl links can't carry params). */
@@ -998,12 +1017,27 @@ const campusToParty = (e) => ({
 const MOD_STATUSES = ["pending", "under_review", "approved", "rejected"];
 const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 
-const VENUE_SUGGESTIONS = ["Marina Rooftop Lounge", "JBR Beach", "Student Lounge, Block 5", "Rooftop Terrace, Block 5", "Courtyard Café", "Sports Hall", "Innovation Studio", "Auditorium, Block 3"];
 const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Sportswear & trainers", "Student ID at the door", "No experience needed"];
 const REVIEW_MS = 2 * 36e5; // admin safety review for student parties
-const PITCH_MIN = 100;
+const PITCH_MIN_WORDS = 50;
+const wordCount = (t) => ((t || "").trim().match(/\S+/g) || []).length;
 /* Field order on the page, used to bring the first problem into view on submit. */
-const FIELD_ORDER = ["art", "title", "pitch", "date", "end", "venueName", "mapsUrl", "spots", "price", "whatsapp", "telegram", "email"];
+const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "whatsapp", "telegram", "email"];
+
+/* Event times are entered and checked in Dubai time (UTC+4, no daylight saving), whatever the device's zone.
+   Applications must arrive at least 24 hours before the event starts. */
+const DUBAI_OFFSET_MS = 4 * 36e5;
+const LEAD_MS = 24 * 36e5;
+const dubaiStartMs = (date, time) => {
+  const [y, mo, d] = date.split("-").map(Number), [h, mi] = time.split(":").map(Number);
+  return Date.UTC(y, mo - 1, d, h, mi) - DUBAI_OFFSET_MS;
+};
+// Earliest allowed start, as Dubai date + time (rounded up to the next 5 minutes).
+const earliestStart = (now = Date.now()) => {
+  const step = 5 * 6e4;
+  const x = new Date(Math.ceil((now + LEAD_MS) / step) * step + DUBAI_OFFSET_MS).toISOString();
+  return { date: x.slice(0, 10), time: x.slice(11, 16) };
+};
 
 /* Locked-dark form primitives (fixed colours; u-keep opts out of the theme remap). */
 const DK = {
@@ -1022,31 +1056,141 @@ const DkSection = ({ n, title, children }) => (
   </section>
 );
 
+/* Host preview: frames for the event card and the event page. */
+const PreviewBlock = ({ title, note, onEdit, children }) => (
+  <section className="min-w-0">
+    <div className="mb-3 flex items-baseline justify-between gap-3">
+      <h4 className="text-sm font-semibold text-white">{title}{note && <span className="font-normal text-slate-400"> · {note}</span>}</h4>
+      {onEdit && <button type="button" onClick={onEdit} className="u-keep shrink-0 rounded-md text-xs font-semibold text-crimson-300 underline-offset-4 hover:text-crimson-200 hover:underline">Edit</button>}
+    </div>
+    {children}
+  </section>
+);
+
+/* Phone-shaped frame on desktop, a plain full-width panel on mobile. */
+const PhoneFrame = ({ children }) => (
+  <div className="lg:mx-auto lg:w-[360px] lg:rounded-[2.75rem] lg:bg-[#020617] lg:p-2.5 lg:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] lg:ring-1 lg:ring-white/10">
+    <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-white/10 lg:rounded-[2.2rem] lg:ring-0">
+      <span className="pointer-events-none absolute left-1/2 top-2 z-20 hidden h-6 w-24 -translate-x-1/2 rounded-full bg-[#020617] lg:block" aria-hidden="true" />
+      <div className="max-h-[560px] overflow-y-auto overscroll-contain lg:h-[640px] lg:max-h-none">{children}</div>
+    </div>
+  </div>
+);
+
+function HostPreview({ sub, onEdit }) {
+  const p = { ...submissionToParty(sub), host: "you" };
+  const fake = (label, primary) => (
+    <span className={`u-btn inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold ${primary ? "flex-1 bg-slate-900 text-white" : "text-slate-700 ring-1 ring-slate-200"}`}>{label}</span>
+  );
+  const buy = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve free spot";
+  const rows = [
+    ["When", `${fmtDate(sub.date)} · ${fmtRange(sub.start, sub.end)} (Dubai time)`, "date"],
+    ["Venue", sub.room ? `${sub.venueName}, ${sub.room}` : sub.venueName, "venueName"],
+    ["Capacity · price", `${sub.spots} spots · ${sub.price > 0 ? `${sub.price} AED` : "Free"}`, "spots"],
+    ["Type · language", `${sub.category} · ${sub.lang}`, "title"],
+    ...(sub.dress || sub.reqs ? [["Dress code · bring", [sub.dress, sub.reqs].filter(Boolean).join(" · "), "reqs"]] : []),
+    ["Contacts", [sub.whatsapp && `WhatsApp ${sub.whatsapp}`, sub.telegram && `@${sub.telegram}`, sub.email].filter(Boolean).join(" · "), "whatsapp"],
+  ];
+  return (
+    <div className="space-y-10">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Preview</p>
+        <h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">Here's how your event will look</h3>
+        <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-slate-400">This is what students will see once the Unite team approves it. Spotted something? Tap Edit and you'll go straight back to that part of the form.</p>
+      </div>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <div className="space-y-10">
+          <PreviewBlock title="Event card" note="Student Parties" onEdit={() => onEdit("logo")}>
+            <div className="pointer-events-none select-none" aria-hidden="true">
+              <PartyCard p={p} onShare={() => {}} actions={<>{fake(buy, true)}{fake("Details")}</>} />
+            </div>
+          </PreviewBlock>
+          <PreviewBlock title="Application details" onEdit={() => onEdit("title")}>
+            <dl className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl bg-white/[0.03] ring-1 ring-white/10">
+              {rows.map(([k, v, field]) => (
+                <div key={k} className="flex items-start gap-3 px-4 py-3 text-sm">
+                  <dt className="w-32 shrink-0 text-slate-400">{k}</dt>
+                  <dd className="min-w-0 flex-1 break-words text-slate-100">{v}</dd>
+                  <button type="button" onClick={() => onEdit(field)} className="u-keep shrink-0 text-xs font-semibold text-crimson-300 hover:text-crimson-200 hover:underline">Edit</button>
+                </div>
+              ))}
+            </dl>
+          </PreviewBlock>
+        </div>
+        <PreviewBlock title="Event page" note="when a student opens it" onEdit={() => onEdit("cover")}>
+          <PhoneFrame>
+            <div className="pointer-events-none select-none" aria-hidden="true">
+              <EventDetailBody p={p} onShare={() => {}} />
+              <div className="border-t border-slate-200/50 bg-white p-4">{fake(buy, true)}</div>
+            </div>
+          </PhoneFrame>
+        </PreviewBlock>
+      </div>
+    </div>
+  );
+}
+
 function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const [f, setF] = useState({
     title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
-    spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, art: { cover: "", logo: "", logoCustom: false }, website: "",
+    spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, logo: null, cover: null, website: "",
   });
   const [errors, setErrors] = useState({});
+  const [step, setStep] = useState("form"); // form | preview
+  const [confirm, setConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sendError, setSendError] = useState("");
-  const set = (k) => (e) => { setF({ ...f, [k]: e.target.value }); setErrors({ ...errors, [k]: undefined, ...(k === "whatsapp" || k === "telegram" ? { whatsapp: undefined, telegram: undefined } : {}) }); };
+  const [focusField, setFocusField] = useState(null);
+  const bodyRef = useRef(null);
+  const yesRef = useRef(null);
+  const earliest = earliestStart();
+  const clearErr = (...ks) => setErrors((x) => { const n = { ...x }; ks.forEach((k) => { n[k] = undefined; }); return n; });
+  const set = (k) => (e) => {
+    const v = e.target.value;
+    setF((x) => ({ ...x, [k]: v }));
+    clearErr(k, ...(k === "whatsapp" || k === "telegram" ? ["whatsapp", "telegram"] : []), ...(k === "date" || k === "time" || k === "end" ? ["date", "time", "end"] : []));
+  };
 
+  // Escape steps back: closes the confirmation, then leaves the preview, then closes the form.
   useEffect(() => {
-    const h = (e) => e.key === "Escape" && !submitting && onClose();
+    const h = (e) => {
+      if (e.key !== "Escape" || submitting) return;
+      if (confirm) setConfirm(false);
+      else if (step === "preview") setStep("form");
+      else onClose();
+    };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [submitting, onClose]);
+  }, [submitting, confirm, step, onClose]);
+  useEffect(() => { if (confirm && yesRef.current) yesRef.current.focus(); }, [confirm]);
+  // After switching steps: top of the preview, or straight to the field the host wants to edit.
+  useEffect(() => {
+    if (step === "preview") { if (bodyRef.current) bodyRef.current.scrollTop = 0; return; }
+    if (!focusField) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`c-${focusField}`);
+      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); if (el.focus) el.focus({ preventScroll: true }); }
+      setFocusField(null);
+    }, 60);
+    return () => clearTimeout(t);
+  }, [step, focusField]);
 
   const validate = () => {
     const e = {};
-    if (!f.art.cover) e.art = "Add a cover photo for your event.";
+    if (!f.logo) e.logo = "Add a square logo for your event card.";
+    if (!f.cover) e.cover = "Add a 16:9 cover for your event page.";
     if (f.title.trim().length < 3) e.title = "Give your event a title (3+ characters).";
-    if (f.pitch.trim().length < PITCH_MIN) e.pitch = `Please describe your event in more detail (at least ${PITCH_MIN} characters).`;
-    if (!f.date || f.date < TODAY) e.date = "Pick a date from today onwards.";
-    if (f.time && f.end && toMin(f.end) <= toMin(f.time)) e.end = "End after the start time.";
+    const words = wordCount(f.pitch);
+    if (words < PITCH_MIN_WORDS) e.pitch = `Please describe your event in more detail: at least ${PITCH_MIN_WORDS} words (you have ${words}).`;
+    if (!f.date) e.date = "Pick the date of your event.";
+    else if (f.date < new Date(Date.now() + DUBAI_OFFSET_MS).toISOString().slice(0, 10)) e.date = "That date has already passed. Pick an upcoming date.";
+    else if (f.date < earliest.date) e.date = "Events must be submitted at least 24 hours before they start.";
+    if (!f.time) e.time = "Add a start time.";
+    if (f.date && f.time && !e.date && dubaiStartMs(f.date, f.time) < Date.now() + LEAD_MS) e.date = "Events must be submitted at least 24 hours before they start.";
+    if (!f.end) e.end = "Add an end time.";
+    else if (f.time && toMin(f.end) <= toMin(f.time)) e.end = "The end time must be after the start time.";
     if (f.venueName.trim().length < 3) e.venueName = "Add the venue name, e.g. Marina Rooftop Lounge.";
-    if (f.mapsUrl.trim() && !isGoogleMapsUrl(f.mapsUrl.trim())) e.mapsUrl = "Paste a Google Maps link (google.com/maps or maps.app.goo.gl).";
+    if (!f.mapsUrl.trim() || !isGoogleMapsUrl(f.mapsUrl)) e.mapsUrl = "Please paste a Google Maps link to the venue";
     if (!(Number(f.spots) >= 1)) e.spots = "At least 1 spot.";
     if (Number(f.price) < 0 || f.price === "") e.price = "Enter 0 for free events.";
     const wa = waDigits(f.whatsapp), tg = tgHandle(f.telegram);
@@ -1057,53 +1201,69 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     return e;
   };
 
-  const submit = async () => {
+  const buildSub = () => ({
+    ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, pitch: f.pitch.trim(),
+    date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: normalizeMapsUrl(f.mapsUrl),
+    spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
+    whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(),
+    cover: f.cover ? f.cover.src : "", logo: f.logo ? f.logo.src : "",
+  });
+
+  // Step 1: check everything, then show the preview instead of sending.
+  const review = () => {
     const e = validate();
     setErrors(e);
     const first = FIELD_ORDER.find((k) => e[k]);
-    if (first) {
-      const el = document.getElementById(`c-${first}`);
-      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); if (el.focus) el.focus({ preventScroll: true }); }
-      return;
-    }
+    if (first) { setFocusField(first); return; }
+    setSendError("");
+    setStep("preview");
+  };
+  // Step 3: only after "Yes, submit".
+  const send = async () => {
+    const e = validate();
+    if (FIELD_ORDER.some((k) => e[k])) { setErrors(e); setConfirm(false); setStep("form"); setFocusField(FIELD_ORDER.find((k) => e[k])); return; }
     setSubmitting(true); setSendError("");
-    const sub = {
-      ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, pitch: f.pitch.trim(),
-      date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: f.mapsUrl.trim(),
-      spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
-      whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), cover: f.art.cover, logo: f.art.logo,
-    };
     try {
-      await onSubmitted(sub, f.website); // delivers the pitch to the moderation chat, then queues it for review
+      await onSubmitted(buildSub(), f.website); // delivers the pitch to the moderation chat, then queues it for review
     } catch (err) {
       setSubmitting(false);
       setSendError(err.message || "The review team couldn't be reached. Please try again.");
     }
   };
+  const edit = (field) => { setConfirm(false); setStep("form"); setFocusField(field); };
   const addReq = (r) => { if (!f.reqs.includes(r)) setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r }); };
   const E = ({ k }) => (errors[k] ? <p className={DK.err}>{errors[k]}</p> : null);
-  const pitchLen = f.pitch.trim().length;
+  const words = wordCount(f.pitch);
+  const preview = step === "preview";
+  const dubai = <span className="ml-1 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-slate-300">Dubai time</span>;
 
   return (
     <div className="u-keep u-fade fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
-        className="u-keep u-up u-safe-full relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 sm:h-[92vh] sm:max-w-2xl sm:rounded-3xl"
+        className={`u-keep u-up u-safe-full relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:h-[92vh] sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: "dark" }}>
         {/* Header */}
         <div className="u-keep shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, env(safe-area-inset-top))" }}>
           <button onClick={onClose} disabled={submitting} aria-label="Close"
             className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">✕</button>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events</p>
-          <h2 id="host-title" className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Host an event</h2>
-          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours.</p>
+          <p className="pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events{preview ? " · Step 2 of 2" : ""}</p>
+          <h2 id="host-title" className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{preview ? "Preview your event" : "Host an event"}</h2>
+          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
         </div>
 
         {/* Body */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10">
-          <div className="space-y-12">
-            <DkSection n={1} title="Artwork">
-              <div id="c-art" tabIndex={-1} className="focus:outline-none">
-                <ArtworkDrop value={f.art} error={errors.art} onChange={(art) => { setF((x) => ({ ...x, art })); setErrors((x) => ({ ...x, art: undefined })); }} />
+        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10">
+          {preview ? (
+            <div key="preview" className="u-slide"><HostPreview sub={buildSub()} onEdit={edit} /></div>
+          ) : (
+          <div key="form" className="u-slide space-y-12">
+            <DkSection n={1} title="Photos">
+              <p className="-mt-2 text-sm text-slate-400">Two photos: a square logo for the event card and a widescreen cover for the event page. Both are required.</p>
+              <div className="grid gap-8 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:gap-6">
+                <div className="w-full max-w-[13rem]">
+                  <PhotoDrop kind="logo" value={f.logo} error={errors.logo} onChange={(v) => { setF((x) => ({ ...x, logo: v })); clearErr("logo"); }} />
+                </div>
+                <PhotoDrop kind="cover" value={f.cover} error={errors.cover} onChange={(v) => { setF((x) => ({ ...x, cover: v })); clearErr("cover"); }} />
               </div>
             </DkSection>
 
@@ -1136,7 +1296,9 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   className={`${DK.input(!!errors.pitch)} resize-y leading-relaxed`} />
                 <div className="mt-2 flex items-start justify-between gap-4 text-xs">
                   {errors.pitch ? <span className="text-sm text-rose-300">{errors.pitch}</span> : <span className="text-slate-400">A thorough plan gets approved faster.</span>}
-                  <span className={`shrink-0 tabular-nums ${pitchLen >= PITCH_MIN ? "text-crimson-300" : "text-slate-400"}`}>{pitchLen} / {PITCH_MIN}+</span>
+                  <span aria-live="polite" className={`shrink-0 tabular-nums font-medium transition-colors ${words >= PITCH_MIN_WORDS ? "text-emerald-400" : "text-slate-400"}`}>
+                    {words >= PITCH_MIN_WORDS && "✓ "}{words} / {PITCH_MIN_WORDS} words minimum
+                  </span>
                 </div>
               </div>
             </DkSection>
@@ -1145,34 +1307,34 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div className="col-span-2 sm:col-span-1">
                   <label className={DK.label} htmlFor="c-date">Date</label>
-                  <input id="c-date" type="date" min={TODAY} value={f.date} onChange={set("date")} className={DK.input(!!errors.date)} />
-                  <E k="date" />
+                  <input id="c-date" type="date" min={earliest.date} value={f.date} onChange={set("date")} className={DK.input(!!errors.date)} />
                 </div>
                 <div>
-                  <label className={DK.label} htmlFor="c-time">Starts</label>
-                  <input id="c-time" type="time" value={f.time} onChange={set("time")} className={DK.input(false)} />
+                  <label className={DK.label} htmlFor="c-time">Starts {dubai}</label>
+                  <input id="c-time" type="time" min={f.date === earliest.date ? earliest.time : undefined} value={f.time} onChange={set("time")} className={DK.input(!!errors.time || !!errors.date)} />
                 </div>
                 <div>
-                  <label className={DK.label} htmlFor="c-end">Ends</label>
+                  <label className={DK.label} htmlFor="c-end">Ends {dubai}</label>
                   <input id="c-end" type="time" value={f.end} onChange={set("end")} className={DK.input(!!errors.end)} />
-                  <E k="end" />
                 </div>
               </div>
+              {errors.date || errors.time || errors.end
+                ? <div className="-mt-3 space-y-1">{["date", "time", "end"].map((k) => <E key={k} k={k} />)}</div>
+                : <p className="-mt-3 text-xs text-slate-400">Applications close 24 hours before the start. Earliest start right now: {fmtDate(earliest.date)}, {fmtTime(earliest.time)} (Dubai time).</p>}
               <div>
                 <label className={DK.label} htmlFor="c-venueName">Venue name</label>
-                <input id="c-venueName" list="c-venues" value={f.venueName} onChange={set("venueName")} placeholder="Marina Rooftop Lounge, JBR Beach…" className={DK.input(!!errors.venueName)} />
-                <datalist id="c-venues">{VENUE_SUGGESTIONS.map((v) => <option key={v} value={v} />)}</datalist>
+                <input id="c-venueName" value={f.venueName} onChange={set("venueName")} autoComplete="off" placeholder="e.g. Marina Rooftop Lounge" className={DK.input(!!errors.venueName)} />
                 <E k="venueName" />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className={DK.label} htmlFor="c-room">Room or meeting point <span className="text-slate-500">· optional</span></label>
-                  <input id="c-room" value={f.room} onChange={set("room")} placeholder="Level 3 terrace" className={DK.input(false)} />
+                  <input id="c-room" value={f.room} onChange={set("room")} autoComplete="off" placeholder="Level 3 terrace" className={DK.input(false)} />
                 </div>
                 <div>
-                  <label className={DK.label} htmlFor="c-mapsUrl">Google Maps link <span className="text-slate-500">· optional</span></label>
-                  <input id="c-mapsUrl" type="url" inputMode="url" value={f.mapsUrl} onChange={set("mapsUrl")} placeholder="https://maps.app.goo.gl/…" className={DK.input(!!errors.mapsUrl)} />
-                  <E k="mapsUrl" />
+                  <label className={DK.label} htmlFor="c-mapsUrl">Google Maps link</label>
+                  <input id="c-mapsUrl" type="url" inputMode="url" autoComplete="off" value={f.mapsUrl} onChange={set("mapsUrl")} placeholder="https://maps.app.goo.gl/…" className={DK.input(!!errors.mapsUrl)} />
+                  {errors.mapsUrl ? <E k="mapsUrl" /> : <p className={DK.hint}>In Google Maps: open the venue → Share → Copy link.</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1230,19 +1392,49 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               </div>
             </DkSection>
           </div>
+          )}
           <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={set("website")}
             style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
         </div>
 
         {/* Footer */}
         <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-          {sendError && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
-          {Object.values(errors).some(Boolean) && !sendError && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
-          <button onClick={submit} disabled={submitting}
-            className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">
-            {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Submitting…</>) : "Submit Party Application"}
-          </button>
+          {sendError && !confirm && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
+          {!preview && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
+          {preview ? (
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <button onClick={() => setStep("form")} disabled={submitting}
+                className="u-keep rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50 sm:w-auto">← Back to editing</button>
+              <button onClick={() => setConfirm(true)} disabled={submitting}
+                className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">Submit application</button>
+            </div>
+          ) : (
+            <button onClick={review}
+              className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98]">Preview my event →</button>
+          )}
         </div>
+
+        {/* Confirmation */}
+        {confirm && (
+          <div className="u-keep u-fade absolute inset-0 z-20 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
+            onMouseDown={(e) => e.target === e.currentTarget && !submitting && setConfirm(false)}>
+            <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
+              className="u-up w-full max-w-sm rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "env(safe-area-inset-bottom)" }}>
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-xl ring-1 ring-inset ring-crimson-400/30" aria-hidden="true">📨</span>
+              <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit your application?</h3>
+              <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>
+              {sendError && <p role="alert" className="mt-3 rounded-xl bg-rose-500/10 px-3 py-2 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => setConfirm(false)} disabled={submitting}
+                  className="u-keep flex-1 rounded-xl py-3 text-sm font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50">Cancel</button>
+                <button ref={yesRef} onClick={send} disabled={submitting}
+                  className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white transition-all hover:bg-crimson-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-300 active:scale-[0.98] disabled:opacity-80">
+                  {submitting ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending…</>) : "Yes, submit"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1434,11 +1626,50 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Event details                                                      */
 /* ------------------------------------------------------------------ */
-function EventDetail({ party: p, action, onShare, onClose }) {
+/* An event card as shown in Student Parties (also used in the host's preview). */
+function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
+  const left = p.spots - p.taken;
+  return (
+    <article id={"event-" + p.id} {...open}
+      className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+      <div className={`relative flex justify-between gap-2 overflow-hidden px-4 ${p.cover ? "h-40 items-end bg-slate-900 pb-3" : `items-center bg-gradient-to-r py-4 ${GRADIENTS[p.category]}`}`}>
+        {p.cover && (
+          <>
+            <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" style={{ aspectRatio: "16 / 9" }} />
+            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" aria-hidden="true" />
+          </>
+        )}
+        <span className="relative">{p.logo ? <EventLogo p={p} className="h-12 w-12 ring-2 ring-white/80 shadow-lg" /> : <span className="text-3xl">{p.emoji}</span>}</span>
+        <div className="relative flex items-center gap-2">
+          <ShareBtn onClick={onShare} />
+          <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
+          <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+        </div>
+      </div>
+      <div className="p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-semibold text-slate-900">{p.title}</h3>
+          <Badge kind="verified" />
+        </div>
+        <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
+        <div className="mt-2.5"><Vibe v={p.vibe} /></div>
+        <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+          <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
+          <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
+        </div>
+        <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
+        <div className="mt-4 flex gap-2">{actions}</div>
+      </div>
+    </article>
+  );
+}
+
+/* The event page content: shared by the event details modal and the host's preview. */
+function EventDetailBody({ p, onShare }) {
   const left = p.spots - p.taken;
   const mapsUrl = partyMapsUrl(p);
   return (
-    <Modal onClose={onClose} size="lg">
+    <>
       <div className={`relative overflow-hidden px-6 pb-6 pt-7 text-white ${p.cover ? "bg-slate-900" : `bg-gradient-to-br ${GRADIENTS[p.category]}`}`}>
         {p.cover && (
           <>
@@ -1502,7 +1733,14 @@ function EventDetail({ party: p, action, onShare, onClose }) {
           </div>
         </div>
       </div>
+    </>
+  );
+}
 
+function EventDetail({ party: p, action, onShare, onClose }) {
+  return (
+    <Modal onClose={onClose} size="lg">
+      <EventDetailBody p={p} onShare={onShare} />
       <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );
@@ -2826,37 +3064,8 @@ export default function App() {
               {filteredParties.map((p, i) => {
                 const left = p.spots - p.taken;
                 return (
-                  <article key={p.id} id={"event-" + p.id} {...cardOpen(() => setModal({ type: "detail", id: p.id }))}
-                    className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
-                    <div className={`relative flex justify-between gap-2 overflow-hidden px-4 ${p.cover ? "h-40 items-end bg-slate-900 pb-3" : `items-center bg-gradient-to-r py-4 ${GRADIENTS[p.category]}`}`}>
-                      {p.cover && (
-                        <>
-                          <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" style={{ aspectRatio: "16 / 9" }} />
-                          <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" aria-hidden="true" />
-                        </>
-                      )}
-                      <span className="relative">{p.logo ? <EventLogo p={p} className="h-12 w-12 ring-2 ring-white/80 shadow-lg" /> : <span className="text-3xl">{p.emoji}</span>}</span>
-                      <div className="relative flex items-center gap-2">
-                        <ShareBtn onClick={() => shareEvent(p)} />
-                        <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
-                        <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
-                      </div>
-                    </div>
-                    <div className="p-5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-slate-900">{p.title}</h3>
-                        <Badge kind="verified" />
-                      </div>
-                      <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
-                      <div className="mt-2.5"><Vibe v={p.vibe} /></div>
-                      <div className="mt-3 space-y-1.5 text-sm text-slate-600">
-                        <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time}</p>
-                        <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
-                      </div>
-                      <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
-                      <div className="mt-4 flex gap-2">{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></div>
-                    </div>
-                  </article>
+                  <PartyCard key={p.id} p={p} i={i} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
+                    actions={<>{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
                 );
               })}
             </div>

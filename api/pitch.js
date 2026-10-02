@@ -134,7 +134,8 @@ export default async function handler(req, res) {
   const missing = [];
   if (p.title.length < 3) missing.push("title");
   if (p.venueName.length < 3) missing.push("venue name");
-  if (p.pitch.length < 100) missing.push("detailed description");
+  // The form asks for 50+ words; 100+ characters is still accepted from older clients.
+  if ((p.pitch.match(/\S+/g) || []).length < 50 && p.pitch.length < 100) missing.push("detailed description");
   if (!isEmail(p.email)) missing.push("email");
   if (!p.whatsapp && !p.telegram) missing.push("WhatsApp or Telegram");
   const cover = parseImage(b.cover), logo = b.logo ? parseImage(b.logo) : null;
