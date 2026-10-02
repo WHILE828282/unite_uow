@@ -13,6 +13,9 @@ const crimson = {
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  // hover: styles only apply on devices with a real hover (mouse/trackpad). On phones the first tap would otherwise
+  // trigger the hover state and only the second tap would click.
+  future: { hoverOnlyWhenSupported: true },
   // Flat repo layout: App.jsx and main.jsx live at the root, not in src/.
   content: ["./index.html", "./*.{js,jsx}"],
   theme: {

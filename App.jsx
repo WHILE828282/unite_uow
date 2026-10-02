@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { GetAppBadges, InstallBanner, AppleLogo, AndroidLogo } from "./GetApp.jsx";
 import { isStandalone, platform, installPath } from "./install.js";
+import { applyUpdate } from "./updates.js";
+
+/* global __APP_VERSION__ */
+// Injected at build time (vite.config.js): short commit + build date, shown in the footer.
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : { commit: "dev", built: "" };
+const versionLabel = () => {
+  const d = APP_VERSION.built ? new Date(APP_VERSION.built) : null;
+  const when = d ? d.toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  return `Version ${APP_VERSION.commit}${when ? ` · ${when}` : ""}`;
+};
 
 /* ------------------------------------------------------------------ */
 /*  Config & data                                                      */
@@ -335,7 +345,7 @@ const CSS = `
 .u-spin{animation:uSpin .8s linear infinite}
 .u-ping{animation:uPing 1.4s ease-out infinite}
 .u-card{transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease}
-.u-card:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 28px -12px rgba(15,23,42,.18);border-color:#cbd5e1}
+@media (hover:hover) and (pointer:fine){.u-card:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(15,23,42,.04),0 12px 28px -12px rgba(15,23,42,.18);border-color:#cbd5e1}}
 .u-btn{transition:all .2s cubic-bezier(.2,.8,.2,1)}
 .u-btn:not(:disabled):active{transform:scale(.95)}
 @keyframes uSlide{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
@@ -750,7 +760,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
 
             <label htmlFor="auth-email" className="mt-5 block text-sm font-medium text-slate-700">Email address</label>
             <input
-              id="auth-email" type="email" value={email} autoFocus autoComplete="email"
+              id="auth-email" type="email" inputMode="email" value={email} autoFocus autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="you@example.com"
@@ -760,7 +770,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
 
             <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
             <input
-              id="auth-sid" value={studentId} inputMode="numeric" autoComplete="off"
+              id="auth-sid" value={studentId} inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="go"
               onChange={(e) => setStudentId(e.target.value.replace(/\s/g, "").slice(0, 12))}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="e.g., 7654321"
@@ -798,6 +808,8 @@ function AuthModal({ reason, onClose, onSignIn }) {
                   ref={(el) => { refs.current[i] = el; }}
                   value={d}
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  enterKeyHint="done"
                   autoComplete={i === 0 ? "one-time-code" : "off"}
                   aria-label={`Digit ${i + 1}`}
                   readOnly={locked}
@@ -1167,6 +1179,29 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [submitting, confirm, step, onClose]);
+  // Phone back gesture / browser back (see App): same steps as Escape, but never closes while sending.
+  useEffect(() => {
+    const h = (e) => {
+      if (submitting) { e.preventDefault(); return; }
+      if (confirm) { setConfirm(false); e.preventDefault(); }
+      else if (step === "preview") { setStep("form"); e.preventDefault(); }
+    };
+    window.addEventListener("unite:back", h);
+    return () => window.removeEventListener("unite:back", h);
+  }, [submitting, confirm, step]);
+  // Keyboard: "Next" on every single-line field, "Done" on the last; Enter moves on instead of doing nothing.
+  // Fields you type into. Enter skips dropdowns and date/time pickers: focusing one opens its popup, which then swallows the next keystrokes.
+  const formFields = () => (bodyRef.current ? [...bodyRef.current.querySelectorAll("input:not([type=file]):not([type=date]):not([type=time]):not([type=checkbox]):not([type=radio]):not([name=website]), textarea")].filter((el) => el.offsetParent) : []);
+  useEffect(() => {
+    const list = formFields();
+    list.forEach((el, i) => { if (el.tagName === "INPUT") el.setAttribute("enterkeyhint", i === list.length - 1 ? "done" : "next"); });
+  });
+  const onFieldEnter = (e) => {
+    if (e.key !== "Enter" || e.target.tagName !== "INPUT" || e.target.type === "file") return;
+    e.preventDefault();
+    const list = formFields(), next = list[list.indexOf(e.target) + 1];
+    if (next) next.focus(); else e.target.blur();
+  };
   useEffect(() => { if (confirm && yesRef.current) yesRef.current.focus(); }, [confirm]);
   // After switching steps: top of the preview, or straight to the field the host wants to edit.
   useEffect(() => {
@@ -1257,7 +1292,7 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         </div>
 
         {/* Body */}
-        <div ref={bodyRef} className="u-scroll min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10" style={{ paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
+        <div ref={bodyRef} onKeyDown={onFieldEnter} className="u-scroll min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10" style={{ paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {preview ? (
             <div key="preview" className="u-slide"><HostPreview sub={buildSub()} onEdit={edit} /></div>
           ) : (
@@ -1495,6 +1530,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
   }, [step]);
 
   const confirm = () => {
+    if (step !== "review") return; // a second fast tap must not pay twice
     if (method === "Card") {
       const e = {};
       if (card.number.replace(/\s/g, "").length < 15) e.number = "Enter a valid card number.";
@@ -2370,6 +2406,7 @@ const tryoutUrl = (c) => {
 /* Always dark, whatever the site theme: only fixed dark colours are used here, none that the
    .u-dark palette remap touches, and every surface carries u-keep. */
 function TryoutModal({ club: c, onSent, onClose }) {
+  const sentRef = useRef(false); // one registration per tap, even if double-tapped
   const [loaded, setLoaded] = useState(false);
   const [slow, setSlow] = useState(false);
   const src = tryoutUrl(c);
@@ -2446,7 +2483,7 @@ function TryoutModal({ club: c, onSent, onClose }) {
 
         {/* Footer: locked dark */}
         <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0a192f] p-3 sm:flex-row sm:items-center sm:px-6 [@media(max-height:500px)]:py-2" style={{ paddingBottom: "max(0.75rem, var(--sab))", paddingLeft: "max(0.75rem, var(--sal))", paddingRight: "max(0.75rem, var(--sar))" }}>
-          <button onClick={onSent} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
+          <button onClick={() => { if (sentRef.current) return; sentRef.current = true; onSent(); }} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
             I've submitted the form
             <span className="ml-1.5 font-normal text-white/70">· adds {scheduleLabel(c, true)} to My Schedule</span>
           </button>
@@ -2580,13 +2617,48 @@ export default function App() {
     return () => { Object.assign(b, prev); window.scrollTo({ top: y, behavior: "instant" }); };
   }, [modalOpen]);
 
+  // Phone back gesture / browser back: closes the open modal (or steps back inside it) instead of leaving the app,
+  // and returns to the previous tab. Each open modal and each tab change gets a history entry.
+  const modalRef = useRef(modal);
+  modalRef.current = modal;
+  const ownBack = useRef(false); // a history.back() we triggered ourselves
+  useEffect(() => {
+    const st = window.history.state || {};
+    if (modalOpen && !st.uniteModal) window.history.pushState({ ...st, uniteModal: true }, "", window.location.href);
+    else if (!modalOpen && st.uniteModal) { ownBack.current = true; window.history.back(); }
+  }, [modalOpen]);
+  useEffect(() => {
+    if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: "clubs" }, "", window.location.href);
+    const onPop = (e) => {
+      if (ownBack.current) { ownBack.current = false; return; }
+      if (modalRef.current) {
+        const ev = new CustomEvent("unite:back", { cancelable: true });
+        window.dispatchEvent(ev);
+        if (ev.defaultPrevented) window.history.pushState({ ...(window.history.state || {}), uniteModal: true }, "", window.location.href);
+        else setModal(null);
+        return;
+      }
+      setTab((e.state && e.state.uniteTab) || "clubs");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // A new version took over while something was open: offer to reload (updates.js).
+  const [updateReady, setUpdateReady] = useState(false);
+  useEffect(() => {
+    const h = () => setUpdateReady(true);
+    window.addEventListener("unite:update-ready", h);
+    return () => window.removeEventListener("unite:update-ready", h);
+  }, []);
+
   // Keep the address bar on the open team or club, so the link can be copied straight from the browser.
   useEffect(() => {
     try {
       const club = modal && modal.type === "club" && CLUBS.find((x) => x.id === modal.id);
       const path = window.location.pathname;
-      if (club && path !== clubPath(club)) window.history.replaceState(null, "", clubPath(club));
-      else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave"].includes(modal.type))) window.history.replaceState(null, "", "/");
+      if (club && path !== clubPath(club)) window.history.replaceState(window.history.state, "", clubPath(club));
+      else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
     } catch (e) { /* ignore */ }
   }, [modal]);
 
@@ -2694,7 +2766,10 @@ export default function App() {
     if (action) setTimeout(() => action(email), 250);
   };
 
-  const changeTab = (t) => { setTab(t); setFilter("All"); setLangFilter("All"); };
+  const changeTab = (t) => {
+    if (t !== tab) { try { window.history.pushState({ ...(window.history.state || {}), uniteTab: t, uniteModal: false }, "", window.location.href); } catch (e) { /* ignore */ } }
+    setTab(t); setFilter("All"); setLangFilter("All");
+  };
   const jumpTo = (t) => {
     changeTab(t);
     const el = document.getElementById("tabs");
@@ -3142,6 +3217,7 @@ export default function App() {
         <footer className="mt-12 text-center text-xs text-slate-400">
           {!isStandalone() && <div className="mb-6"><GetAppBadges heading="Get the Unite app" /></div>}
           Unite · uniteuow.com · A student-built platform for UOWD · Payments via Ziina (demo mode)
+          <p className="mt-2 text-[11px] text-slate-400/80">{versionLabel()}</p>
         </footer>
       </main>
 
@@ -3219,6 +3295,16 @@ export default function App() {
       {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={modal.booking} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} /></Modal>}
       {modal && modal.type === "waitlist" && (
         <WaitlistModal party={modal.party} pos={modal.pos} email={modal.email} fresh={modal.fresh} onClose={closeModal} onLeave={() => leaveWaitlist(modal.party)} />
+      )}
+
+      {updateReady && (
+        <div className="u-keep pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
+          <div role="status" className="u-up pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl py-2.5 pl-4 pr-2 text-sm text-white shadow-2xl ring-1 ring-white/10" style={glassDark}>
+            <span className="min-w-0 flex-1 font-semibold">New version available</span>
+            <button onClick={applyUpdate} className="shrink-0 rounded-xl bg-crimson-700 px-4 py-2 font-semibold text-white active:scale-95">Update</button>
+            <button onClick={() => setUpdateReady(false)} aria-label="Later" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400">✕</button>
+          </div>
+        </div>
       )}
 
       {toast && (

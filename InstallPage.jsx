@@ -151,8 +151,8 @@ export default function InstallPage() {
 
       {/* iPhone: floating hint pointing at Safari's toolbar */}
       {hint && tab === "ios" && (
-        <div className="u-keep u-inst-rise fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
-          <div className="relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
+        <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
+          <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
             <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">✕</button>
           </div>

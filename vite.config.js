@@ -1,18 +1,28 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { execSync } from "node:child_process";
+
+// Build version shown in the app footer, so you can see which deploy a phone is running.
+const commit = (() => {
+  if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+  try { return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch (e) { return "dev"; }
+})();
+const APP_VERSION = { commit, built: new Date().toISOString() };
 
 // Brand colours from the Unite logo pack.
 const BRAND_BG = "#0b1222"; // splash background (the icon's navy)
 const BRAND_THEME = "#0f172a"; // browser / status bar
 
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
   plugins: [
     react(),
     VitePWA({
-      // A new Vercel deploy installs a fresh service worker and takes over on the next load: no manual cache clearing.
+      // A new deploy's service worker takes over as soon as it is downloaded (skipWaiting + clientsClaim below);
+      // updates.js registers it and checks for updates on start, on return to the foreground and every 30 minutes.
       registerType: "autoUpdate",
-      injectRegister: false, // registered in main.jsx via virtual:pwa-register
+      injectRegister: false,
       includeAssets: ["favicon.ico", "icons/*.png", "icons/unite-icon.svg"],
       manifest: {
         name: "Unite · UOWD clubs & events",

@@ -157,8 +157,8 @@ export function InstallBanner() {
   return (
     <>
       {show && (
-        <div role="dialog" aria-label="Get Unite on your home screen" className="u-keep u-up fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
-          <div className="flex w-full items-center gap-3 rounded-2xl border border-white/10 py-2.5 pl-3 pr-2 text-white shadow-2xl" style={{ background: "rgba(10,25,47,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+        <div role="dialog" aria-label="Get Unite on your home screen" className="u-keep u-up u-hide-typing pointer-events-none fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
+          <div className="pointer-events-auto flex w-full items-center gap-3 rounded-2xl border border-white/10 py-2.5 pl-3 pr-2 text-white shadow-2xl" style={{ background: "rgba(10,25,47,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
             <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-[22%]" />
             <p className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">Get Unite on your home screen</p>
             <button onClick={act} className="u-keep shrink-0 rounded-xl bg-crimson-700 px-4 py-2 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">
