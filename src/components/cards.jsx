@@ -4,11 +4,11 @@ import { clubDays, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 
 /* An event card as shown in Events (also used in the host's preview). */
-export function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
+export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false }) {
   const left = p.spots - p.taken;
   return (
     <article id={"event-" + p.id} {...open}
-      className="group u-card u-rise flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400" style={{ animationDelay: `${i * 60}ms` }}>
+      className={`group u-card u-rise flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ${wide ? "md:col-span-2" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400`} style={{ animationDelay: `${i * 60}ms` }}>
       {p.cover && (
         <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
           <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
