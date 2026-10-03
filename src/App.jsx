@@ -48,7 +48,13 @@ const loadSession = () => {
 export default function App() {
   const [saved] = useState(loadSession);
   const [user, setUser] = useState(() => (saved ? saved.user : null));
-  const [tab, setTab] = useState("home");
+  // A reload (pull to refresh) reopens the tab you were on instead of jumping back to Home.
+  const [tab, setTab] = useState(() => {
+    let t = null;
+    try { t = sessionStorage.getItem("unite-reload-tab"); sessionStorage.removeItem("unite-reload-tab"); } catch (e) { /* ignore */ }
+    if (!t) t = (window.history.state || {}).uniteTab;
+    return ["home", "clubs", "parties", "schedule", "tickets", "events"].includes(t) ? t : "home";
+  });
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
@@ -140,7 +146,7 @@ export default function App() {
     else if (!modalOpen && st.uniteModal) { ownBack.current = true; window.history.back(); }
   }, [modalOpen]);
   useEffect(() => {
-    if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: "home" }, "", window.location.href);
+    if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: tab }, "", window.location.href);
     const onPop = (e) => {
       if (ownBack.current) { ownBack.current = false; return; }
       if (modalRef.current) {

@@ -53,6 +53,7 @@ export function PullToRefresh() {
       if (s.d >= THRESHOLD) {
         s.busy = true;
         setBusy(true); setPull(HOLD); slide(HOLD, true);
+        try { sessionStorage.setItem("unite-reload-tab", (window.history.state || {}).uniteTab || "home"); } catch (e) { /* ignore */ }
         setTimeout(() => window.location.reload(), 450);
       } else { setPull(0); slide(0, true); }
     };
