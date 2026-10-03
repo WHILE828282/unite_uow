@@ -353,10 +353,12 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   // Keyboard: "Next" on every single-line field, "Done" on the last; Enter moves on instead of doing nothing.
   // Fields you type into. Enter skips dropdowns and date/time pickers: focusing one opens its popup, which then swallows the next keystrokes.
   const formFields = () => (bodyRef.current ? [...bodyRef.current.querySelectorAll("input:not([type=file]):not([type=date]):not([type=time]):not([type=checkbox]):not([type=radio]):not([name=website]), textarea")].filter((el) => el.offsetParent) : []);
+  // Only when the set of fields changes (not on every keystroke: measuring every field per key press made typing lag on phones).
   useEffect(() => {
     const list = formFields();
     list.forEach((el, i) => { if (el.tagName === "INPUT") el.setAttribute("enterkeyhint", i === list.length - 1 ? "done" : "next"); });
-  });
+    // eslint-disable-next-line
+  }, [step, f.kind]);
   const onFieldEnter = (e) => {
     if (e.key !== "Enter" || e.target.tagName !== "INPUT" || e.target.type === "file") return;
     e.preventDefault();
@@ -454,8 +456,11 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const dubai = <span className="ml-1 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-slate-300">Dubai time</span>;
 
   return (
-    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6">
+    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 sm:items-center sm:p-6 sm:backdrop-blur-md">
+      {/* Touch: a tap on a button keeps the keyboard where it is. Otherwise the keyboard closing mid-tap resizes the
+          form, the button slides away under the finger and the tap is lost ("buttons don't respond"). */}
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
+        onPointerDown={(e) => { if (e.pointerType !== "mouse" && e.target.closest("button") && document.activeElement && document.activeElement.matches("input, textarea")) e.preventDefault(); }}
         className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: "dark" }}>
         {/* Header */}

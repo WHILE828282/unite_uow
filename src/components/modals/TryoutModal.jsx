@@ -33,7 +33,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 backdrop-blur-md sm:items-center sm:p-6"
+    <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 sm:items-center sm:p-6 sm:backdrop-blur-md"
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={`UOWD registration for ${c.name}`}
         className="u-keep u-up u-full-h flex w-full flex-col overflow-hidden bg-[#06101f] text-white shadow-2xl ring-1 ring-white/10 sm:max-w-3xl sm:rounded-3xl"

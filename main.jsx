@@ -24,12 +24,15 @@ const syncViewport = () => {
   const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
   const gap = Math.max(0, H - top - h);
   const typing = isField(document.activeElement) && gap > 120; // on-screen keyboard is up
+  const next = { "--vvh": `${Math.round(h)}px`, "--kbtop": `${typing ? Math.round(top) : 0}px`, "--kb": `${typing ? Math.round(gap) : 0}px`, "--tb": `${typing ? 0 : Math.round(Math.min(gap, 140))}px` };
+  // Writing these restyles the whole page, and visualViewport fires on every scroll frame: only write real changes.
+  const key = JSON.stringify(next) + typing;
+  if (key === lastViewport) return;
+  lastViewport = key;
   document.documentElement.classList.toggle("u-kb", typing);
-  root.setProperty("--vvh", `${Math.round(h)}px`);
-  root.setProperty("--kbtop", `${typing ? Math.round(top) : 0}px`);
-  root.setProperty("--kb", `${typing ? Math.round(gap) : 0}px`);
-  root.setProperty("--tb", `${typing ? 0 : Math.round(Math.min(gap, 140))}px`);
+  Object.entries(next).forEach(([k, v]) => root.setProperty(k, v));
 };
+let lastViewport = "";
 // The keyboard animates for ~300ms and iOS doesn't always report the final size, so measure a few times.
 const syncSoon = () => { syncViewport(); [80, 200, 400, 700, 1000].forEach((t) => setTimeout(syncViewport, t)); };
 syncViewport();
