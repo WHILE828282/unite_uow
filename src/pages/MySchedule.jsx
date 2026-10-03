@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { EventLogo, Icon, ReviewBadge } from "../components/ui.jsx";
 import { DAYS } from "../data/options.js";
-import { TYPE_EMOJI } from "../lib/events.js";
 import { fmtDate, fmtRange, isoDay, shortVenue, slotHours, to24, toMin, weekdayIdx } from "../lib/format.js";
 import { CAT_TINT, HOUR_PX, MONTHS, addDays, hourLabel, isoWeek, layoutDay, mondayOf, shortRange } from "../lib/schedule.js";
 import { GRADIENTS } from "../lib/styles.js";

@@ -396,13 +396,21 @@ export default function App() {
     });
   };
 
+  // Phones: the system share sheet (WhatsApp, Telegram, Instagram…). Elsewhere, or if it's unavailable: copy the link.
+  const nativeShare = async (title, url) => {
+    if (!navigator.share || !(window.matchMedia && window.matchMedia("(pointer: coarse)").matches)) return false;
+    try { await navigator.share({ title, url }); } catch (e) { /* closed the sheet: nothing to do */ }
+    return true;
+  };
   const shareClub = async (c) => {
     const url = `${window.location.origin}${clubPath(c)}`;
+    if (await nativeShare(`${c.name} · Unite`, url)) return;
     const ok = await copyText(url);
     notify(ok ? `Link to ${c.name} copied! Share it with your squad.` : `Copy this link to share: ${url}`, ok ? 3000 : 6000);
   };
   const shareEvent = async (p) => {
     const url = `${window.location.origin}/events/${p.id}`;
+    if (await nativeShare(`${p.title} · Unite`, url)) return;
     const ok = await copyText(url);
     notify(ok ? "Link copied to clipboard! Share it with your squad." : `Copy this link to share: ${url}`, ok ? 3000 : 6000);
   };
