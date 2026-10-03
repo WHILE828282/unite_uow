@@ -459,7 +459,8 @@ export default function App() {
     }
     return b;
   };
-  const liveBooking = (b) => bookings.find((x) => x.id === b.id) || b;
+  // Latest copy of a ticket; bookings saved before events had logos borrow the event's logo.
+  const liveBooking = (b) => { const x = bookings.find((y) => y.id === b.id) || b; return x.logo ? x : { ...x, logo: (parties.find((p) => p.id === x.partyId) || {}).logo }; };
   const openFile = async (b) => { const r = await openTicketFile({ ref: b.ref, id: b.id, key: b.key }); if (r !== true) notify(r, 3500); };
 
   const joinWaitlist = (p, email) => {

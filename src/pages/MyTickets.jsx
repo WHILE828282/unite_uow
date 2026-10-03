@@ -1,4 +1,4 @@
-import { Icon } from "../components/ui.jsx";
+import { EventLogo, Icon } from "../components/ui.jsx";
 import { fmtDate } from "../lib/format.js";
 
 
@@ -39,7 +39,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
             <div className="grid gap-3 md:grid-cols-2">
               {bookings.map((b) => (
                 <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>
+                  {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{b.title}</p>
                     <p className="text-sm text-slate-500">{fmtDate(b.date)} · {b.time}</p>
@@ -59,7 +59,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                 const p = parties.find((x) => x.id === Number(id));
                 return p ? (
                   <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-2xl">{p.emoji}</div>
+                    {p.logo ? <EventLogo p={p} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{p.emoji}</div>}
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{p.title}</p>
                       <p className="text-sm text-slate-500">{fmtDate(p.date)} · {p.time}</p>
