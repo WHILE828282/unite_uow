@@ -237,7 +237,7 @@ export const PreviewBlock = ({ title, note, onEdit, children }) => (
 
 /* Phone-shaped frame on desktop, a plain full-width panel on mobile. */
 export const PhoneFrame = ({ children }) => (
-  <div className="lg:mx-auto lg:w-[360px] lg:rounded-[2.75rem] lg:bg-[#020617] lg:p-2.5 lg:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] lg:ring-1 lg:ring-white/10">
+  <div className="u-host-keep lg:mx-auto lg:w-[360px] lg:rounded-[2.75rem] lg:bg-[#020617] lg:p-2.5 lg:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] lg:ring-1 lg:ring-white/10">
     <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-white/10 lg:rounded-[2.2rem] lg:ring-0">
       <span className="pointer-events-none absolute left-1/2 top-2 z-20 hidden h-6 w-24 -translate-x-1/2 rounded-full bg-[#020617] lg:block" aria-hidden="true" />
       {/* Phones: no scroll box of its own (it trapped the finger, so the form wouldn't scroll past the preview). */}
@@ -306,7 +306,7 @@ export function HostPreview({ sub, onEdit }) {
   );
 }
 
-export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
+export function CreateModal({ email: defaultEmail, onClose, onSubmitted, dark = true }) {
   const [f, setF] = useState({
     title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
     spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, logo: null, cover: null, website: "",
@@ -462,8 +462,8 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           resize under the finger. */}
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
         onMouseDown={(e) => { if (e.target.closest("button") && document.activeElement && document.activeElement.matches("input, textarea")) e.preventDefault(); }}
-        className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
-        style={{ colorScheme: "dark" }}>
+        className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${dark ? "" : "u-host-light"} ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
+        style={{ colorScheme: dark ? "dark" : "light" }}>
         {/* Header */}
         <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, calc(var(--sat) + 1rem))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {/* Below the status bar: in the installed iPhone app, taps up there belong to iOS and never reach the page. */}

@@ -742,8 +742,8 @@ export default function App() {
 
       <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
         side={user ? (
-          <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark up label="Profile"
-            triggerClass="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+          <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark={dark} up label="Profile"
+            triggerClass="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-sm font-bold"
             onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")} onMyEvents={showMyEvents ? () => jumpTo("events") : undefined}
             onSignOut={() => setModal({
               type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
@@ -752,7 +752,7 @@ export default function App() {
             })} />
         ) : (
           <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} aria-label="Sign in"
-            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-white">
+            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full">
             <Icon name="person" className="h-6 w-6" />
           </button>
         )} />
@@ -762,7 +762,7 @@ export default function App() {
       {/* Modals */}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
-        <CreateModal email={modal.email} onClose={closeModal} onSubmitted={submitParty} />
+        <CreateModal email={modal.email} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
       )}
       {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} live={liveBooking} onOpenFile={openFile} />}
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (

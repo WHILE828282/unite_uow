@@ -22,10 +22,9 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
 }
 
 /* Phones: Portals-style floating glass bar at the bottom (thumb reach), plus a separate round profile button.
-   Active item: white icon and label on a lighter glass capsule; inactive: icon and label fade to 28% white.
+   Active item: full-colour icon and label on a capsule; inactive: icon and label fade (28% white in dark mode).
    Hidden while typing so it never sits on top of the keyboard. "My events" lives in the profile menu. */
 const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
-const FADED = "rgba(255,255,255,0.28)";
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-2 px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
@@ -36,7 +35,7 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
           return (
             <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
               className={`u-keep relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10.5px] font-semibold leading-none tracking-tight transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
-              style={on ? { color: "#FFFFFF" } : { color: FADED, "--icon-accent": FADED }}>
+              style={on ? { color: "var(--nav-on)" } : { color: "var(--nav-off)", "--icon-accent": "var(--nav-off)" }}>
               <span className="relative">
                 <Icon name={NAV_ICON[k] || "home"} className="h-6 w-6" />
                 {badge > 0 && <span className="absolute -right-2.5 -top-1.5 min-w-[1rem] rounded-full bg-crimson-600 px-1 text-center text-[9.5px] leading-4 text-white">{badge}</span>}
