@@ -48,6 +48,12 @@ export function useImageReady(src) {
   return ready;
 }
 
+/* Each club room has its own accent: a tinted icon tile and a hairline along the card's top edge. */
+const ROOM_TILE = {
+  Tech: "linear-gradient(135deg, #0ea5e9 0%, #1e3a8a 100%)",
+  Business: "linear-gradient(135deg, #10b981 0%, #065f46 100%)",
+  Arts: "linear-gradient(135deg, #f43f5e 0%, #7c2d12 100%)",
+};
 export function ClubCard({ c, i, open, members, button }) {
   const photo = useImageReady(c.backgroundImage);
   const meta = (cls) => (
@@ -78,9 +84,10 @@ export function ClubCard({ c, i, open, members, button }) {
       </article>
     );
   return (
-    <article {...open} className="u-card u-rise cursor-pointer rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+    <article {...open} className="u-card u-rise relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
+      {ROOM_TILE[c.category] && <span className="u-keep absolute inset-x-0 top-0 h-1 opacity-80" style={{ background: ROOM_TILE[c.category] }} aria-hidden="true" />}
       <div className="flex items-start gap-4">
-        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl ${GRADIENTS[c.category]}`}>{c.emoji}</div>
+        <div className={`u-keep flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl shadow-sm ${ROOM_TILE[c.category] ? "" : GRADIENTS[c.category]}`} style={ROOM_TILE[c.category] ? { background: ROOM_TILE[c.category] } : undefined}>{c.emoji}</div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{c.name}</h3>
