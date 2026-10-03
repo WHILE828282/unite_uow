@@ -17,7 +17,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
   const [q, setQ] = useState("");
   const list = filteredParties.filter((p) => matches(q, p.title, p.host, p.where, p.category, p.lang));
   const groups = [];
-  list.forEach((p) => { const s = sectionOf(p.date); const g = groups.find((x) => x.s === s); g ? g.items.push(p) : groups.push({ s, items: [p] }); });
+  list.forEach((p) => { const s = p.pinned ? "Featured" : sectionOf(p.date); const g = groups.find((x) => x.s === s); g ? g.items.push(p) : groups.push({ s, items: [p] }); });
   const clear = () => { setQ(""); setFilter("All"); setLangFilter("All"); };
   let n = 0;
   return (

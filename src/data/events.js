@@ -2,6 +2,13 @@ export const UOWD_ADDRESS = "University of Wollongong in Dubai, Dubai Knowledge 
 export const UOWD_MAPS = "University of Wollongong in Dubai";
 
 export const PARTIES = [
+  // Pinned launch party: always first in the feed.
+  { id: 13, pinned: true, lang: "English", title: "Unite Grand Launch: The Basement Sessions", emoji: "🎧", category: "Music", date: "2026-10-25", time: "9:00 PM", until: "till late",
+    where: "Q Underground (Basement Level), Holiday Inn, Barsha Heights", address: "Holiday Inn Dubai – Barsha Heights, Dubai, UAE", maps: "Q Underground, Holiday Inn Barsha Heights, Dubai",
+    price: 50, spots: 150, taken: 37, wait: 0, vibe: null, host: "Unite Team",
+    contact: { name: "Unite Team", role: "Organizer", email: "welcome@uniteuow.com" },
+    desc: "The ultimate UOWD campus takeover! No overpriced luxury traps, no fake dress codes. Celebrate the end of midterm exams inside Dubai’s legendary raw concrete electronic bunker—Q Underground. Experience an intimate, high-vibe student night with pure deep house and urban beats from live student guest DJs. 100% of upfront ticket revenue directly funds the Unite platform. Entry is strictly capped and verified at the single secure basement doors via digital QR-tickets purchased through uniteuow.com.",
+    perks: ["Live student guest DJs", "Deep house & urban beats", "Digital QR entry", "From 9:00 PM till late"] },
   { id: 1, logo: "/events/rooftop-sunset-mixer-small.webp", cover: "/events/rooftop-sunset-mixer-large.webp", lang: "English", title: "Rooftop Sunset Mixer", emoji: "🌇", category: "Social", date: "2026-10-09", time: "7:00 PM", where: "Rooftop Terrace, Block 5", address: UOWD_ADDRESS, maps: UOWD_MAPS, price: 40, spots: 60, taken: 52, wait: 0, vibe: { score: 4.9, count: 42 }, host: "Layla Al Mansoori",
     contact: { name: "Layla Al Mansoori", role: "Event lead", email: "sunset@uniteuow.com", whatsapp: "+971 50 000 1001", telegram: "unite_sunset" },
     desc: "A golden-hour mixer on the Block 5 rooftop with a live DJ, a mocktail bar and skyline views. The easiest way to meet students from every faculty after a busy week.",

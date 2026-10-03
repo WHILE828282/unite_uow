@@ -2,14 +2,18 @@
    POST { action: "send", email }                      -> emails a 6-digit code, returns a signed challenge
    POST { action: "verify", email, code, challenge }   -> { ok: true } when the code matches
    Stateless: the challenge carries the email and expiry, signed with HMAC so it can't be forged or reused
-   for another address. Needs RESEND_API_KEY; RESEND_FROM overrides the sender once a domain is verified. */
+   for another address. Needs RESEND_API_KEY. Sender: Unite Team <welcome@uniteuow.com>. Only @uowdubai.ac.ae and @uniteuow.com addresses. */
 import crypto from "node:crypto";
 
 const TTL_MS = 10 * 60 * 1000; // codes expire after 10 minutes
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const clean = (v) => String(v || "").trim().replace(/^["']|["']$/g, "").trim();
 const apiKey = () => clean(process.env.RESEND_API_KEY);
-const sender = () => clean(process.env.RESEND_FROM) || "Unite <onboarding@resend.dev>";
+// Every code is sent from Unite's verified domain.
+const sender = () => "Unite Team <welcome@uniteuow.com>";
+// Live codes go to UOWD campus accounts only (the demo account never reaches this API).
+const isCampus = (v) => /^[^\s@]+@(uowdubai\.ac\.ae|uniteuow\.com)$/.test(v);
+const RESTRICTED = "🔒 Access Restricted: Unite is an exclusive secure ecosystem for verified UOWD campus members only.";
 // Signing key: OTP_SECRET if set, otherwise derived from the Resend key (both stay server-side).
 const signingKey = () => crypto.createHash("sha256").update(`unite-otp:${clean(process.env.OTP_SECRET) || apiKey()}`).digest();
 const sign = (email, code, exp) => crypto.createHmac("sha256", signingKey()).update(`${email}|${code}|${exp}`).digest("base64url");
@@ -43,7 +47,8 @@ export default async function handler(req, res) {
   if (typeof b === "string") { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   b = b || {};
   const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
-  if (!isEmail(email)) return res.status(400).json({ ok: false, error: "Enter a valid email address, like name@gmail.com." });
+  if (!isEmail(email)) return res.status(400).json({ ok: false, error: "Enter a valid email address, like name@uowdubai.ac.ae." });
+  if (!isCampus(email)) return res.status(403).json({ ok: false, code: "domain", error: RESTRICTED });
   if (!apiKey()) {
     console.error("RESEND_API_KEY is missing for this deployment");
     return res.status(503).json({ ok: false, code: "config", error: "Email sign-in isn't available right now. Use the demo account instead." });

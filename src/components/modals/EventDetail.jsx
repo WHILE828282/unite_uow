@@ -59,7 +59,7 @@ export function EventDetailBody({ p, onShare }) {
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
             <InfoIcon name="calendar" />
-            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.time} <DayTag iso={p.date} /></p><p className="text-slate-500">Doors open 30 minutes before</p></div>
+            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.until ? `From ${p.time} ${p.until}` : p.time} <DayTag iso={p.date} /></p><p className="text-slate-500">Doors open 30 minutes before</p></div>
           </div>
           <div className="flex gap-3">
             <InfoIcon name="pin" />

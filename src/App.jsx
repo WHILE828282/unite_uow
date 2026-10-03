@@ -25,6 +25,7 @@ import { downloadCalendar, downloadTicket } from "./lib/downloads.js";
 import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, submissionToParty, tripClosed } from "./lib/events.js";
 import { firstName, fmtDate, fmtLeft, fmtTime, isoDay, makeId, shortVenue, to24, weekdayIdx } from "./lib/format.js";
 import { overlaps, scheduleLabel } from "./lib/schedule.js";
+import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
 import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
 import { CSS, glassChip, glassDark } from "./lib/styles.js";
 import { versionLabel } from "./lib/version.js";
@@ -425,12 +426,24 @@ export default function App() {
   // "I've submitted the form" (pending, then registered once Student Services processes it).
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
-    requireAuth(`Sign in to join ${c.name}`, () => setModal({
+    // Teams: the official UOWD tryouts form. Clubs: join in one tap; business clubs' applications also reach the admin in Telegram.
+    requireAuth(`Sign in to join ${c.name}`, (email) => setModal(isSports(c) ? {
       type: "confirm",
-      title: isSports(c) ? `Sign up for ${c.name} tryouts?` : `Join ${c.name}?`,
+      title: `Sign up for ${c.name} tryouts?`,
       body: `Next you'll fill in the official UOWD form. ${scheduleLabel(c)} will be added to My Schedule.`,
       confirmLabel: "Continue",
       onConfirm: () => setModal({ type: "tryout", id: c.id }),
+    } : {
+      type: "confirm",
+      title: c.notifyAdmin ? `Apply to ${c.name}?` : `Join ${c.name}?`,
+      body: `${scheduleLabel(c)} will be added to My Schedule.${c.notifyAdmin ? " The committee is notified of your application straight away." : ""}`,
+      confirmLabel: c.notifyAdmin ? "Apply" : "Join",
+      onConfirm: () => {
+        setModal({ type: "club", id: c.id });
+        registerClub(c);
+        if (c.notifyAdmin) fetch("/api/club", { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ club: c.name, room: c.category, email, name, studentId: studentIdRef.current, verified: isVerified }) }).catch(() => {});
+      },
     }));
   };
   const leaveClub = (c) => {
@@ -440,6 +453,8 @@ export default function App() {
     notify(wasPending ? `Sign-up for ${c.name} cancelled` : `You left ${c.name}`);
   };
 
+  // Verified UOWD student: signed in with a live emailed code on a campus address (not the demo account).
+  const isVerified = !!user && verifiedRef.current && isCampusEmail(user);
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
   // Student-hosted events: the ticket is registered with Unite, which signs its QR code (own events) or holds the
@@ -543,7 +558,7 @@ export default function App() {
       : st === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
-        {st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : "Join the club"}
+        {st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : c.notifyAdmin ? "Apply to join" : "Join the club"}
       </button>
     );
   };
@@ -567,7 +582,8 @@ export default function App() {
   const filteredClubs = clubs.filter((c) => filter === "All" || c.category === filter);
   // The feed: upcoming events only (past dates drop off), soonest first.
   const today = isoDay(new Date(clock));
-  const upcoming = parties.filter((p) => p.date >= today).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
+  // Pinned events (the launch party) lead the feed.
+  const upcoming = parties.filter((p) => p.date >= today).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
   const filteredParties = upcoming.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
   const feedLangs = LANGUAGES.filter((l) => upcoming.some((p) => p.lang === l));
   const myClubs = clubs.filter(isJoined).length;
@@ -736,7 +752,7 @@ export default function App() {
       <PullToRefresh />
 
       {/* Modals */}
-      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} />}
+      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
         <CreateModal email={modal.email} onClose={closeModal} onSubmitted={submitParty} />
       )}
@@ -752,6 +768,8 @@ export default function App() {
       {modal && modal.type === "club" && clubs.find((x) => x.id === modal.id) && (
         <ClubDetail
           club={clubs.find((x) => x.id === modal.id)}
+          verified={isVerified}
+          onSignIn={() => setModal({ type: "auth", reason: "Sign in with your UOWD student email to unlock club communities." })}
           status={statusOf(clubs.find((x) => x.id === modal.id))}
           action={(() => {
             const c = clubs.find((x) => x.id === modal.id);
@@ -840,7 +858,9 @@ export default function App() {
       {toast && (
         <div className="u-safe-toast pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4">
           <div key={typeof toast === "string" ? toast : toast.title + toast.body} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500"><Check className="h-3 w-3" /></span>
+            {toast.tone === "lock"
+              ? <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-[11px]" aria-hidden="true">🔒</span>
+              : <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500"><Check className="h-3 w-3" /></span>}
             {typeof toast === "string" ? <span>{toast}</span> : <span><span className="block font-bold">{toast.title}</span><span className="block font-normal text-slate-200">{toast.body}</span></span>}
           </div>
         </div>

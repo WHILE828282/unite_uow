@@ -5,8 +5,9 @@ import { UniteIcon } from "../UniteIcon.jsx";
 import { Modal } from "./Modal.jsx";
 import { AnimatedCheck, Check } from "../ui.jsx";
 import { maskEmail, validEmail } from "../../lib/format.js";
+import { RESTRICTED_MSG, isCampusEmail } from "../../lib/auth.js";
 
-export function AuthModal({ reason, onClose, onSignIn }) {
+export function AuthModal({ reason, onClose, onSignIn, onRestricted }) {
   const [step, setStep] = useState("email"); // email | otp | success
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
@@ -61,7 +62,9 @@ export function AuthModal({ reason, onClose, onSignIn }) {
   const sendCode = async (override) => {
     if (typeof override !== "string" && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
-    if (!validEmail(v)) return setError("Enter a valid email address, like name@gmail.com.");
+    if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
+    // Live codes: UOWD campus accounts only (the demo account below is open to everyone).
+    if (typeof override !== "string" && !isCampusEmail(v)) { setError(RESTRICTED_MSG); if (onRestricted) onRestricted(); return; }
     setEmail(v); setError("");
     if (typeof override !== "string") { const err = await sendLive(v); if (err) setError(err); return; }
     // Demo account: unchanged walkthrough, any 4-digit code works.
@@ -162,10 +165,10 @@ export function AuthModal({ reason, onClose, onSignIn }) {
               id="auth-email" type="email" inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
-              placeholder="you@example.com"
+              placeholder="you@uowdubai.ac.ae"
               className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${error ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
             />
-            {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Any email works: university, Gmail, iCloud, Outlook…</p>}
+            {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOWD student email (@uowdubai.ac.ae).</p>}
 
             <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
             <input
@@ -181,7 +184,7 @@ export function AuthModal({ reason, onClose, onSignIn }) {
               {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Email me a code"}
             </button>
             <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-crimson-700 hover:bg-slate-100">
-              Try the demo instead
+              Continue with a demo account
             </button>
 
             <ul className="mt-4 space-y-1.5 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
