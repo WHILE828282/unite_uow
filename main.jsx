@@ -2,7 +2,7 @@ import "./install.js"; // first: catches Chrome's one-time install prompt before
 import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.jsx";
+import App from "./src/App.jsx";
 import { startUpdates } from "./updates.js";
 
 // Service worker + active update checks, so the home-screen app picks up every deploy (see updates.js).
@@ -105,7 +105,7 @@ if (window.visualViewport) {
 }
 
 // /install is a standalone guide page (shareable link); everything else is the app.
-const InstallPage = lazy(() => import("./InstallPage.jsx"));
+const InstallPage = lazy(() => import("./src/pages/Install.jsx"));
 const onInstallPage = /^\/install\/?$/.test(window.location.pathname);
 
 createRoot(document.getElementById("root")).render(

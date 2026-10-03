@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { platform, isIOS, isMobile, isStandalone, inAppBrowser, iosNotSafari, promptInstall } from "./install.js";
-import { InstallBadge, InAppCard, InstalledToast, useCanPrompt } from "./GetApp.jsx";
+import { platform, isIOS, isMobile, isStandalone, inAppBrowser, iosNotSafari, promptInstall } from "../../install.js";
+import { InAppCard, InstallBadge, InstalledToast, useCanPrompt } from "../components/GetApp.jsx";
 
 /* ------------------------------------------------------------------ */
 /*  Install steps: real screenshots from public/install (.webp, .png fallback) */

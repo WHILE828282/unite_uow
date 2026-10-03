@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { platform, isIOS, isAndroid, isMobile, isStandalone, inAppBrowser, iosNotSafari, canPrompt, onPromptChange, promptInstall,
-  bannerSnoozed, snoozeBanner, installPath, INSTALL_URL } from "./install.js";
+  bannerSnoozed, snoozeBanner, installPath, INSTALL_URL } from "../../install.js";
 
 
 /* Brand marks (vector, no raster watermarks): Apple, Google Play, Android. */

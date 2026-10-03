@@ -16,8 +16,8 @@ export default {
   // hover: styles only apply on devices with a real hover (mouse/trackpad). On phones the first tap would otherwise
   // trigger the hover state and only the second tap would click.
   future: { hoverOnlyWhenSupported: true },
-  // Flat repo layout: App.jsx and main.jsx live at the root, not in src/.
-  content: ["./index.html", "./*.{js,jsx}"],
+  // main.jsx lives at the root; the app itself is in src/.
+  content: ["./index.html", "./*.{js,jsx}", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       fontFamily: { sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans] },
