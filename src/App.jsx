@@ -3,6 +3,7 @@ import { isStandalone } from "../install.js";
 import { applyUpdate } from "../updates.js";
 import { GetAppBadges, InstallBanner } from "./components/GetApp.jsx";
 import { Header } from "./components/Header.jsx";
+import { PullToRefresh } from "./components/PullToRefresh.jsx";
 import { Tabs } from "./components/Tabs.jsx";
 import { Ticket } from "./components/Ticket.jsx";
 import { AuthModal } from "./components/modals/AuthModal.jsx";
@@ -713,6 +714,7 @@ export default function App() {
       </main>
 
       <InstallBanner />
+      <PullToRefresh />
 
       {/* Modals */}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} />}
