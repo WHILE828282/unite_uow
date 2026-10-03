@@ -8,7 +8,7 @@ import { GRADIENTS } from "../../lib/styles.js";
 
 
 /* A submitted party while it waits for the admin safety review. */
-export function ReviewModal({ sub: s, r, onClose }) {
+export function ReviewModal({ sub: s, r, onClose, onDelete }) {
   const rows = [
     ["Reference", <span className="font-mono font-semibold">{s.ref}</span>],
     ["Type", s.category],
@@ -59,6 +59,7 @@ export function ReviewModal({ sub: s, r, onClose }) {
           <ContactButtons contact={{ whatsapp: s.whatsapp, telegram: s.telegram, email: s.email }} subject={s.title} />
         </div>
         <button onClick={onClose} className="u-btn w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800">Done</button>
+        {onDelete && <button onClick={onDelete} className="u-btn -mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50">Delete event</button>}
       </div>
     </Modal>
   );

@@ -666,7 +666,12 @@ export default function App() {
       )}
       {modal && modal.type === "review" && submissions.find((x) => x.ref === modal.ref) && (() => {
         const sub = submissions.find((x) => x.ref === modal.ref);
-        return <ReviewModal sub={sub} r={{ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }} onClose={closeModal} />;
+        return <ReviewModal sub={sub} r={{ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }} onClose={closeModal}
+          onDelete={() => setModal({
+            type: "confirm", title: `Delete “${sub.title}”?`, body: "It disappears from Events and My Events. This can't be undone.",
+            confirmLabel: "Delete", danger: true,
+            onConfirm: () => { setSubmissions((x) => x.filter((y) => y !== sub)); setModal(null); notify(`“${sub.title}” deleted`); },
+          })} />;
       })()}
       {modal && modal.type === "leave" && clubs.find((x) => x.id === modal.id) && (
         <LeaveConfirm
