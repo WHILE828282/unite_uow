@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { isStandalone } from "../install.js";
 import { applyUpdate } from "../updates.js";
-import { GetAppBadges, InstallBanner } from "./components/GetApp.jsx";
+import { InstallBanner } from "./components/GetApp.jsx";
 import { Header } from "./components/Header.jsx";
 import { Avatar, ProfileModal } from "./components/modals/ProfileModal.jsx";
 import { PullToRefresh } from "./components/PullToRefresh.jsx";
@@ -24,7 +23,7 @@ import { LANGUAGES } from "./data/options.js";
 import { copyText } from "./lib/clipboard.js";
 import { downloadCalendar, downloadTicket } from "./lib/downloads.js";
 import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, submissionToParty, tripClosed } from "./lib/events.js";
-import { firstName, fmtDate, fmtLeft, fmtTime, isoDay, makeId, shortVenue, to24, weekdayIdx } from "./lib/format.js";
+import { dubaiDay, firstName, fmtDate, fmtLeft, fmtTime, makeId, shortVenue, to24, weekdayIdx } from "./lib/format.js";
 import { overlaps, scheduleLabel } from "./lib/schedule.js";
 import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
 import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
@@ -118,6 +117,8 @@ export default function App() {
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }
       const clubId = clubFromPath(window.location.pathname);
       if (clubId) { setTab("clubs"); setModal({ type: "club", id: clubId }); }
+      // Unknown address: show Home at "/" instead of keeping a broken link in the address bar.
+      if (!m && !clubId && window.location.pathname !== "/") window.history.replaceState(window.history.state, "", "/");
     } catch (e) { /* ignore */ }
   }, []);
 
@@ -152,7 +153,12 @@ export default function App() {
   useEffect(() => {
     if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: tab }, "", window.location.href);
     const onPop = (e) => {
-      if (ownBack.current) { ownBack.current = false; return; }
+      if (ownBack.current) {
+        ownBack.current = false;
+        // Going back to the entry under a closed sheet can bring back a deep link (/events/1, /clubs/tech): reset it.
+        if (/^\/(events|clubs|sports)\//.test(window.location.pathname)) window.history.replaceState(window.history.state, "", "/");
+        return;
+      }
       if (modalRef.current) {
         const ev = new CustomEvent("unite:back", { cancelable: true });
         window.dispatchEvent(ev);
@@ -182,7 +188,10 @@ export default function App() {
   }, []);
 
   // Keep the address bar on the open team or club, so the link can be copied straight from the browser.
+  // Skipped on the first render: the deep link above hasn't opened its sheet yet and would be wiped.
+  const urlSynced = useRef(false);
   useEffect(() => {
+    if (!urlSynced.current) { urlSynced.current = true; return; }
     try {
       const club = modal && modal.type === "club" && CLUBS.find((x) => x.id === modal.id);
       const path = window.location.pathname;
@@ -603,7 +612,7 @@ export default function App() {
 
   const filteredClubs = clubs.filter((c) => filter === "All" || c.category === filter);
   // The feed: upcoming events only (past dates drop off), soonest first.
-  const today = isoDay(new Date(clock));
+  const today = dubaiDay(clock); // Dubai date, so past events drop off at midnight campus time
   // Pinned events (the launch party) lead the feed.
   const upcoming = parties.filter((p) => p.date >= today).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
   const filteredParties = upcoming.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
@@ -757,14 +766,7 @@ export default function App() {
               <p className="flex items-center gap-2 font-extrabold tracking-tight text-slate-900"><UniteIcon className="h-6 w-6" /> unite</p>
               <p className="mt-1.5 max-w-xs">A student-built platform for UOWD clubs, teams and events.</p>
             </div>
-            <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
-              <button onClick={() => jumpTo("clubs")} className="hover:text-slate-900">Clubs</button>
-              <button onClick={() => jumpTo("parties")} className="hover:text-slate-900">Events</button>
-              <button onClick={hostEvent} className="hover:text-slate-900">Host an event</button>
-              {!isStandalone() && <a href="/install" className="hover:text-slate-900">Get the app</a>}
-            </nav>
           </div>
-          {!isStandalone() && <div className="mt-8"><GetAppBadges heading="Get the Unite app" /></div>}
           <p className="mt-8 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
         </footer>
       </main>
@@ -773,12 +775,12 @@ export default function App() {
       <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
         side={user ? (
           <button onClick={openProfile} aria-label="Profile and settings"
-            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full">
-            <Avatar name={name} email={user} photo={extra.photo} className="h-11 w-11 text-sm" />
+            className="u-keep u-glass-round flex h-[58px] w-[58px] shrink-0 min-[390px]:h-[64px] min-[390px]:w-[64px] items-center justify-center rounded-full">
+            <Avatar name={name} email={user} photo={extra.photo} className="h-10 w-10 text-sm min-[390px]:h-11 min-[390px]:w-11" />
           </button>
         ) : (
           <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} aria-label="Sign in"
-            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full">
+            className="u-keep u-glass-round flex h-[58px] w-[58px] shrink-0 min-[390px]:h-[64px] min-[390px]:w-[64px] items-center justify-center rounded-full">
             <Icon name="person" className="h-6 w-6" />
           </button>
         )} />
@@ -869,7 +871,7 @@ export default function App() {
         );
       })()}
       {modal && modal.type === "confirm" && (
-        <ConfirmModal title={modal.title} body={modal.body} confirmLabel={modal.confirmLabel} danger={modal.danger}
+        <ConfirmModal key={modal.title + (modal.confirmLabel || "")} title={modal.title} body={modal.body} confirmLabel={modal.confirmLabel} danger={modal.danger}
           onConfirm={modal.onConfirm} onCancel={closeModal} />
       )}
       {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={liveBooking(modal.booking)} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} onOpenFile={openFile} /></Modal>}

@@ -36,10 +36,10 @@ function Spotlight({ p, booked, onOpen }) {
     <button onClick={onOpen}
       className="u-keep u-btn mt-7 flex w-full max-w-2xl items-center gap-3.5 rounded-2xl p-3 pr-3.5 text-left ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-3.5"
       style={{ background: "linear-gradient(110deg, rgba(116,22,41,.75), rgba(15,23,42,.55))" }}>
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl" aria-hidden="true">{p.emoji}</span>
+      <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl min-[390px]:flex" aria-hidden="true">{p.emoji}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-        <span className="block truncate font-semibold text-white">{p.title}</span>
+        <span className="line-clamp-2 block font-semibold leading-snug text-white">{p.title}</span>
         <span className="mt-0.5 block truncate text-xs tabular-nums text-slate-300">Doors in {d}d {h}h {m}m · {p.spots - p.taken} left</span>
       </span>
       <span className={`u-keep shrink-0 rounded-lg px-3 py-2 text-xs font-bold ${booked ? "bg-emerald-500 text-white" : "bg-white text-slate-900"}`}>{booked ? "Your ticket" : `${p.price} AED`}</span>
@@ -101,11 +101,11 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
         {spotlight && <Spotlight p={spotlight} booked={spotlightBooked} onOpen={onSpotlight} />}
 
         <div className="mt-6 grid max-w-lg grid-cols-3 divide-x divide-white/10 rounded-2xl bg-white/[0.05] py-2.5 ring-1 ring-inset ring-white/10">
-          {stats.map(([n, l, go]) => (
-            <button key={l} onClick={go} className="u-keep px-3 text-left">
+          {stats.map(([n, l]) => (
+            <div key={l} className="px-3">
               <span className="block text-lg font-bold tabular-nums leading-tight text-white sm:text-xl">{n}</span>
               <span className="block text-[11px] leading-tight text-slate-400">{l}</span>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -119,7 +119,7 @@ const Head = ({ eyebrow, title, onAll }) => (
       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-crimson-700">{eyebrow}</p>
       <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">{title}</h2>
     </div>
-    {onAll && <button onClick={onAll} className="shrink-0 rounded-lg px-2 py-1 text-sm font-semibold text-crimson-700 hover:bg-crimson-50">See all</button>}
+    {onAll && <button onClick={onAll} className="-my-2 shrink-0 rounded-lg px-2.5 py-2.5 text-sm font-semibold text-crimson-700 hover:bg-crimson-50">See all</button>}
   </div>
 );
 const Rail = ({ children }) => (
@@ -225,15 +225,6 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
         </section>
       )}
 
-      <button onClick={hostEvent}
-        className="u-keep u-btn flex w-full items-center gap-4 rounded-3xl p-5 text-left text-white shadow-lg"
-        style={{ background: "radial-gradient(100% 120% at 100% 0%, rgba(196,90,104,.6), transparent 60%), linear-gradient(135deg, #741629, #2e0811)" }}>
-        <span className="min-w-0 flex-1">
-          <span className="block text-lg font-bold">Got an idea? Host it on Unite</span>
-          <span className="block text-sm text-white/75">Parties, trips, tournaments. Sell tickets, check guests in with QR.</span>
-        </span>
-        <span className="u-keep shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900">Start</span>
-      </button>
     </div>
   );
 }

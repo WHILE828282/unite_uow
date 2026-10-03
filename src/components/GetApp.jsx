@@ -159,13 +159,13 @@ export function InstallBanner() {
     <>
       {show && (
         <div role="dialog" aria-label="Get Unite on your home screen" className="u-keep u-up u-hide-typing pointer-events-none fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sabx) + var(--nav))" }}>
-          <div className="u-banner pointer-events-auto flex w-full items-center gap-3 rounded-2xl py-2.5 pl-3 pr-2">
+          <div className="u-banner pointer-events-auto flex w-full items-center gap-3 rounded-2xl py-2 pl-3 pr-1.5">
             <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-[22%]" />
             <p className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">Get Unite on your home screen</p>
-            <button onClick={act} className="u-keep shrink-0 rounded-xl bg-crimson-700 px-4 py-2 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">
+            <button onClick={act} className="u-keep h-11 shrink-0 rounded-xl bg-crimson-700 px-4 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">
               Install
             </button>
-            <button onClick={close} aria-label="Dismiss" className="u-keep flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-500/10 hover:text-current"><Icon name="close" className="h-4 w-4" /></button>
+            <button onClick={close} aria-label="Dismiss" className="u-keep flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-500/10 hover:text-current"><Icon name="close" className="h-4 w-4" /></button>
           </div>
         </div>
       )}

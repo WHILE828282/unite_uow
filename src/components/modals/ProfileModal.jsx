@@ -101,7 +101,7 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
               <p className="text-sm font-medium text-slate-700">Email</p>
               <p className="truncate text-sm text-slate-500">{email}</p>
             </div>
-            <button type="button" onClick={onChangeEmail} className="u-btn shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold text-crimson-700 ring-1 ring-slate-200 hover:bg-slate-50">Change</button>
+            <button type="button" onClick={onChangeEmail} className="u-btn shrink-0 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-crimson-700 ring-1 ring-slate-200 hover:bg-slate-50">Change</button>
           </div>
           <p className="mt-1.5 text-xs text-slate-400">We'll email a code to the new address. Your tickets, clubs and events move with you.</p>
         </Section>

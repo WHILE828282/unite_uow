@@ -1,10 +1,15 @@
+import { useRef } from "react";
 import { Modal } from "./Modal.jsx";
 import { scheduleLabel } from "../../lib/schedule.js";
 
 
 
 /* Generic "are you sure?" sheet: sign out, joining a team/club, reserving a free spot, joining a waitlist. */
-export function ConfirmModal({ title, body, confirmLabel, danger, onConfirm, onCancel }) {
+// Runs fn on the first tap only, so a double tap can't book, join or sign out twice.
+const useOnce = (fn) => { const done = useRef(false); return () => { if (done.current) return; done.current = true; fn(); }; };
+
+export function ConfirmModal({ title, body, confirmLabel, danger, onConfirm: confirm, onCancel }) {
+  const onConfirm = useOnce(confirm);
   return (
     <Modal onClose={onCancel} size="sm">
       <div className="p-6 pt-8 text-center">
@@ -18,7 +23,8 @@ export function ConfirmModal({ title, body, confirmLabel, danger, onConfirm, onC
     </Modal>
   );
 }
-export function LeaveConfirm({ club: c, pending, onConfirm, onCancel }) {
+export function LeaveConfirm({ club: c, pending, onConfirm: confirm, onCancel }) {
+  const onConfirm = useOnce(confirm);
   const kind = c.category === "Sports" ? "team" : "club";
   return (
     <Modal onClose={onCancel} size="sm">

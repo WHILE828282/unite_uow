@@ -85,7 +85,7 @@ export default function InstallPage() {
         <a href="/" className="inline-flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-slate-300 hover:text-white">
           <img src="/icons/unite-icon-small.svg" alt="" className="h-7 w-7 rounded-[22%] ring-1 ring-white/15" /> <span className="font-extrabold tracking-tight text-white">unite</span>
         </a>
-        <a href="/" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
+        <a href="/" className="rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
       </header>
 
       <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint && tab === "ios" ? "calc(10rem + var(--sabx))" : "calc(7rem + var(--sabx))" }}>
@@ -155,7 +155,7 @@ export default function InstallPage() {
         <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sabx))" }}>
           <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
-            <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4" /></button>
+            <button onClick={closeHint} aria-label="Close hint" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4" /></button>
           </div>
           {/* points at Safari's ••• button, bottom right */}
           <svg viewBox="0 0 24 24" className="u-bob mr-3 mt-1 h-7 w-7 text-white drop-shadow" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6" /></svg>

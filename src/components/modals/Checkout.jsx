@@ -143,7 +143,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
         <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1" role="radiogroup" aria-label="Payment method">
           {[["Apple Pay", "phone"], ["Card", "card"]].map(([m, icon]) => (
             <button key={m} role="radio" aria-checked={method === m} onClick={() => { setMethod(m); setErrors({}); }}
-              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold ${method === m ? "u-keep bg-crimson-700 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold ${method === m ? "u-keep bg-crimson-700 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
               <Icon name={icon} className="h-4 w-4" /> {m}
             </button>
           ))}

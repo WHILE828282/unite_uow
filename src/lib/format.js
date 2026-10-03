@@ -2,15 +2,13 @@ import { DAYS } from "../data/options.js";
 
 
 
-export const TODAY = new Date().toISOString().slice(0, 10);
 
 export const fmtDate = (iso) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 // "Today" / "Tomorrow" for dates that close (isoDay is defined below; only called at render time).
 export const dayTag = (iso) => {
-  const now = new Date();
-  if (iso === isoDay(now)) return "Today";
-  if (iso === isoDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))) return "Tomorrow";
+  if (iso === dubaiDay()) return "Today";
+  if (iso === dubaiDay(Date.now(), 1)) return "Tomorrow";
   return null;
 };
 // "ilyas.gasanov.2020@gmail.com" -> "Ilyas"
@@ -25,6 +23,8 @@ export const fmtRange = (a, b) => `${fmtTime(a)} – ${fmtTime(b)}`;
 /* "7:00 PM" -> "19:00" */
 export const to24 = (t) => { const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i); if (!m) return "00:00"; let h = +m[1] % 12; if (/pm/i.test(m[3])) h += 12; return `${String(h).padStart(2, "0")}:${m[2]}`; };
 export const weekdayIdx = (d) => (d.getDay() + 6) % 7; // Monday = 0
+// Today's date in Dubai (UTC+4, no daylight saving) as "YYYY-MM-DD", whatever the phone's own time zone.
+export const dubaiDay = (ms = Date.now(), plusDays = 0) => new Date(ms + 4 * 3600e3 + plusDays * 864e5).toISOString().slice(0, 10);
 export const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export const clubDays = (c) => [...new Set(c.slots.map((s) => s.day))].sort().map((d) => DAYS[d].slice(0, 3)).join(" · ");
 export const slotHours = (s) => (toMin(s.end) - toMin(s.start)) / 60;

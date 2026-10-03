@@ -56,9 +56,9 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="calendar" className="h-7 w-7" /></span>
         <h3 className="mt-4 text-lg font-bold text-slate-900">Your week is wide open</h3>
         <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Register for a team or club and its official weekly schedule appears here, along with any event tickets. Everything you sign up for lands here automatically.</p>
-        <div className="mt-5 flex justify-center gap-2">
-          <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse teams & clubs</button>
-          <button onClick={() => onBrowse("parties")} className="u-btn rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Find events</button>
+        <div className="mx-auto mt-5 flex max-w-xs flex-col gap-2 sm:max-w-none sm:flex-row sm:justify-center">
+          <button onClick={() => onBrowse("clubs")} className="u-btn rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">Browse teams & clubs</button>
+          <button onClick={() => onBrowse("parties")} className="u-btn rounded-xl px-5 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Find events</button>
         </div>
       </div>
     );

@@ -9,7 +9,7 @@ import { STATUS_BAR_STRIP, glassChip, glassDark } from "../lib/styles.js";
 export function ThemeToggle({ dark, onToggle, tone = dark }) {
   return (
     <button onClick={onToggle} role="switch" aria-checked={dark} aria-label="Dark mode" title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${tone ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
+      className={`u-keep u-btn relative flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${tone ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
       style={tone ? glassChip : undefined}>
       <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
         <Icon name="moon" className="h-[18px] w-[18px]" />
@@ -29,14 +29,14 @@ export function Header({ dark: theme, overHero = false, user, name, photo, onHom
     <header className={`u-keep u-safe-top sticky top-0 z-30 border-b transition-colors duration-300 ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={{ backgroundColor: theme ? glassDark.background : overHero ? "#070d1a" : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...STATUS_BAR_STRIP }}>
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <button onClick={onHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
-          <UniteIcon className="h-9 w-9" />
+          <UniteIcon className="h-10 w-10" />
           <span className={`text-xl font-extrabold tracking-tight ${dark ? "text-white" : "text-[#0f172a]"}`}>unite</span>
           <span className={`hidden border-l pl-2.5 text-xs font-medium sm:inline ${dark ? "border-white/15 text-slate-400" : "border-slate-200 text-slate-500"}`}>for UOWD students</span>
         </button>
         <div className="flex items-center gap-2">
         {!isStandalone() && (
           <a href={installPath(platform())} aria-label="Get the app"
-            className="u-keep group inline-flex h-9 items-center gap-2 rounded-full bg-black pl-2.5 pr-2.5 text-[13px] font-semibold text-white ring-1 ring-white/15 transition-colors duration-200 hover:bg-slate-800 active:scale-95 sm:pr-3.5">
+            className="u-keep group inline-flex h-10 items-center gap-2 rounded-full bg-black pl-3 pr-3 text-[13px] font-semibold text-white ring-1 ring-white/15 transition-colors duration-200 hover:bg-slate-800 active:scale-95 sm:pr-3.5">
             {/* iPhone: Apple only · Android: Android only · computer: both */}
             <span className="flex items-center gap-1.5" aria-hidden="true">
               {platform() !== "android" && <AppleLogo className="h-[15px] w-[15px] -mt-px" />}
@@ -50,7 +50,7 @@ export function Header({ dark: theme, overHero = false, user, name, photo, onHom
         {/* Phones have the profile / sign-in button in the bottom bar, so here it's computer-only (one button per job). */}
         {user ? (
           <button onClick={onProfile} aria-label="Profile and settings" className="u-keep hidden rounded-full ring-2 ring-transparent transition-shadow hover:ring-crimson-200 sm:block">
-            <Avatar name={name} email={user} photo={photo} />
+            <Avatar name={name} email={user} photo={photo} className="h-10 w-10 text-xs" />
           </button>
         ) : (
           <button onClick={onSignIn}

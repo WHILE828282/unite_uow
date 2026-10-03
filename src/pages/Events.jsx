@@ -2,11 +2,11 @@ import { useState } from "react";
 import { FeaturedCard, PartyCard } from "../components/cards.jsx";
 import { Icon } from "../components/ui.jsx";
 import SearchField, { matches } from "../components/SearchField.jsx";
-import { isoDay, weekdayIdx } from "../lib/format.js";
+import { dubaiDay, isoDay, weekdayIdx } from "../lib/format.js";
 
 // "This week" (to Sunday), "Next week", then "Later".
 const sectionOf = (iso) => {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const now = new Date(dubaiDay() + "T00:00:00"); // weeks follow the Dubai calendar
   const endThis = new Date(now); endThis.setDate(now.getDate() + (6 - weekdayIdx(now)));
   const endNext = new Date(endThis); endNext.setDate(endThis.getDate() + 7);
   return iso <= isoDay(endThis) ? "This week" : iso <= isoDay(endNext) ? "Next week" : "Later";
@@ -22,18 +22,18 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
   let n = 0;
   return (
     <>
-      <SearchField value={q} onChange={setQ} placeholder="Search events, hosts, places" />
+      <SearchField value={q} onChange={setQ} placeholder="Search events or places" />
       <div className="mb-5 mt-3 flex items-center justify-between gap-3 text-sm text-slate-500">
-        <span className="whitespace-nowrap">{list.length} {list.length === 1 ? "event" : "events"}</span>
-        <div className="flex items-center gap-2">
+        <span className="hidden whitespace-nowrap min-[360px]:inline">{list.length} {list.length === 1 ? "event" : "events"}</span>
+        <div className="ml-auto flex min-w-0 items-center gap-2">
           <label className="inline-flex items-center gap-2">
             <span className="sr-only">Language</span>
             <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language"
-              className="max-w-[10.5rem] rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
+              className="w-[9rem] shrink-0 rounded-xl border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
               {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "Language" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
             </select>
           </label>
-          <button onClick={hostEvent} className="u-btn shrink-0 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800">+ Host</button>
+          <button onClick={hostEvent} className="u-btn shrink-0 whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">+ Host</button>
         </div>
       </div>
 

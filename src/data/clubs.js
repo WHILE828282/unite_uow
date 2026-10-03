@@ -40,7 +40,6 @@ export const clubFromPath = (path) => {
 export const svgLines = (body, opacity = 0.24) =>
   `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 320' preserveAspectRatio='xMidYMid slice'><g fill='none' stroke='#fff' stroke-opacity='${opacity}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'>${body}</g></svg>`)}")`;
 export const STRIPES = (w, a = 0.05) => `repeating-linear-gradient(90deg, rgba(255,255,255,${a}) 0 ${w}px, transparent ${w}px ${w * 2}px)`;
-export const GRID = (size, a = 0.06) => `linear-gradient(rgba(255,255,255,${a}) 1px, transparent 1px) 0 0/${size}px ${size}px, linear-gradient(90deg, rgba(255,255,255,${a}) 1px, transparent 1px) 0 0/${size}px ${size}px`;
 export const HERO_PHOTOS = {
   // Football: striped pitch, halfway line, centre circle, both penalty areas
   1: { photo: "/teams/football.webp", lines: svgLines("<rect x='40' y='30' width='720' height='260' rx='4'/><line x1='400' y1='30' x2='400' y2='290'/><circle cx='400' cy='160' r='55'/><circle cx='400' cy='160' r='3' fill='#fff'/><rect x='40' y='85' width='115' height='150'/><rect x='40' y='125' width='42' height='70'/><path d='M155 125 A58 58 0 0 1 155 195'/><rect x='645' y='85' width='115' height='150'/><rect x='718' y='125' width='42' height='70'/><path d='M645 125 A58 58 0 0 0 645 195'/>"),

@@ -40,7 +40,7 @@ export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clu
         {active.clubs.map((c, i) => (
           <ClubCard key={c.id} c={c} i={i} members={memberCount(c)}
             open={cardOpen(() => setModal({ type: "club", id: c.id }))}
-            button={(onPhoto) => clubBtn(c, "shrink-0 px-4 py-2", onPhoto)} />
+            button={(onPhoto) => clubBtn(c, "shrink-0 px-4 py-2.5", onPhoto)} />
         ))}
       </div>
     </div>

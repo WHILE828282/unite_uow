@@ -37,7 +37,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare, verified
           <span className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" aria-hidden="true" />
         </>)}
         {onShare && (
-          <button onClick={() => onShare(c)} aria-label={`Copy link to ${c.name}`} className="absolute right-14 top-3 z-10 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white backdrop-blur hover:bg-white/30" style={{ background: "rgba(255,255,255,0.18)" }}>
+          <button onClick={() => onShare(c)} aria-label={`Copy link to ${c.name}`} className="absolute right-14 top-3 z-10 inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white backdrop-blur hover:bg-white/30" style={{ background: "rgba(255,255,255,0.18)" }}>
             <Icon name="share" className="h-3.5 w-3.5" />
             Share
           </button>
