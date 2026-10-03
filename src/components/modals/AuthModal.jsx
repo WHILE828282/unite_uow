@@ -90,7 +90,18 @@ export function AuthModal({ reason, onClose, onSignIn }) {
   const N = digits.length;
   const locked = verifying || (mode === "live" && attempts >= 5);
   const setDigit = (i, raw) => {
-    const d = raw.replace(/\D/g, "").slice(-1);
+    // iPhone/Android code autofill (and some keyboards) put the whole code into one box: spread it across the boxes.
+    const all = raw.replace(/\D/g, "");
+    if (all.length >= 3 && !locked) { // 2 digits = typing over a filled box: keep the newest, below
+      const full = all.length >= N, from = full ? 0 : i, next = full ? blank(N) : [...digits];
+      (full ? all.slice(0, N) : all).split("").forEach((ch, k) => { if (from + k < N) next[from + k] = ch; });
+      setDigits(next); setOtpError("");
+      const at = next.findIndex((x) => !x);
+      if (refs.current[at < 0 ? N - 1 : at]) refs.current[at < 0 ? N - 1 : at].focus();
+      if (next.every(Boolean)) verify(next.join(""));
+      return;
+    }
+    const d = all.slice(-1);
     const next = [...digits]; next[i] = d;
     setDigits(next); setOtpError("");
     if (d && i < N - 1 && refs.current[i + 1]) refs.current[i + 1].focus();
