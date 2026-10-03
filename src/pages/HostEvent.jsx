@@ -306,10 +306,10 @@ export function HostPreview({ sub, onEdit }) {
   );
 }
 
-export function CreateModal({ email: defaultEmail, onClose, onSubmitted, dark = true }) {
+export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSubmitted, dark = true }) {
   const [f, setF] = useState({
     title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
-    spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, logo: null, cover: null, website: "",
+    spots: 30, price: 0, dress: "", reqs: "", whatsapp: contacts.whatsapp || "", telegram: contacts.telegram || "", email: defaultEmail, logo: null, cover: null, website: "",
     kind: "", extName: "", seller: "", minGroup: 10, collectUntil: "",
   });
   const [errors, setErrors] = useState({});

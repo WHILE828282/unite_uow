@@ -7,12 +7,12 @@ import { AnimatedCheck, Check } from "../ui.jsx";
 import { maskEmail, validEmail } from "../../lib/format.js";
 import { RESTRICTED_MSG, isCampusEmail } from "../../lib/auth.js";
 
-export function AuthModal({ reason, onClose, onSignIn, onRestricted }) {
+export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName = "", defaultSid = "", title = "Campus Login" }) {
   const [step, setStep] = useState("email"); // email | otp | success
-  const [name, setName] = useState("");
+  const [name, setName] = useState(defaultName);
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
-  const [studentId, setStudentId] = useState("");
+  const [studentId, setStudentId] = useState(defaultSid);
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
   const [digits, setDigits] = useState(["", "", "", ""]);
@@ -147,7 +147,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted }) {
               <UniteIcon className="h-16 w-16 shadow-lg" />
               <span className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">unite</span>
             </div>
-            <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>
+            <h2 className="mt-3 text-center text-xl font-bold text-slate-900">{title}</h2>
             <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
             <label htmlFor="auth-name" className="mt-5 block text-sm font-medium text-slate-700">Your name</label>

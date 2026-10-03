@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { isStandalone } from "../install.js";
 import { applyUpdate } from "../updates.js";
 import { GetAppBadges, InstallBanner } from "./components/GetApp.jsx";
-import { AccountMenu, Header } from "./components/Header.jsx";
+import { Header } from "./components/Header.jsx";
+import { Avatar, ProfileModal } from "./components/modals/ProfileModal.jsx";
 import { PullToRefresh } from "./components/PullToRefresh.jsx";
 import { BottomNav, Tabs } from "./components/Tabs.jsx";
 import { Ticket } from "./components/Ticket.jsx";
@@ -87,14 +88,16 @@ export default function App() {
   const toastTimer = useRef(null);
   const studentIdRef = useRef(saved ? saved.sid || "" : "");
   const [name, setName] = useState(() => (saved && saved.name) || "");
+  // Profile extras: photo (small data URL) and linked Telegram / WhatsApp, saved with the session.
+  const [extra, setExtra] = useState(() => ({ photo: (saved && saved.photo) || "", telegram: (saved && saved.telegram) || "", whatsapp: (saved && saved.whatsapp) || "" }));
   const verifiedRef = useRef(saved ? !!saved.verified : false); // true when the email was confirmed with a live code
 
   useEffect(() => {
     try {
       if (!user) localStorage.removeItem(SESSION_KEY);
-      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, joinedClubs, bookings, waitlist }));
+      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, ...extra, joinedClubs, bookings, waitlist }));
     } catch (e) { /* storage full or blocked */ }
-  }, [user, name, joinedClubs, bookings, waitlist]);
+  }, [user, name, extra, joinedClubs, bookings, waitlist]);
 
   // One-off cleanup: test events created before launch, removed from this browser's saved applications.
   useEffect(() => {
@@ -350,6 +353,17 @@ export default function App() {
 
   const signIn = (email, sid, verified, fullName) => {
     const action = modal && modal.action;
+    // Changing email from Profile: same account, new address. Everything stays; saved events move to the new key.
+    if (modal && modal.changeEmail) {
+      verifiedRef.current = !!verified;
+      if (email !== user) {
+        try { localStorage.removeItem(`unite-events:${user}`); } catch (e) { /* ignore */ }
+        setUser(email);
+      }
+      setModal(null);
+      notify(email === user ? "That's already your email" : { title: "Email changed", body: `You now sign in as ${email}` }, 3000);
+      return;
+    }
     setName(fullName || "");
     studentIdRef.current = sid || "";
     verifiedRef.current = !!verified;
@@ -615,6 +629,13 @@ export default function App() {
   })();
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
+  const openProfile = () => setModal({ type: "profile" });
+  const signOut = () => setModal({
+    type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
+    confirmLabel: "Sign out", danger: true,
+    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
+  });
+
   // Light theme, top of Home: the header sits on the dark hero, so it turns dark glass until the hero scrolls away.
   const [overHero, setOverHero] = useState(false);
   useEffect(() => {
@@ -656,14 +677,9 @@ export default function App() {
       <style>{CSS}</style>
 
       {/* Nav */}
-      <Header dark={dark} overHero={overHero} user={user} name={name} studentId={studentIdRef.current}
+      <Header dark={dark} overHero={overHero} user={user} name={name} photo={extra.photo}
         onHome={goHome} onToggleTheme={() => setDark((d) => !d)}
-        onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")}
-        onSignOut={() => setModal({
-          type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
-          confirmLabel: "Sign out", danger: true,
-          onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
-        })}
+        onProfile={openProfile}
         onSignIn={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} />
 
       {/* Everything under the header slides with the pull-to-refresh gesture (data-ptr). */}
@@ -756,14 +772,10 @@ export default function App() {
 
       <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
         side={user ? (
-          <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark={dark} up label="Profile"
-            triggerClass="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-sm font-bold"
-            onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")} onMyEvents={showMyEvents ? () => jumpTo("events") : undefined}
-            onSignOut={() => setModal({
-              type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
-              confirmLabel: "Sign out", danger: true,
-              onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
-            })} />
+          <button onClick={openProfile} aria-label="Profile and settings"
+            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full">
+            <Avatar name={name} email={user} photo={extra.photo} className="h-11 w-11 text-sm" />
+          </button>
         ) : (
           <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} aria-label="Sign in"
             className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full">
@@ -774,9 +786,16 @@ export default function App() {
       <PullToRefresh />
 
       {/* Modals */}
-      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
+      {modal && modal.type === "profile" && user && (
+        <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }}
+          onSave={(p) => { setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved"); }}
+          onChangeEmail={() => setModal({ type: "auth", changeEmail: true, reason: "Enter your new email. We'll send a code to confirm it's yours." })}
+          onMyEvents={showMyEvents ? () => { setModal(null); jumpTo("events"); } : undefined}
+          onSignOut={signOut} onClose={closeModal} />
+      )}
+      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} title={modal.changeEmail ? "Change email" : undefined} defaultName={modal.changeEmail ? name : ""} defaultSid={modal.changeEmail ? studentIdRef.current : ""} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
-        <CreateModal email={modal.email} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
+        <CreateModal email={modal.email} contacts={extra} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
       )}
       {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} live={liveBooking} onOpenFile={openFile} />}
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (
