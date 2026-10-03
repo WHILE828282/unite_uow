@@ -19,7 +19,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tickets</h3>
           {bookings.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="card" className="h-6 w-6" /></span>
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="ticket" className="h-6 w-6" /></span>
               <p className="mt-3 font-semibold">No tickets yet</p>
               <p className="text-sm text-slate-500">Grab a spot at an upcoming student event.</p>
               <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse events</button>

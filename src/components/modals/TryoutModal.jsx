@@ -49,7 +49,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
               <a href={src} target="_blank" rel="noopener noreferrer" className="u-keep inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
                 Open in new tab ↗
               </a>
-              <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/10 hover:bg-white/20">✕</button>
+              <button onClick={onClose} aria-label="Close" className="u-keep flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/10 hover:bg-white/20"><Icon name="close" className="h-4 w-4" /></button>
             </div>
           </div>
           <div className="u-short-hide mt-4 flex items-center gap-3">

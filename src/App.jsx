@@ -14,7 +14,7 @@ import { Modal } from "./components/modals/Modal.jsx";
 import { ReviewModal } from "./components/modals/ReviewModal.jsx";
 import { TryoutModal } from "./components/modals/TryoutModal.jsx";
 import { WaitlistModal } from "./components/modals/WaitlistModal.jsx";
-import { Check } from "./components/ui.jsx";
+import { Check, Icon } from "./components/ui.jsx";
 import { CLUBS, clubFromPath, clubPath, isSports } from "./data/clubs.js";
 import { PARTIES } from "./data/events.js";
 import { LANGUAGES } from "./data/options.js";
@@ -668,7 +668,7 @@ export default function App() {
           <div role="status" className="u-up pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl py-2.5 pl-4 pr-2 text-sm text-white shadow-2xl ring-1 ring-white/10" style={glassDark}>
             <span className="min-w-0 flex-1 font-semibold">New version available</span>
             <button onClick={applyUpdate} className="shrink-0 rounded-xl bg-crimson-700 px-4 py-2 font-semibold text-white active:scale-95">Update</button>
-            <button onClick={() => setUpdateReady(false)} aria-label="Later" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400">✕</button>
+            <button onClick={() => setUpdateReady(false)} aria-label="Later" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400"><Icon name="close" className="h-4 w-4" /></button>
           </div>
         </div>
       )}

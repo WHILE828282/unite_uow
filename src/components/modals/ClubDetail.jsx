@@ -1,5 +1,5 @@
 import { Modal } from "./Modal.jsx";
-import { Badge, InfoIcon } from "../ui.jsx";
+import { Badge, InfoIcon, Icon } from "../ui.jsx";
 import { HERO_PHOTOS, heroBackground } from "../../data/clubs.js";
 import { UOWD_ADDRESS, UOWD_MAPS } from "../../data/events.js";
 import { DAYS } from "../../data/options.js";
@@ -23,7 +23,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare }) {
         </>)}
         {onShare && (
           <button onClick={() => onShare(c)} aria-label={`Copy link to ${c.name}`} className="absolute right-14 top-3 z-10 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white backdrop-blur hover:bg-white/30" style={{ background: "rgba(255,255,255,0.18)" }}>
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 14a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1 1M14 10a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1-1" /></svg>
+            <Icon name="share" className="h-3.5 w-3.5" />
             Share
           </button>
         )}

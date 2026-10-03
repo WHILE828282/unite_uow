@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { platform, isIOS, isMobile, isStandalone, inAppBrowser, iosNotSafari, promptInstall } from "../../install.js";
 import { InAppCard, InstallBadge, InstalledToast, useCanPrompt } from "../components/GetApp.jsx";
+import { Icon } from "../components/ui.jsx";
 
 /* ------------------------------------------------------------------ */
 /*  Install steps: real screenshots from public/install (.webp, .png fallback) */
@@ -154,7 +155,7 @@ export default function InstallPage() {
         <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
           <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
-            <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">✕</button>
+            <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4" /></button>
           </div>
           {/* points at Safari's ••• button, bottom right */}
           <svg viewBox="0 0 24 24" className="u-bob mr-3 mt-1 h-7 w-7 text-white drop-shadow" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6" /></svg>

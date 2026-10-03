@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Icon } from "./ui.jsx";
 import { platform, isIOS, isAndroid, isMobile, isStandalone, inAppBrowser, iosNotSafari, canPrompt, onPromptChange, promptInstall,
   bannerSnoozed, snoozeBanner, installPath, INSTALL_URL } from "../../install.js";
 
@@ -164,7 +165,7 @@ export function InstallBanner() {
             <button onClick={act} className="u-keep shrink-0 rounded-xl bg-crimson-700 px-4 py-2 text-sm font-semibold text-white hover:bg-crimson-600 active:scale-95">
               Install
             </button>
-            <button onClick={close} aria-label="Dismiss" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white">✕</button>
+            <button onClick={close} aria-label="Dismiss" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"><Icon name="close" className="h-4 w-4" /></button>
           </div>
         </div>
       )}

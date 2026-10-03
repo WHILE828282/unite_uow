@@ -47,7 +47,7 @@ export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedul
             <p className={`truncate text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{email}{studentId ? ` · ID ${studentId}` : ""}</p>
           </div>
           <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
-          <button role="menuitem" onClick={go(onTickets)} className={item}><Icon name="card" /> My tickets</button>
+          <button role="menuitem" onClick={go(onTickets)} className={item}><Icon name="ticket" /> My tickets</button>
           <button role="menuitem" onClick={go(onSchedule)} className={item}><Icon name="calendar" /> My schedule</button>
           <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
           <button role="menuitem" onClick={go(onSignOut)} className={`${item} ${dark ? "!text-rose-300" : "!text-rose-600"}`}><Icon name="lock" /> Sign out</button>

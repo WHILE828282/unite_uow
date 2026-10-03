@@ -60,11 +60,7 @@ export async function readImageFile(file, kind) {
   } finally { URL.revokeObjectURL(url); }
 }
 
-export const PhotoIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="3" y="4.5" width="18" height="15" rx="2.5" /><circle cx="8.5" cy="10" r="1.6" /><path d="M21 15.5l-4.6-4.6a1.5 1.5 0 00-2.1 0L5 20" />
-  </svg>
-);
+export const PhotoIcon = ({ className }) => <Icon name="image" className={className} />;
 
 /* One photo upload (locked dark styling): a frame in the photo's shape, live preview, Replace / Remove,
    the requirements underneath and its own inline error. value = null | { src, cropped } */
@@ -431,7 +427,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         {/* Header */}
         <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, var(--sat))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           <button onClick={onClose} disabled={submitting} aria-label="Close"
-            className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40">✕</button>
+            className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
           <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events{preview ? " · Step 2 of 2" : ""}</p>
           <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : "Host an event"}</h2>
           <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
