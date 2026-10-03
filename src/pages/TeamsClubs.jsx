@@ -4,18 +4,19 @@ import { CLUB_ROOMS } from "../data/clubs.js";
 
 /* Clubs tab: one switcher on top (Teams + the three club rooms), so every section is one tap away
    instead of the clubs sitting below all the team cards. The choice is remembered for the visit. */
+// Clubs first, teams last.
 const SECTIONS = [
-  { k: "Sports", label: "Sports Teams", emoji: "🏆", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
   ...CLUB_ROOMS.map((r) => ({ ...r, ...{
     Tech: { emoji: "💻", blurb: "Code, compete and create: tech, e-sports, cars and content." },
     Business: { emoji: "📈", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
     Arts: { emoji: "🎨", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
   }[r.k] })),
+  { k: "Sports", label: "Sports Teams", emoji: "🏆", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
 ];
 
 export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clubBtn }) {
-  const [sec, setSec] = useState(() => { try { return sessionStorage.getItem("unite-room") || "Sports"; } catch (e) { return "Sports"; } });
-  const pick = (k) => { setSec(k); try { sessionStorage.setItem("unite-room", k); } catch (e) { /* ignore */ } };
+  const [sec, setSec] = useState(() => { try { return sessionStorage.getItem("unite-section") || "Tech"; } catch (e) { return "Tech"; } });
+  const pick = (k) => { setSec(k); try { sessionStorage.setItem("unite-section", k); } catch (e) { /* ignore */ } };
   const sections = SECTIONS.map((s) => ({ ...s, clubs: filteredClubs.filter((c) => c.category === s.k) })).filter((s) => s.clubs.length);
   const active = sections.find((s) => s.k === sec) || sections[0];
   if (!active) return null;
