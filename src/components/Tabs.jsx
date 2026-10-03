@@ -29,16 +29,16 @@ const FADED = "rgba(255,255,255,0.28)";
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-2 px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
-      <div className="u-glass-bar flex min-w-0 flex-1 items-center gap-0.5 rounded-[30px] p-1.5">
+      <div className="u-glass-bar flex h-[64px] min-w-0 flex-1 items-stretch gap-0.5 rounded-full p-[5px]">
         {tabs.filter(([k]) => k !== "events").map(([k, , short]) => {
           const on = tab === k;
           const badge = k === "tickets" && user && bookings.length ? bookings.length : 0;
           return (
             <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
-              className={`u-keep relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-[24px] px-1 pb-1.5 pt-2 text-[10.5px] font-semibold transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
+              className={`u-keep relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10.5px] font-semibold leading-none tracking-tight transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
               style={on ? { color: "#FFFFFF" } : { color: FADED, "--icon-accent": FADED }}>
               <span className="relative">
-                <Icon name={NAV_ICON[k] || "home"} className="h-[22px] w-[22px]" />
+                <Icon name={NAV_ICON[k] || "home"} className="h-6 w-6" />
                 {badge > 0 && <span className="absolute -right-2.5 -top-1.5 min-w-[1rem] rounded-full bg-crimson-600 px-1 text-center text-[9.5px] leading-4 text-white">{badge}</span>}
               </span>
               <span className="truncate">{short}</span>

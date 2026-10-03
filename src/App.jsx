@@ -733,7 +733,7 @@ export default function App() {
       <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
         side={user ? (
           <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark up label="Profile"
-            triggerClass="u-keep u-glass-round flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+            triggerClass="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
             onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")} onMyEvents={showMyEvents ? () => jumpTo("events") : undefined}
             onSignOut={() => setModal({
               type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
@@ -742,7 +742,7 @@ export default function App() {
             })} />
         ) : (
           <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} aria-label="Sign in"
-            className="u-keep u-glass-round flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full text-white">
+            className="u-keep u-glass-round flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full text-white">
             <Icon name="person" className="h-6 w-6" />
           </button>
         )} />
