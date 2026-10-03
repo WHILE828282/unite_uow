@@ -590,6 +590,10 @@ export default function App() {
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
   // Signed-in strip: the next thing on your calendar (ticket or team session) and a nudge about teams.
+  // The pinned launch party, promoted in the hero until you have a ticket for it.
+  const spotlight = upcoming.find((p) => p.pinned && !bookingFor(p.id));
+  const openSpotlight = () => spotlight && setModal({ type: "detail", id: spotlight.id });
+  const spotlightWhen = spotlight ? (() => { const n = Math.round((new Date(spotlight.date + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5); return n <= 0 ? "Tonight" : n === 1 ? "Tomorrow" : `In ${n} days`; })() : "";
   const nextUp = (() => {
     const now = new Date(clock);
     const at = (d, hhmm) => { const [h, m] = hhmm.split(":").map(Number); const x = new Date(d); x.setHours(h, m, 0, 0); return x; };
@@ -605,6 +609,7 @@ export default function App() {
     const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
     return { ...next, when: `${when} · ${next.at.toLocaleDateString("en-GB", { weekday: "short" })} ${fmtTime(`${String(next.at.getHours()).padStart(2, "0")}:${String(next.at.getMinutes()).padStart(2, "0")}`)}` };
   })();
+  const heroCards = [nextUp, myClubs > 0, spotlight].filter(Boolean).length;
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
   const tabs = [["clubs", "Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "Schedule", "Schedule"], ["tickets", "Tickets", "Tickets"],
@@ -651,8 +656,9 @@ export default function App() {
           {user ? (
             <>
               <h1 className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
-              {(nextUp || myClubs > 0) && <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+              {(nextUp || myClubs > 0 || spotlight) && <div className={`u-chips -mx-4 mt-2 flex snap-x snap-mandatory scroll-px-4 gap-2.5 px-4 py-1 sm:mx-0 sm:grid sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none] ${heroCards > 2 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
                 {[
+                  spotlight ? { k: "🎧 Don't miss", t: spotlight.title, d: `${spotlightWhen} · ${fmtDate(spotlight.date)} · ${spotlight.price > 0 ? `${spotlight.price} AED` : "Free"}`, go: openSpotlight, hot: true } : null,
                   nextUp
                     ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open }
                     : null,
@@ -661,7 +667,7 @@ export default function App() {
                     : { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") },
                 ].filter(Boolean).map((x) => (
                   <button key={x.k} onClick={x.go}
-                    className={`u-keep u-btn min-w-0 rounded-2xl p-3.5 text-left ${dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
+                    className={`u-keep u-btn min-w-0 shrink-0 snap-start rounded-2xl p-3.5 text-left sm:w-auto ${heroCards > 1 ? "w-[82%]" : "w-full"} ${x.hot ? (dark ? "ring-1 ring-crimson-400/40 hover:bg-white/10" : "bg-white ring-2 ring-crimson-200 hover:ring-crimson-300") : dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
                     <span className={`block text-[11px] font-semibold uppercase tracking-wider ${dark ? "text-crimson-200" : "text-crimson-700"}`}>{x.k}</span>
                     <span className={`mt-1 block truncate font-semibold ${dark ? "text-white" : "text-gray-900"}`}>{x.t}</span>
                     <span className={`mt-0.5 block truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>{x.d}</span>
@@ -682,6 +688,18 @@ export default function App() {
               <button onClick={() => jumpTo("clubs")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{clubs.length}</b> teams & clubs</button>
               <button onClick={() => jumpTo("parties")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{upcoming.length}</b> upcoming events</button>
             </p>
+          )}
+          {!user && spotlight && (
+            <button onClick={openSpotlight}
+              className="u-keep u-btn mt-5 flex w-full max-w-md items-center gap-3 rounded-2xl p-3 pr-4 text-left text-white shadow-lg ring-1 ring-white/10"
+              style={{ background: "radial-gradient(120% 120% at 100% 0%, rgba(196,90,104,.55), transparent 60%), linear-gradient(160deg, #111827, #0a0f1d)" }}>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl" aria-hidden="true">{spotlight.emoji}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-bold uppercase tracking-wider text-crimson-200">{spotlightWhen} · {fmtDate(spotlight.date)}</span>
+                <span className="line-clamp-2 block font-semibold leading-snug">{spotlight.title}</span>
+              </span>
+              <span className="u-keep shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900">Tickets</span>
+            </button>
           )}
         </div>
       </section>
