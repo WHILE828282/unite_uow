@@ -49,7 +49,7 @@ function Spotlight({ p, booked, onOpen }) {
 
 export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBooked, onSpotlight, onEvents, onClubs }) {
   return (
-    <section className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#070d1a] text-white shadow-[0_20px_40px_-24px_rgba(7,13,26,.6)] sm:rounded-b-[44px]">
+    <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#070d1a] text-white shadow-[0_20px_40px_-24px_rgba(7,13,26,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-40 sm:-inset-x-10 sm:grid-cols-6">
           {[...COLLAGE, ...COLLAGE].slice(0, 18).map((src, i) => (

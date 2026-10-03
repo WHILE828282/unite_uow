@@ -615,6 +615,20 @@ export default function App() {
   })();
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
+  // Light theme, top of Home: the header sits on the dark hero, so it turns dark glass until the hero scrolls away.
+  const [overHero, setOverHero] = useState(false);
+  useEffect(() => {
+    if (dark || tab !== "home") { setOverHero(false); return; }
+    const check = () => {
+      const h = document.getElementById("home-hero");
+      const head = document.querySelector("header");
+      setOverHero(!!h && !!head && h.getBoundingClientRect().bottom > head.getBoundingClientRect().bottom + 24);
+    };
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => { window.removeEventListener("scroll", check); window.removeEventListener("resize", check); };
+  }, [dark, tab]);
   const tabs = [["home", "Home", "Home"], ["clubs", "Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "Schedule", "Schedule"], ["tickets", "Tickets", "Tickets"],
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
@@ -638,11 +652,11 @@ export default function App() {
   const openOwn = (sub) => (reviewOf(sub) === "approved" ? setModal({ type: "detail", id: sub.at }) : setModal({ type: "review", ref: sub.ref }));
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
+    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : "u-light"}`}>
       <style>{CSS}</style>
 
       {/* Nav */}
-      <Header dark={dark} user={user} name={name} studentId={studentIdRef.current}
+      <Header dark={dark} overHero={overHero} user={user} name={name} studentId={studentIdRef.current}
         onHome={goHome} onToggleTheme={() => setDark((d) => !d)}
         onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")}
         onSignOut={() => setModal({

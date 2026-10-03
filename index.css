@@ -205,6 +205,10 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 .u-dark :where(button.bg-slate-900:not(.u-keep), a.bg-slate-900:not(.u-keep)) { background-color: #8c1d32; color: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
 @media (hover: hover) and (pointer: fine) { .u-dark :where(button.bg-slate-900:not(.u-keep):not(:disabled), a.bg-slate-900:not(.u-keep)):hover { background-color: #a83446; } }
 
+/* Light theme primary buttons: the same brand crimson as the dark theme (they were near-black, next to crimson ones). */
+.u-light :where(button.bg-slate-900:not(.u-keep), a.bg-slate-900:not(.u-keep)) { background-color: #741629; color: #fff; box-shadow: 0 1px 2px rgba(116, 22, 41, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1); }
+@media (hover: hover) and (pointer: fine) { .u-light :where(button.bg-slate-900:not(.u-keep):not(:disabled), a.bg-slate-900:not(.u-keep)):hover { background-color: #8c1d32; } }
+
 /* ---- Bottom navigation (phones) ---- */
 :root { --nav: 0px; }
 @media (max-width: 639px) { :root { --nav: 5.2rem; } }

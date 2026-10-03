@@ -6,11 +6,12 @@ import { Icon } from "./ui.jsx";
 import { initials, nameInitials } from "../lib/format.js";
 import { STATUS_BAR_STRIP, glassChip, glassDark } from "../lib/styles.js";
 
-export function ThemeToggle({ dark, onToggle }) {
+/* `tone` is the surface it sits on (dark glass or light); `dark` is the theme it switches. */
+export function ThemeToggle({ dark, onToggle, tone = dark }) {
   return (
     <button onClick={onToggle} role="switch" aria-checked={dark} aria-label="Dark mode" title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${dark ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
-      style={dark ? glassChip : undefined}>
+      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${tone ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
+      style={tone ? glassChip : undefined}>
       <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
         <Icon name="moon" className="h-[18px] w-[18px]" />
       </span>
@@ -59,9 +60,11 @@ export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedul
 }
 
 /* Sticky top bar: logo, Get the app, theme toggle and the account menu (or Sign in). */
-export function Header({ dark, user, name, studentId, onHome, onToggleTheme, onTickets, onSchedule, onSignOut, onSignIn }) {
+/* `overHero`: light theme at the top of Home, where the bar sits on the dark hero and turns dark glass to match it. */
+export function Header({ dark: theme, overHero = false, user, name, studentId, onHome, onToggleTheme, onTickets, onSchedule, onSignOut, onSignIn }) {
+  const dark = theme || overHero;
   return (
-    <header className={`u-keep u-safe-top sticky top-0 z-30 border-b ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={{ backgroundColor: dark ? glassDark.background : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...STATUS_BAR_STRIP }}>
+    <header className={`u-keep u-safe-top sticky top-0 z-30 border-b transition-colors duration-300 ${dark ? "border-white/10" : "border-slate-200/50 bg-white/80"}`} style={{ backgroundColor: theme ? glassDark.background : overHero ? "#070d1a" : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...STATUS_BAR_STRIP }}>
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <button onClick={onHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
           <UniteIcon className="h-9 w-9" />
@@ -81,7 +84,7 @@ export function Header({ dark, user, name, studentId, onHome, onToggleTheme, onT
             <span className="hidden sm:inline">Get the app</span>
           </a>
         )}
-        <ThemeToggle dark={dark} onToggle={onToggleTheme} />
+        <ThemeToggle dark={theme} tone={dark} onToggle={onToggleTheme} />
         {user ? (
           <AccountMenu name={name} email={user} studentId={studentId} dark={dark}
             onTickets={onTickets} onSchedule={onSchedule}
