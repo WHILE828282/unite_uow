@@ -11,7 +11,7 @@ function HostPanel({ s, d, onManage }) {
   if (!s.moderated || !s.key) return <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">Check-in and ticket delivery need the Unite database, so they aren't available for this event.</p>;
   return (
     <div className="space-y-3 border-t border-slate-100 p-4">
-      <p className="text-sm font-semibold text-slate-900">{payoutText(s, d)}</p>
+      <p className="text-sm font-semibold text-slate-900">{d ? payoutText(s, d) : "Loading tickets and payments…"}</p>
       {trip && d && <p className="text-xs font-medium text-slate-600">{tripStateLabel(d)}</p>}
       {trip && d && d.event.tripState === "confirmed" && <DeliveryBar d={d} />}
       {!(trip && d && d.event.tripState === "cancelled") && (

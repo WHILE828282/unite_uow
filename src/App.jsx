@@ -68,6 +68,7 @@ export default function App() {
     try { const x = JSON.parse(localStorage.getItem(`unite-events:${saved.user}`) || "[]"); return Array.isArray(x) ? x : []; } catch (e) { return []; }
   });
   const [campus, setCampus] = useState([]); // approved student events from the database, visible to everyone
+  const [campusLoaded, setCampusLoaded] = useState(false); // first feed request finished (either way)
   const seenRef = useRef({}); // last review status shown per application, to announce changes once
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
@@ -175,6 +176,7 @@ export default function App() {
       const path = window.location.pathname;
       if (club && path !== clubPath(club)) window.history.replaceState(window.history.state, "", clubPath(club));
       else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
+      else if (/^\/events\/\d+/.test(path) && !(modal && ["detail", "checkout", "confirm", "auth", "ticket", "waitlist"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
     } catch (e) { /* ignore */ }
   }, [modal]);
 
@@ -221,6 +223,7 @@ export default function App() {
         const d = await (await fetch("/api/events")).json();
         if (!stop && d && Array.isArray(d.events)) setCampus((old) => (JSON.stringify(old) === JSON.stringify(d.events) ? old : d.events));
       } catch (e) { /* offline or no database: keep what we have */ }
+      if (!stop) setCampusLoaded(true);
     };
     load();
     const t = setInterval(load, 60000);
@@ -592,6 +595,22 @@ export default function App() {
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
   useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);
+  // A shared link or saved view pointing at something that no longer exists (event removed or ended, application
+  // deleted): close it, otherwise an empty overlay keeps the page locked.
+  const gone = !!modal && (
+    (modal.type === "detail" && campusLoaded && !parties.some((x) => x.id === modal.id) && !campus.some((e) => e.at === modal.id) && !ownLive.some((x) => x.at === modal.id))
+    || (["review", "host"].includes(modal.type) && !submissions.some((x) => x.ref === modal.ref))
+    || (["club", "leave", "tryout"].includes(modal.type) && !clubs.some((x) => x.id === modal.id)));
+  useEffect(() => {
+    if (!gone) return;
+    const wasEvent = modal.type === "detail";
+    setModal(null);
+    if (wasEvent) {
+      try { if (/^\/events\//.test(window.location.pathname)) window.history.replaceState(window.history.state, "", "/"); } catch (e) { /* ignore */ }
+      notify("This event isn't available any more.", 3000);
+    }
+    // eslint-disable-next-line
+  }, [gone]);
   const openOwn = (sub) => (reviewOf(sub) === "approved" ? setModal({ type: "detail", id: sub.at }) : setModal({ type: "review", ref: sub.ref }));
 
   return (
@@ -673,7 +692,7 @@ export default function App() {
             user={user}
             onSignIn={() => setModal({ type: "auth", reason: "Sign in to see your schedule." })}
             sessions={sessions}
-            events={bookings}
+            events={bookings.map(liveBooking)}
             onOpenClub={(c) => setModal({ type: "club", id: c.id })}
             reviews={submissions.filter((sub) => reviewOf(sub) !== "rejected").map((sub) => ({ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }))}
             onOpenReview={openOwn}

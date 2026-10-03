@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ticket } from "../Ticket.jsx";
 import { Modal } from "./Modal.jsx";
-import { Check, Icon } from "../ui.jsx";
+import { Check, EventLogo, Icon } from "../ui.jsx";
 import { fmtDate } from "../../lib/format.js";
 import { GRADIENTS } from "../../lib/styles.js";
 
@@ -122,7 +122,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
           <p className="text-xs font-medium uppercase tracking-widest text-slate-400">Paying Unite Events</p>
           <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight text-slate-900">{amount}<span className="ml-1.5 text-lg font-semibold text-slate-400">AED</span></p>
           <div className="mt-2 inline-flex max-w-full items-center gap-2 rounded-full bg-slate-100 py-1 pl-1 pr-3 text-sm text-slate-600">
-            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm ${GRADIENTS[party.category]}`}>{party.emoji}</span>
+            {party.logo ? <EventLogo p={party} className="h-6 w-6 !rounded-full" /> : <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-sm ${GRADIENTS[party.category]}`}>{party.emoji}</span>}
             <span className="truncate">{party.title} · {fmtDate(party.date)}</span>
           </div>
         </div>

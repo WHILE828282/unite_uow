@@ -85,7 +85,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
             </button>
           ) : upcoming[0] ? (
             <button onClick={() => onOpenTicket(upcoming[0])} className="mt-2 flex w-full items-center gap-3 text-left">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{upcoming[0].emoji}</span>
+              {upcoming[0].logo ? <EventLogo p={upcoming[0]} className="h-11 w-11" /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{upcoming[0].emoji}</span>}
               <span className="min-w-0"><span className="block truncate font-semibold text-slate-900">{upcoming[0].title}</span><span className="block text-sm text-slate-500">{fmtDate(upcoming[0].date)} · {upcoming[0].time}</span></span>
             </button>
           ) : <p className="mt-2 text-sm text-slate-500">Nothing coming up.</p>}
