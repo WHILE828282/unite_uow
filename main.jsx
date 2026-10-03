@@ -97,6 +97,21 @@ document.addEventListener("focusin", (e) => {
   setTimeout(revealFocused, 350);
 });
 document.addEventListener("focusout", () => setTimeout(settleAfterKeyboard, 120));
+
+// Phones: a tap on an empty spot closes the keyboard, like native apps (iOS keeps it open otherwise, covering the
+// buttons underneath). Taps on fields, labels, buttons and links behave as before; scrolls are ignored.
+let tapStart = null;
+const KEEP = "input, textarea, select, label, button, a, [role=button], [role=tab], [role=radio], [role=switch], [contenteditable]";
+document.addEventListener("touchstart", (e) => { tapStart = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.target } : null; }, { passive: true });
+document.addEventListener("touchend", (e) => {
+  const s = tapStart; tapStart = null;
+  const el = document.activeElement;
+  if (!s || !isField(el) || !e.changedTouches[0]) return;
+  if (Math.abs(e.changedTouches[0].clientX - s.x) > 10 || Math.abs(e.changedTouches[0].clientY - s.y) > 10) return;
+  if (s.t && s.t.closest && s.t.closest(KEEP)) return;
+  window.__uniteKbClosedAt = Date.now(); // this tap only closed the keyboard (sheets don't close on it, see modals)
+  el.blur();
+}, { passive: true });
 if (window.visualViewport) {
   let lastH = window.visualViewport.height;
   window.visualViewport.addEventListener("resize", () => {

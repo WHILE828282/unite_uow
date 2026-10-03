@@ -69,7 +69,20 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
     setStage(0); setStep("processing");
   };
 
-  const upd = (k, fmt) => (e) => { setCard({ ...card, [k]: fmt(e.target.value) }); setErrors({ ...errors, [k]: undefined }); };
+  // Phone keyboards: Next moves on, Pay (last field) pays; a complete number/expiry/CVC jumps to the next field.
+  const NEXT = { number: "cc-exp", exp: "cc-cvc", cvc: "cc-name" };
+  const DONE = { number: 16, exp: 4, cvc: 3 };
+  const upd = (k, fmt) => (e) => {
+    const v = fmt(e.target.value);
+    setCard({ ...card, [k]: v }); setErrors({ ...errors, [k]: undefined });
+    if (DONE[k] && v.replace(/\D/g, "").length >= DONE[k] && v.length > card[k].length) { const n = document.getElementById(NEXT[k]); if (n) n.focus(); }
+  };
+  const keys = (k) => ({ enterKeyHint: NEXT[k] ? "next" : "go", onKeyDown: (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const n = NEXT[k] && document.getElementById(NEXT[k]);
+    if (n) n.focus(); else { e.currentTarget.blur(); confirm(); }
+  } });
   const fmtNum = (v) => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
   const fmtExp = (v) => { const d = v.replace(/\D/g, "").slice(0, 4); return d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d; };
   const fmtCvc = (v) => v.replace(/\D/g, "").slice(0, 4);
@@ -148,24 +161,24 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
               <div className="mt-4 space-y-3">
                 <div>
                   <label htmlFor="cc-number" className="text-sm font-medium text-slate-700">Card number</label>
-                  <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} />
+                  <input id="cc-number" inputMode="numeric" autoComplete="cc-number" placeholder="4242 4242 4242 4242" className={inp("number")} value={card.number} onChange={upd("number", fmtNum)} {...keys("number")} />
                   <Err k="number" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label htmlFor="cc-exp" className="text-sm font-medium text-slate-700">Expiry</label>
-                    <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} />
+                    <input id="cc-exp" inputMode="numeric" autoComplete="cc-exp" placeholder="MM/YY" className={inp("exp")} value={card.exp} onChange={upd("exp", fmtExp)} {...keys("exp")} />
                     <Err k="exp" />
                   </div>
                   <div>
                     <label htmlFor="cc-cvc" className="text-sm font-medium text-slate-700">CVC</label>
-                    <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} />
+                    <input id="cc-cvc" inputMode="numeric" autoComplete="cc-csc" placeholder="123" className={inp("cvc")} value={card.cvc} onChange={upd("cvc", fmtCvc)} {...keys("cvc")} />
                     <Err k="cvc" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="cc-name" className="text-sm font-medium text-slate-700">Name on card</label>
-                  <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} />
+                  <input id="cc-name" autoComplete="cc-name" placeholder="Full name" className={inp("name")} value={card.name} onChange={upd("name", fmtName)} {...keys("name")} />
                   <Err k="name" />
                 </div>
               </div>

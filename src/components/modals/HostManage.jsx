@@ -160,6 +160,7 @@ function AttendeeRow({ a, sub, d, onCheckIn, onDelivered, notify }) {
             <div className="space-y-2 rounded-xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-200">
               <label className="block text-xs font-medium text-slate-600" htmlFor={`note-${a.id}`}>Note for {a.name ? a.name.split(" ")[0] : "them"} <span className="text-slate-400">· optional</span></label>
               <input id={`note-${a.id}`} value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} placeholder="Check your email from the seller"
+                enterKeyHint="send" onKeyDown={(e) => { if (e.key === "Enter" && !busy) { e.preventDefault(); e.currentTarget.blur(); send({ mode: "external", note }); } }}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
               <div className="flex gap-2">
                 <button disabled={busy} onClick={() => send({ mode: "external", note })} className="u-btn flex-1 rounded-lg bg-emerald-600 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">{busy ? "Saving…" : "Mark as delivered"}</button>
@@ -258,7 +259,7 @@ export function HostManage({ sub, data: d, onRefresh, notify, onClose, startScan
 
             <div>
               <label htmlFor="att-q" className="sr-only">Search attendees</label>
-              <input id="att-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, email or ticket ID"
+              <input id="att-q" type="search" enterKeyHint="search" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }} placeholder="Search by name, email or ticket ID"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-slate-400 focus:outline-none" />
               {shown.length ? (
                 <ul className="mt-2 divide-y divide-slate-100">

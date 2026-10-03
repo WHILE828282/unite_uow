@@ -2,6 +2,10 @@ import { useEffect } from "react";
 import { overlayStyle } from "../../lib/styles.js";
 import { Icon } from "../ui.jsx";
 
+/* True while a field has focus, or when this very tap just closed the keyboard (main.jsx): a backdrop tap then only
+   dismisses the keyboard instead of closing the sheet and losing what was typed. */
+export const typingNow = () => (document.activeElement && document.activeElement.matches("input, textarea, select")) || Date.now() - (window.__uniteKbClosedAt || 0) < 500;
+
 export function Modal({ children, onClose, locked, size = "md" }) {
   useEffect(() => {
     if (locked) return;
@@ -14,7 +18,7 @@ export function Modal({ children, onClose, locked, size = "md" }) {
     <div
       className="u-fade u-vv fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
       style={overlayStyle}
-      onMouseDown={(e) => e.target === e.currentTarget && !locked && onClose()}
+      onMouseDown={(e) => { if (e.target !== e.currentTarget || locked) return; if (typingNow()) { e.preventDefault(); if (document.activeElement) document.activeElement.blur(); return; } onClose(); }}
     >
       <div className={`u-up relative w-full ${size === "lg" ? "max-w-lg" : size === "sm" ? "max-w-sm" : "max-w-md"} u-safe-sheet u-sheet-h overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl`}>
         {!locked && (

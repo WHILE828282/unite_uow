@@ -20,7 +20,7 @@ export default function SearchField({ value, onChange, placeholder }) {
       <Icon name="search" className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
       <input ref={ref} type="search" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         enterKeyHint="search" autoComplete="off" autoCorrect="off" spellCheck="false"
-        onKeyDown={(e) => { if (e.key === "Escape" && value) { e.stopPropagation(); onChange(""); } }}
+        onKeyDown={(e) => { if (e.key === "Escape" && value) { e.stopPropagation(); onChange(""); } if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
         className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none [&::-webkit-search-cancel-button]:hidden" />
       {value && (
         <button type="button" onClick={() => { onChange(""); ref.current && ref.current.focus(); }} aria-label="Clear search"
