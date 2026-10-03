@@ -58,6 +58,8 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
   .u-short-hide { display: none !important; }
   .u-short-tight { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
 }
+/* Calendar days sit edge to edge: their own 40px cells are the tap targets (no enlarged overlapping area). */
+.u-cal button::after { content: none !important; }
 /* Touch screens: inputs at 16px so iOS doesn't zoom the page, and every control gets an invisible 44×44 tap area
    (the visible size doesn't change). */
 @media (pointer: coarse) {

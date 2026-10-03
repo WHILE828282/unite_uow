@@ -1,5 +1,5 @@
 /* Vercel serverless function: Telegram webhook for the moderation buttons under each party application.
-   ✅ Approve → "approved" (goes live in Parties), 🔍 Additional Check → "under_review", ❌ Reject → "rejected".
+   ✅ Approve → "approved" (goes live in Events), 🔍 Additional Check → "under_review", ❌ Reject → "rejected".
    Only accepts calls carrying the secret Telegram was given at registration, and only clicks made in the admin chat. */
 import { CHAT_ID, readToken, tg, kv, K, TTL_S, storeConfigured, isRef, getPitch, statusFromCode, moderationKeyboard, webhookSecret } from "./_lib.js";
 

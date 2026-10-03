@@ -1082,6 +1082,63 @@ const DK = {
   err: "mt-2 text-sm text-rose-300",
   hint: "mt-2 text-xs text-slate-400",
 };
+/* Date picker in the form's own style (the browser's calendar popup looked out of place). Opens inline under
+   the field; days before `min` are disabled. Values are "YYYY-MM-DD". */
+function DkDatePicker({ id, value, min, onChange, bad }) {
+  const [open, setOpen] = useState(false);
+  const first = (iso) => { const [y, m] = iso.split("-").map(Number); return new Date(y, m - 1, 1); };
+  const [month, setMonth] = useState(() => first(value || min));
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const minMonth = first(min);
+  const lastMonth = new Date(minMonth.getFullYear(), minMonth.getMonth() + 11, 1);
+  const lead = (month.getDay() + 6) % 7; // Monday first
+  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
+  const label = value ? new Date(value + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "Choose a date";
+  const shift = (n) => setMonth((m) => new Date(m.getFullYear(), m.getMonth() + n, 1));
+  return (
+    <div onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); } }}>
+      <button id={id} type="button" onClick={() => { setMonth(first(value || min)); setOpen((o) => !o); }} aria-expanded={open} aria-haspopup="dialog"
+        className={`${DK.input(bad)} flex items-center justify-between text-left ${value ? "" : "text-slate-500"}`}>
+        {label}<Icon name="calendar" className="h-4 w-4 text-slate-400" />
+      </button>
+      {open && (
+        <div role="dialog" aria-label="Choose a date" className="u-keep u-fade mt-2 rounded-2xl border border-white/10 bg-[#0d1f3a] p-3">
+          <div className="flex items-center justify-between px-1">
+            <button type="button" onClick={() => shift(-1)} disabled={month <= minMonth} aria-label="Previous month" className="u-keep flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30"><Icon name="chevron" className="h-4 w-4 rotate-90" /></button>
+            <span className="text-sm font-semibold text-white">{month.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</span>
+            <button type="button" onClick={() => shift(1)} disabled={month >= lastMonth} aria-label="Next month" className="u-keep flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30"><Icon name="chevron" className="h-4 w-4 -rotate-90" /></button>
+          </div>
+          <div className="mt-2 grid grid-cols-7 text-center text-[11px] font-medium uppercase text-slate-500">{["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <span key={i} className="py-1">{d}</span>)}</div>
+          <div className="u-cal grid grid-cols-7 gap-1">
+            {cells.map((d, i) => {
+              if (!d) return <span key={i} />;
+              const k = iso(d), off = k < min, on = k === value;
+              return (
+                <button key={k} type="button" disabled={off} onClick={() => { onChange(k); setOpen(false); }} aria-pressed={on} aria-label={d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+                  className={`u-keep h-10 rounded-lg text-sm tabular-nums transition-colors ${on ? "bg-crimson-700 font-semibold text-white" : off ? "text-slate-600" : "text-slate-200 hover:bg-white/10"}`}>{d.getDate()}</button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+// Times in 15-minute steps, shown as "8:00 PM". Earlier than `min` is disabled; an off-step value stays selectable.
+function DkTimeSelect({ id, value, min, onChange, bad }) {
+  const opts = Array.from({ length: 96 }, (_, i) => `${String(Math.floor(i / 4)).padStart(2, "0")}:${String((i % 4) * 15).padStart(2, "0")}`);
+  if (value && !opts.includes(value)) opts.push(value), opts.sort();
+  return (
+    <div className="relative">
+      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={`${DK.input(bad)} appearance-none pr-10`}>
+        {opts.map((t) => <option key={t} value={t} disabled={!!min && t < min}>{fmtTime(t)}</option>)}
+      </select>
+      <Icon name="chevron" className="pointer-events-none absolute right-4 top-[calc(50%+4px)] h-4 w-4 -translate-y-1/2 text-slate-400" />
+    </div>
+  );
+}
 const DkSection = ({ n, title, children }) => (
   <section className="space-y-6 border-t border-white/[0.06] pt-10 first:border-0 first:pt-0">
     <h3 className="flex items-baseline gap-3 text-lg font-semibold tracking-tight text-white">
@@ -1135,7 +1192,7 @@ function HostPreview({ sub, onEdit }) {
       </div>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-10">
-          <PreviewBlock title="Event card" note="Parties" onEdit={() => onEdit("logo")}>
+          <PreviewBlock title="Event card" note="Events" onEdit={() => onEdit("logo")}>
             <div className="pointer-events-none select-none" aria-hidden="true">
               <PartyCard p={p} onShare={() => {}} actions={<>{fake(buy, true)}{fake("Details")}</>} />
             </div>
@@ -1362,18 +1419,18 @@ function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
             </DkSection>
 
             <DkSection n={3} title="When & where">
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <div className="col-span-2 sm:col-span-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
                   <label className={DK.label} htmlFor="c-date">Date</label>
-                  <input id="c-date" type="date" min={earliest.date} value={f.date} onChange={set("date")} className={DK.input(!!errors.date)} />
+                  <DkDatePicker id="c-date" min={earliest.date} value={f.date} onChange={(v) => set("date")({ target: { value: v } })} bad={!!errors.date} />
                 </div>
                 <div>
                   <label className={DK.label} htmlFor="c-time">Starts {dubai}</label>
-                  <input id="c-time" type="time" min={f.date === earliest.date ? earliest.time : undefined} value={f.time} onChange={set("time")} className={DK.input(!!errors.time || !!errors.date)} />
+                  <DkTimeSelect id="c-time" min={f.date === earliest.date ? earliest.time : undefined} value={f.time} onChange={(v) => set("time")({ target: { value: v } })} bad={!!errors.time || !!errors.date} />
                 </div>
                 <div>
                   <label className={DK.label} htmlFor="c-end">Ends {dubai}</label>
-                  <input id="c-end" type="time" value={f.end} onChange={set("end")} className={DK.input(!!errors.end)} />
+                  <DkTimeSelect id="c-end" value={f.end} onChange={(v) => set("end")({ target: { value: v } })} bad={!!errors.end} />
                 </div>
               </div>
               {errors.date || errors.time || errors.end
@@ -1685,7 +1742,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
 /* ------------------------------------------------------------------ */
 /*  Event details                                                      */
 /* ------------------------------------------------------------------ */
-/* An event card as shown in Parties (also used in the host's preview). */
+/* An event card as shown in Events (also used in the host's preview). */
 function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
   const left = p.spots - p.taken;
   return (
@@ -1902,8 +1959,8 @@ function ReviewModal({ sub: s, r, onClose }) {
         ) : (
           <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
             {s.mod === "under_review"
-              ? <>The admin team is running an additional safety check and may contact you at <span className="font-semibold">{s.email}</span>. It goes live in Parties once approved.</>
-              : <>Our admin team is verifying your event's safety. Once approved (usually within 2 hours) it goes live in Parties. This page updates automatically.</>}
+              ? <>The admin team is running an additional safety check and may contact you at <span className="font-semibold">{s.email}</span>. It goes live in Events once approved.</>
+              : <>Our admin team is verifying your event's safety. Once approved (usually within 2 hours) it goes live in Events. This page updates automatically.</>}
           </p>
         )}
         <dl className="space-y-2 rounded-2xl border border-slate-200/50 bg-slate-50 p-4 text-sm">
@@ -1929,6 +1986,56 @@ function ReviewModal({ sub: s, r, onClose }) {
 
 const PROCESSING_MS = 24 * 36e5; // Student Services turnaround for tryout forms
 
+/* Avatar in the header; tap for account details, shortcuts and Sign out. */
+function AccountMenu({ name, email, studentId, dark, onTickets, onSchedule, onSignOut }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const esc = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", away); document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", esc); };
+  }, [open]);
+  const item = `u-keep flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm ${dark ? "text-slate-200 hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"}`;
+  const go = (fn) => () => { setOpen(false); fn(); };
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label="Account"
+        className="u-keep flex h-9 w-9 items-center justify-center rounded-full bg-crimson-700 text-xs font-bold text-white ring-2 ring-transparent hover:ring-crimson-200">
+        {name ? nameInitials(name) : initials(email)}
+      </button>
+      {open && (
+        <div role="menu" className={`u-keep u-fade absolute right-0 top-11 z-40 w-64 rounded-2xl p-1.5 shadow-xl ring-1 ${dark ? "bg-[#112240] ring-white/10" : "bg-white ring-slate-200"}`}>
+          <div className="px-3 pb-2 pt-2">
+            {name && <p className={`truncate text-sm font-semibold ${dark ? "text-white" : "text-slate-900"}`}>{name}</p>}
+            <p className={`truncate text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{email}{studentId ? ` · ID ${studentId}` : ""}</p>
+          </div>
+          <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
+          <button role="menuitem" onClick={go(onTickets)} className={item}><Icon name="card" /> My tickets</button>
+          <button role="menuitem" onClick={go(onSchedule)} className={item}><Icon name="calendar" /> My schedule</button>
+          <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
+          <button role="menuitem" onClick={go(onSignOut)} className={`${item} ${dark ? "!text-rose-300" : "!text-rose-600"}`}><Icon name="lock" /> Sign out</button>
+        </div>
+      )}
+    </div>
+  );
+}
+/* Generic "are you sure?" sheet: sign out, joining a team/club, reserving a free spot, joining a waitlist. */
+function ConfirmModal({ title, body, confirmLabel, danger, onConfirm, onCancel }) {
+  return (
+    <Modal onClose={onCancel} size="sm">
+      <div className="p-6 pt-8 text-center">
+        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+        {body && <p className="mt-2 text-sm leading-relaxed text-slate-600">{body}</p>}
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <button onClick={onCancel} autoFocus className="u-btn rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+          <button onClick={onConfirm} className={`u-btn rounded-xl py-3 text-sm font-semibold text-white ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-slate-900 hover:bg-slate-800"}`}>{confirmLabel}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
 function LeaveConfirm({ club: c, pending, onConfirm, onCancel }) {
   const kind = c.category === "Sports" ? "team" : "club";
   return (
@@ -2112,7 +2219,7 @@ function MyEvents({ items, onOpen, onHost }) {
       </section>
       <section>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Live Events <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{live.length}</span></h3>
-        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and in Parties for the whole campus.</Empty>}
+        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and in Events for the whole campus.</Empty>}
       </section>
       {declined.length > 0 && (
         <section>
@@ -2702,7 +2809,7 @@ export default function App() {
       const prev = seenRef.current[sub.ref];
       seenRef.current[sub.ref] = st;
       if (prev === undefined || prev === st) return;
-      if (st === "approved") notify({ title: "Your event is approved", body: `"${sub.title}" passed the safety review and is now live in Parties.` }, 5000);
+      if (st === "approved") notify({ title: "Your event is approved", body: `"${sub.title}" passed the safety review and is now live in Events.` }, 5000);
       else if (st === "rejected") notify({ title: "Application not approved", body: `The admin team didn't approve "${sub.title}". See My Events for details.` }, 5000);
       else if (st === "review:check") notify({ title: "Additional check", body: `The admin team is taking a closer look at "${sub.title}".` }, 4500);
     });
@@ -2832,7 +2939,7 @@ export default function App() {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
     setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
-    if (pending) notify(`Form sent for ${c.name}. Student Services usually confirms within 24 hours. ${scheduleLabel(c)} is already in My Schedule as pending.${heads}`, 5200);
+    if (pending) notify(`Form sent for ${c.name}. Student Services usually confirms within 24 hours.${heads}`, 4200);
     else notify(`You're in ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
@@ -2866,7 +2973,13 @@ export default function App() {
   // "I've submitted the form" (pending, then registered once Student Services processes it).
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
-    requireAuth(`Sign in to join ${c.name}`, () => setModal({ type: "tryout", id: c.id }));
+    requireAuth(`Sign in to join ${c.name}`, () => setModal({
+      type: "confirm",
+      title: isSports(c) ? `Sign up for ${c.name} tryouts?` : `Join ${c.name}?`,
+      body: `Next you'll fill in the official UOWD form. ${scheduleLabel(c)} will be added to My Schedule.`,
+      confirmLabel: "Continue",
+      onConfirm: () => setModal({ type: "tryout", id: c.id }),
+    }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
@@ -2903,11 +3016,19 @@ export default function App() {
     if (existing) return setModal({ type: "ticket", booking: existing });
     if (p.spots - p.taken <= 0) {
       if (user && waitlist[p.id]) return setModal({ type: "waitlist", party: p, pos: waitlist[p.id], email: user });
-      return requireAuth(`Sign in to join the waitlist for ${p.title}`, (email) => joinWaitlist(p, email));
+      return requireAuth(`Sign in to join the waitlist for ${p.title}`, (email) => setModal({
+        type: "confirm", title: `Join the waitlist for ${p.title}?`,
+        body: "It's fully booked. If a spot opens up, we'll email you a code to claim it.",
+        confirmLabel: "Join waitlist", onConfirm: () => joinWaitlist(p, email),
+      }));
     }
     requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : `Sign in to reserve your spot at ${p.title}`, (email) => {
       if (p.price > 0) setModal({ type: "checkout", party: p, email });
-      else setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true });
+      else setModal({
+        type: "confirm", title: `Reserve a spot at ${p.title}?`,
+        body: `${fmtDate(p.date)} · ${p.time} · ${shortVenue(p.where)}. It's free; you'll get a ticket with a QR code.`,
+        confirmLabel: "Reserve", onConfirm: () => setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true }),
+      });
     });
   };
 
@@ -2972,15 +3093,26 @@ export default function App() {
   const myClubs = clubs.filter(isJoined).length;
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
-  const weekSummary = (() => {
-    const parts = [];
-    if (myClubs) parts.push(`${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`);
-    if (bookings.length) parts.push(`${bookings.length} ${bookings.length > 1 ? "tickets" : "ticket"}`);
-    return parts.length ? `You're signed up for ${parts.join(" and ")}. Everything is in My Schedule.` : "Join a team, grab a ticket or host your own event.";
+  // Signed-in strip: the next thing on your calendar (ticket or team session) and a nudge about teams.
+  const nextUp = (() => {
+    const now = new Date(clock);
+    const at = (d, hhmm) => { const [h, m] = hhmm.split(":").map(Number); const x = new Date(d); x.setHours(h, m, 0, 0); return x; };
+    const items = bookings.map((b) => ({ at: at(new Date(b.date + "T00:00:00"), to24(b.time)), title: b.title, open: () => setModal({ type: "ticket", booking: b }) }));
+    sessions.forEach(({ club, slot, pending }) => {
+      const d = new Date(now); d.setDate(d.getDate() + ((slot.day - weekdayIdx(now) + 7) % 7));
+      let t = at(d, slot.start); if (t <= now) t = new Date(t.getTime() + 7 * 864e5);
+      items.push({ at: t, title: `${club.name}${pending ? " (pending)" : ""}`, sub: slot.title, open: () => setModal({ type: "club", id: club.id }) });
+    });
+    const next = items.filter((x) => x.at > now).sort((a, b) => a.at - b.at)[0];
+    if (!next) return null;
+    const days = Math.round((new Date(next.at).setHours(0, 0, 0, 0) - new Date(now).setHours(0, 0, 0, 0)) / 864e5);
+    const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+    return { ...next, when: `${when} · ${next.at.toLocaleDateString("en-GB", { weekday: "short" })} ${fmtTime(`${String(next.at.getHours()).padStart(2, "0")}:${String(next.at.getMinutes()).padStart(2, "0")}`)}` };
   })();
+  const starter = clubs.filter(isSports).sort((a, b) => b.members - a.members)[0] || clubs[0];
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Parties", "Parties"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
+  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
   useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);
@@ -3013,11 +3145,13 @@ export default function App() {
           )}
           <ThemeToggle dark={dark} onToggle={() => setDark((d) => !d)} />
           {user ? (
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white" title={[name, user, studentIdRef.current && `ID ${studentIdRef.current}`].filter(Boolean).join(" · ")}>{name ? nameInitials(name) : initials(user)}</div>
-              <button onClick={() => { setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); }}
-                className={`u-keep rounded-lg px-2.5 py-1.5 text-sm ${dark ? "text-slate-300 hover:bg-white/10 hover:text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}>Sign out</button>
-            </div>
+            <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark={dark}
+              onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")}
+              onSignOut={() => setModal({
+                type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
+                confirmLabel: "Sign out", danger: true,
+                onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); },
+              })} />
           ) : (
             <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })}
               className={`u-keep u-btn rounded-lg px-3.5 py-1.5 text-sm font-semibold ${dark ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 text-white shadow-sm hover:bg-gray-800"}`}>Sign in</button>
@@ -3029,11 +3163,27 @@ export default function App() {
       {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
       {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
       <section className="u-keep relative">
-        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-12 pt-7 sm:pt-10" : "pb-14 pt-9 sm:pt-14"}`}>
+        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-12 pt-6 sm:pt-8" : "pb-14 pt-9 sm:pt-14"}`}>
           {user ? (
             <>
-              <h1 className={`max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
-              <p className={`mt-2 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>{weekSummary}</p>
+              <h1 className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
+              <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                {[
+                  nextUp
+                    ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open }
+                    : { k: "Next up", t: "Nothing planned yet", d: "See what's on this week →", go: () => jumpTo("parties") },
+                  myClubs === 0
+                    ? { k: "Teams & clubs", t: "You're not in a team yet", d: `Start with ${starter.name} →`, go: () => setModal({ type: "club", id: starter.id }) }
+                    : { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") },
+                ].map((x) => (
+                  <button key={x.k} onClick={x.go}
+                    className={`u-keep u-btn min-w-0 rounded-2xl p-3.5 text-left ${dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
+                    <span className={`block text-[11px] font-semibold uppercase tracking-wider ${dark ? "text-crimson-200" : "text-crimson-700"}`}>{x.k}</span>
+                    <span className={`mt-1 block truncate font-semibold ${dark ? "text-white" : "text-gray-900"}`}>{x.t}</span>
+                    <span className={`mt-0.5 block truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>{x.d}</span>
+                  </button>
+                ))}
+              </div>
             </>
           ) : (
             <>
@@ -3073,35 +3223,25 @@ export default function App() {
         </div>
 
         <div key={tab} className="u-tab">
-        {(tab === "clubs" || tab === "parties") && (
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <div className="u-chips flex min-w-0 flex-1 gap-2 pb-1 pr-4">
-              {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
-                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
-              ))}
-            </div>
-            {tab === "parties" && (
-              <button onClick={hostEvent} className="u-btn mb-1 shrink-0 whitespace-nowrap rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:px-4">+ Host event</button>
-            )}
-          </div>
-        )}
         {tab === "parties" && (
-          <div className="-mt-1 mb-4 flex items-center justify-between gap-3 text-sm text-slate-500">
-            <span>{filteredParties.length} {filteredParties.length === 1 ? "event" : "events"}</span>
+          <div className="mb-4 flex items-center justify-between gap-3 text-sm text-slate-500">
+            <span className="whitespace-nowrap">{filteredParties.length} {filteredParties.length === 1 ? "event" : "events"}</span>
+            <div className="flex items-center gap-2">
             <label className="inline-flex items-center gap-2">
               <span className="sr-only">Language</span>
               <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language"
-                className="rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
+                className="max-w-[10.5rem] rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
                 {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "All languages" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
               </select>
             </label>
+              <button onClick={hostEvent} className="u-btn shrink-0 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800">+ Host</button>
+            </div>
           </div>
         )}
 
         {/* Clubs */}
         {tab === "clubs" && (
           <>
-            {user && <p className="mb-4 text-sm text-slate-500">{myClubs === 0 ? "You haven't joined any teams or clubs yet." : `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}${myPending ? ` · ${myPending} pending approval` : ""}.`}</p>}
             <div className="grid gap-4 md:grid-cols-2">
               {filteredClubs.map((c, i) => (
                 <ClubCard key={c.id} c={c} i={i} members={memberCount(c)}
@@ -3325,6 +3465,10 @@ export default function App() {
           />
         );
       })()}
+      {modal && modal.type === "confirm" && (
+        <ConfirmModal title={modal.title} body={modal.body} confirmLabel={modal.confirmLabel} danger={modal.danger}
+          onConfirm={modal.onConfirm} onCancel={closeModal} />
+      )}
       {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={modal.booking} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} /></Modal>}
       {modal && modal.type === "waitlist" && (
         <WaitlistModal party={modal.party} pos={modal.pos} email={modal.email} fresh={modal.fresh} onClose={closeModal} onLeave={() => leaveWaitlist(modal.party)} />
