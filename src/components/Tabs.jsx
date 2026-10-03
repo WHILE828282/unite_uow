@@ -23,7 +23,7 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
 
 /* Phones: the same sections as an app-style bar at the bottom, in reach of the thumb (the top tabs are hidden there).
    Hidden while typing so it never sits on top of the keyboard. */
-const NAV_ICON = { clubs: "users", parties: "calendar", schedule: "clock", tickets: "ticket", events: "user" };
+const NAV_ICON = { home: "home", clubs: "users", parties: "calendar", schedule: "clock", tickets: "ticket", events: "user" };
 export function BottomNav({ tabs, tab, changeTab, user, bookings, myEventItems }) {
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing u-bottomnav fixed inset-x-0 bottom-0 z-30 border-t sm:hidden" style={{ paddingBottom: "var(--sabx)" }}>

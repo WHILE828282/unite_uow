@@ -18,6 +18,7 @@ export const Check = ({ className = "h-3.5 w-3.5" }) => (
 // Outline icons with a crimson accent dot (Unite icon set). `d`: stroked path; `dot`: [cx, cy, r] filled accent.
 const ACCENT = "#e11d48";
 export const ICONS = {
+  home: { d: "M3.5 10.5L12 3.5l8.5 7M5.5 9v10a1.5 1.5 0 001.5 1.5h10a1.5 1.5 0 001.5-1.5V9", dot: [12, 15.5, 1.8] },
   calendar: { d: "M4 7.5A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5v10a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-10zM4 10h16M8.5 3v4M15.5 3v4", dot: [15.5, 15.5, 1.6] },
   pin: { d: "M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z", dot: [12, 10, 2.3] },
   users: { d: "M5.5 20v-.5A4.5 4.5 0 0110 15h4a4.5 4.5 0 014.5 4.5v.5M2.5 17.5v-.3A3.2 3.2 0 015 14.1M21.5 17.5v-.3a3.2 3.2 0 00-2.5-3.1M5.5 9.3a2.2 2.2 0 100-4.4 2.2 2.2 0 000 4.4zM18.5 9.3a2.2 2.2 0 100-4.4 2.2 2.2 0 000 4.4z", dot: [12, 9, 3] },

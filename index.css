@@ -221,3 +221,8 @@ html.u-typing { --nav: 0px; }
 /* Ticket confetti */
 @keyframes uConfetti { 0% { transform: translate3d(0, -20px, 0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--dx), 300px, 0) rotate(var(--rot)); opacity: 0; } }
 .u-confetti { animation-name: uConfetti; animation-timing-function: cubic-bezier(.25,.6,.4,1); animation-fill-mode: both; }
+
+/* Home hero glow (slow breathing crimson light behind the collage) */
+@keyframes uGlow { 0%, 100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.15); opacity: .8; } }
+.u-hero-glow { background: radial-gradient(circle, rgba(196, 90, 104, .55), transparent 65%); filter: blur(20px); animation: uGlow 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .u-hero-glow { animation: none; } }

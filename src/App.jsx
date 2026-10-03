@@ -27,10 +27,11 @@ import { firstName, fmtDate, fmtLeft, fmtTime, isoDay, makeId, shortVenue, to24,
 import { overlaps, scheduleLabel } from "./lib/schedule.js";
 import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
 import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
-import { CSS, glassChip, glassDark } from "./lib/styles.js";
+import { CSS, glassDark } from "./lib/styles.js";
 import { versionLabel } from "./lib/version.js";
 import { Events } from "./pages/Events.jsx";
 import { CreateModal } from "./pages/HostEvent.jsx";
+import { HomeHero, HomeSections } from "./pages/Home.jsx";
 import { MyEvents } from "./pages/MyEvents.jsx";
 import { MySchedulePage } from "./pages/MySchedule.jsx";
 import { MyTickets } from "./pages/MyTickets.jsx";
@@ -47,7 +48,7 @@ const loadSession = () => {
 export default function App() {
   const [saved] = useState(loadSession);
   const [user, setUser] = useState(() => (saved ? saved.user : null));
-  const [tab, setTab] = useState("clubs");
+  const [tab, setTab] = useState("home");
   const [filter, setFilter] = useState("All");
   const [langFilter, setLangFilter] = useState("All");
   const clubs = CLUBS;
@@ -139,7 +140,7 @@ export default function App() {
     else if (!modalOpen && st.uniteModal) { ownBack.current = true; window.history.back(); }
   }, [modalOpen]);
   useEffect(() => {
-    if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: "clubs" }, "", window.location.href);
+    if (!(window.history.state || {}).uniteTab) window.history.replaceState({ ...(window.history.state || {}), uniteTab: "home" }, "", window.location.href);
     const onPop = (e) => {
       if (ownBack.current) { ownBack.current = false; return; }
       if (modalRef.current) {
@@ -149,7 +150,7 @@ export default function App() {
         else setModal(null);
         return;
       }
-      setTab((e.state && e.state.uniteTab) || "clubs");
+      setTab((e.state && e.state.uniteTab) || "home");
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
@@ -590,10 +591,6 @@ export default function App() {
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
   // Signed-in strip: the next thing on your calendar (ticket or team session) and a nudge about teams.
-  // The pinned launch party, promoted in the hero until you have a ticket for it.
-  const spotlight = upcoming.find((p) => p.pinned && !bookingFor(p.id));
-  const openSpotlight = () => spotlight && setModal({ type: "detail", id: spotlight.id });
-  const spotlightWhen = spotlight ? (() => { const n = Math.round((new Date(spotlight.date + "T00:00:00") - new Date(today + "T00:00:00")) / 864e5); return n <= 0 ? "Tonight" : n === 1 ? "Tomorrow" : `In ${n} days`; })() : "";
   const nextUp = (() => {
     const now = new Date(clock);
     const at = (d, hhmm) => { const [h, m] = hhmm.split(":").map(Number); const x = new Date(d); x.setHours(h, m, 0, 0); return x; };
@@ -609,13 +606,12 @@ export default function App() {
     const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
     return { ...next, when: `${when} · ${next.at.toLocaleDateString("en-GB", { weekday: "short" })} ${fmtTime(`${String(next.at.getHours()).padStart(2, "0")}:${String(next.at.getMinutes()).padStart(2, "0")}`)}` };
   })();
-  const heroCards = [nextUp, myClubs > 0, spotlight].filter(Boolean).length;
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
-  const tabs = [["clubs", "Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "Schedule", "Schedule"], ["tickets", "Tickets", "Tickets"],
+  const tabs = [["home", "Home", "Home"], ["clubs", "Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "Schedule", "Schedule"], ["tickets", "Tickets", "Tickets"],
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
-  useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);
+  useEffect(() => { if (tab === "events" && !showMyEvents) setTab("home"); }, [tab, showMyEvents]);
   // A shared link or saved view pointing at something that no longer exists (event removed or ended, application
   // deleted): close it, otherwise an empty overlay keeps the page locked.
   const gone = !!modal && (
@@ -645,67 +641,24 @@ export default function App() {
         onSignOut={() => setModal({
           type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
           confirmLabel: "Sign out", danger: true,
-          onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("clubs"); notify("Signed out"); },
+          onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
         })}
         onSignIn={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} />
 
-      {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
-      {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
-      <section className="u-keep relative">
-        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-12 pt-6 sm:pt-8" : "pb-14 pt-9 sm:pt-14"}`}>
-          {user ? (
-            <>
-              <h1 className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
-              {(nextUp || myClubs > 0 || spotlight) && <div className={`u-chips -mx-4 mt-2 flex snap-x snap-mandatory scroll-px-4 gap-2.5 px-4 py-1 sm:mx-0 sm:grid sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none] ${heroCards > 2 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-                {[
-                  spotlight ? { k: "🎧 Don't miss", t: spotlight.title, d: `${spotlightWhen} · ${fmtDate(spotlight.date)} · ${spotlight.price > 0 ? `${spotlight.price} AED` : "Free"}`, go: openSpotlight, hot: true } : null,
-                  nextUp
-                    ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open }
-                    : null,
-                  myClubs === 0
-                    ? null
-                    : { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") },
-                ].filter(Boolean).map((x) => (
-                  <button key={x.k} onClick={x.go}
-                    className={`u-keep u-btn min-w-0 shrink-0 snap-start rounded-2xl p-3.5 text-left sm:w-auto ${heroCards > 1 ? "w-[82%]" : "w-full"} ${x.hot ? (dark ? "ring-1 ring-crimson-400/40 hover:bg-white/10" : "bg-white ring-2 ring-crimson-200 hover:ring-crimson-300") : dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
-                    <span className={`block text-[11px] font-semibold uppercase tracking-wider ${dark ? "text-crimson-200" : "text-crimson-700"}`}>{x.k}</span>
-                    <span className={`mt-1 block truncate font-semibold ${dark ? "text-white" : "text-gray-900"}`}>{x.t}</span>
-                    <span className={`mt-0.5 block truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>{x.d}</span>
-                  </button>
-                ))}
-              </div>}
-            </>
-          ) : (
-            <>
-            <h1 className={`max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
-              Where UOWD comes together.
-            </h1>
-            <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Teams, clubs and student events at UOWD, all in one place.</p>
-            </>
-          )}
-          {!user && (
-            <p className={`mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
-              <button onClick={() => jumpTo("clubs")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{clubs.length}</b> teams & clubs</button>
-              <button onClick={() => jumpTo("parties")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{upcoming.length}</b> upcoming events</button>
-            </p>
-          )}
-          {!user && spotlight && (
-            <button onClick={openSpotlight}
-              className="u-keep u-btn mt-5 flex w-full max-w-md items-center gap-3 rounded-2xl p-3 pr-4 text-left text-white shadow-lg ring-1 ring-white/10"
-              style={{ background: "radial-gradient(120% 120% at 100% 0%, rgba(196,90,104,.55), transparent 60%), linear-gradient(160deg, #111827, #0a0f1d)" }}>
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl" aria-hidden="true">{spotlight.emoji}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-crimson-200">{spotlightWhen} · {fmtDate(spotlight.date)}</span>
-                <span className="line-clamp-2 block font-semibold leading-snug">{spotlight.title}</span>
-              </span>
-              <span className="u-keep shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900">Tickets</span>
-            </button>
-          )}
-        </div>
-      </section>
+      {/* Home: photo-collage hero (always dark). Other tabs start straight under the header. */}
+      {tab === "home" ? (
+        <HomeHero user={user} firstName={name ? name.split(" ")[0] : user ? firstName(user) : ""}
+          cards={user ? [
+            nextUp ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open } : null,
+            myClubs > 0 ? { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") } : null,
+            bookings.length ? { k: "Tickets", t: `${bookings.length} ticket${bookings.length > 1 ? "s" : ""} in your wallet`, d: "Show QR at the door →", go: () => jumpTo("tickets"), hot: true } : null,
+          ].filter(Boolean) : []}
+          stats={[[clubs.length, "teams & clubs", () => jumpTo("clubs")], [upcoming.length, "upcoming events", () => jumpTo("parties")], [totalMembers.toLocaleString("en-US"), "students in clubs", () => jumpTo("clubs")]]}
+          onEvents={() => jumpTo("parties")} onClubs={() => jumpTo("clubs")} />
+      ) : <div className="h-12" aria-hidden="true" />}
 
       {/* Content */}
-      <main className="relative mx-auto -mt-7 max-w-5xl px-4 pb-28">
+      <main className={`relative mx-auto max-w-5xl px-4 pb-28 ${tab === "home" ? "mt-5" : "-mt-7"}`}>
         <div id="tabs-anchor" aria-hidden="true" />
         <Tabs tabs={tabs} tab={tab} changeTab={changeTab} user={user} bookings={bookings} myEventItems={myEventItems} sessions={sessions} />
 
@@ -715,6 +668,14 @@ export default function App() {
           <Events filteredParties={filteredParties} upcoming={upcoming} feedLangs={feedLangs} filter={filter} setFilter={setFilter}
             langFilter={langFilter} setLangFilter={setLangFilter} hostEvent={hostEvent} cardOpen={cardOpen} setModal={setModal}
             shareEvent={shareEvent} partyBtn={partyBtn} />
+        )}
+
+        {/* Home */}
+        {tab === "home" && (
+          <HomeSections featured={upcoming.find((p) => p.pinned)} events={upcoming.filter((p) => !p.pinned).slice(0, 8)}
+            clubs={clubs.filter((c) => !isSports(c)).sort((a, b) => memberCount(b) - memberCount(a)).slice(0, 8)} teams={clubs.filter(isSports)}
+            memberCount={memberCount} partyBtn={partyBtn} cardOpen={cardOpen} setModal={setModal} shareEvent={shareEvent}
+            goEvents={() => jumpTo("parties")} goClubs={() => jumpTo("clubs")} hostEvent={hostEvent} />
         )}
 
         {/* Clubs */}
