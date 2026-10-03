@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PartyCard } from "../components/cards.jsx";
+import { FeaturedCard, PartyCard } from "../components/cards.jsx";
 import { Icon } from "../components/ui.jsx";
 import SearchField, { matches } from "../components/SearchField.jsx";
 import { isoDay, weekdayIdx } from "../lib/format.js";
@@ -52,6 +52,15 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
       <div className="space-y-8">
         {groups.map((g) => (
           <section key={g.s}>
+            {g.s === "Featured" ? (
+              <div className="space-y-4">
+                {g.items.map((p) => (
+                  <FeaturedCard key={p.id} p={p} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
+                    onDetails={() => setModal({ type: "detail", id: p.id })}
+                    action={partyBtn(p, "u-keep flex-1 !bg-white !text-slate-900 !ring-0 hover:!bg-slate-100", true)} />
+                ))}
+              </div>
+            ) : (<>
             <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-slate-900">{g.s}<span className="font-normal text-slate-400">{g.items.length}</span></h2>
             <div className="grid gap-4 md:grid-cols-2">
               {g.items.map((p, k) => (
@@ -59,6 +68,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
                   actions={<>{partyBtn(p, "flex-1", true)}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
               ))}
             </div>
+            </>)}
           </section>
         ))}
       </div>

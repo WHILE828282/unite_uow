@@ -95,3 +95,55 @@ export function ClubCard({ c, i, open, members, button }) {
     </article>
   );
 }
+
+/* Spotlight card for a pinned event (the launch party): locked dark in both themes, live countdown to doors. */
+const dubaiStart = (p) => {
+  const [y, m, d] = p.date.split("-").map(Number);
+  const t = /(\d+):(\d+)\s*(AM|PM)/i.exec(p.time || "") || [];
+  const h = (Number(t[1]) % 12) + (/pm/i.test(t[3] || "") ? 12 : 0);
+  return Date.UTC(y, m - 1, d, h, Number(t[2] || 0)) - 4 * 36e5;
+};
+export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const ms = Math.max(0, dubaiStart(p) - now);
+  const parts = [["days", Math.floor(ms / 864e5)], ["hrs", Math.floor(ms / 36e5) % 24], ["min", Math.floor(ms / 6e4) % 60], ["sec", Math.floor(ms / 1e3) % 60]];
+  const left = p.spots - p.taken, pct = Math.min(100, Math.round((p.taken / p.spots) * 100));
+  return (
+    <article id={"event-" + p.id} {...open}
+      className="u-keep u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7"
+      style={{ background: "radial-gradient(120% 90% at 100% 0%, rgba(196,90,104,.55), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(116,22,41,.6), transparent 60%), linear-gradient(160deg, #111827 0%, #0a0f1d 100%)" }}>
+      <span className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true"
+        style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+      <div className="flex items-start justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-crimson-200 ring-1 ring-inset ring-white/15">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-crimson-400" /> Featured<span className="hidden sm:inline"> · Grand launch</span>
+        </span>
+        <span className="u-keep whitespace-nowrap rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+      </div>
+      <h3 className="mt-4 max-w-xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{p.title}</h3>
+      <p className="mt-2 text-sm text-slate-300">{new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · From {p.time}{p.until ? ` ${p.until}` : ""}</p>
+      <p className="mt-0.5 text-sm text-slate-400">📍 {p.where}</p>
+
+      <div className="mt-5 grid max-w-sm grid-cols-4 gap-2" aria-label="Countdown to doors">
+        {parts.map(([k, v]) => (
+          <div key={k} className="rounded-2xl bg-white/[0.07] py-2.5 text-center ring-1 ring-inset ring-white/10">
+            <div className="text-xl font-bold tabular-nums sm:text-2xl">{String(v).padStart(2, "0")}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{k}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 max-w-sm">
+        <div className="flex justify-between text-xs text-slate-300"><span>{left > 0 ? `${left} of ${p.spots} tickets left` : "Sold out"}</span><span>{pct}% sold</span></div>
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-crimson-500 to-crimson-300" style={{ width: `${pct}%` }} /></div>
+      </div>
+
+      <div className="mt-5 flex max-w-md gap-2">
+        {action}
+        <button onClick={onDetails} className="u-keep u-btn rounded-xl px-4 text-sm font-semibold text-white ring-1 ring-white/20 hover:bg-white/10">Details</button>
+        <button onClick={onShare} aria-label="Share" className="u-keep u-btn flex w-11 shrink-0 items-center justify-center rounded-xl text-white ring-1 ring-white/20 hover:bg-white/10"><Icon name="share" className="h-4 w-4" /></button>
+      </div>
+    </article>
+  );
+}
