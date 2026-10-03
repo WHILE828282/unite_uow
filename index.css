@@ -202,3 +202,16 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
    buttons and links: dark tiles and badges keep the light remap. Placed last so it also beats the hover remaps. */
 .u-dark :where(button.bg-slate-900:not(.u-keep), a.bg-slate-900:not(.u-keep)) { background-color: #8c1d32; color: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
 .u-dark :where(button.bg-slate-900:not(.u-keep):not(:disabled), a.bg-slate-900:not(.u-keep)):hover { background-color: #a83446; }
+
+/* ---- Bottom navigation (phones) ---- */
+:root { --nav: 0px; }
+@media (max-width: 639px) { :root { --nav: 4.4rem; } }
+html.u-typing { --nav: 0px; }
+.u-bottomnav { background: rgba(255, 255, 255, 0.92); border-color: rgba(15, 23, 42, 0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.u-dark .u-bottomnav { background: rgba(10, 25, 47, 0.92); border-color: rgba(255, 255, 255, 0.08); }
+.u-nav-off { color: #64748b; }
+.u-nav-on { color: #741629; }
+.u-nav-pill { background: rgba(116, 22, 41, 0.1); }
+.u-dark .u-nav-off { color: #8892b0; }
+.u-dark .u-nav-on { color: #f5dde0; }
+.u-dark .u-nav-pill { background: rgba(196, 90, 104, 0.25); }

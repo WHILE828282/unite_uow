@@ -1,8 +1,10 @@
+import { Icon } from "./ui.jsx";
+
 /* Section tabs. Stays under the header while you scroll, so switching sections is always one tap away. The strip behind
    it has the page background, so cards don't show between the header and the tabs. */
 export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessions }) {
   return (
-    <div className="u-tabbar sticky z-20 -mx-4 mb-3 px-4 pb-2 pt-2" style={{ top: "calc(var(--sat) + 3.75rem)" }}>
+    <div className="u-tabbar sticky z-20 -mx-4 mb-3 hidden px-4 pb-2 pt-2 sm:block" style={{ top: "calc(var(--sat) + 3.75rem)" }}>
     <div id="tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="relative grid rounded-2xl border border-slate-200/50 bg-white p-1.5 shadow-sm" role="tablist">
       <div className="u-keep absolute rounded-xl bg-crimson-700 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
       {tabs.map(([k, l, short]) => (
@@ -16,5 +18,31 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
       ))}
     </div>
     </div>
+  );
+}
+
+/* Phones: the same sections as an app-style bar at the bottom, in reach of the thumb (the top tabs are hidden there).
+   Hidden while typing so it never sits on top of the keyboard. */
+const NAV_ICON = { clubs: "users", parties: "calendar", schedule: "clock", tickets: "ticket", events: "user" };
+export function BottomNav({ tabs, tab, changeTab, user, bookings, myEventItems }) {
+  return (
+    <nav aria-label="Sections" className="u-keep u-hide-typing u-bottomnav fixed inset-x-0 bottom-0 z-30 border-t sm:hidden" style={{ paddingBottom: "var(--sabx)" }}>
+      <div className="mx-auto flex max-w-md">
+        {tabs.map(([k, l, short]) => {
+          const on = tab === k;
+          const badge = k === "tickets" && user && bookings.length ? bookings.length : k === "events" ? myEventItems.filter(({ r }) => r.status === "review").length : 0;
+          return (
+            <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
+              className={`u-keep relative flex flex-1 flex-col items-center gap-0.5 pb-2 pt-2.5 text-[11px] font-semibold ${on ? "u-nav-on" : "u-nav-off"}`}>
+              <span className={`relative flex h-7 w-12 items-center justify-center rounded-full transition-colors ${on ? "u-nav-pill" : ""}`}>
+                <Icon name={NAV_ICON[k] || "chevron"} className="h-5 w-5" />
+                {badge > 0 && <span className="absolute -right-0.5 -top-1 min-w-[1.1rem] rounded-full bg-crimson-600 px-1 text-center text-[10px] leading-[1.1rem] text-white">{badge}</span>}
+              </span>
+              {short}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
