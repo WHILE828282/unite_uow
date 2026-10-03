@@ -100,7 +100,7 @@ export function InstalledToast({ show, onDone }) {
   useEffect(() => { if (!show) return; const t = setTimeout(onDone, 4500); return () => clearTimeout(t); }, [show, onDone]);
   if (!show) return null;
   return (
-    <div role="status" className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1.25rem + var(--sab))" }}>
+    <div role="status" className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1.25rem + var(--sabx))" }}>
       <span className="rounded-2xl bg-[#0a192f] px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-white/10">Unite is installed. Open it from your home screen.</span>
     </div>
   );
@@ -158,7 +158,7 @@ export function InstallBanner() {
   return (
     <>
       {show && (
-        <div role="dialog" aria-label="Get Unite on your home screen" className="u-keep u-up u-hide-typing pointer-events-none fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
+        <div role="dialog" aria-label="Get Unite on your home screen" className="u-keep u-up u-hide-typing pointer-events-none fixed inset-x-0 z-40 mx-auto flex max-w-md px-4" style={{ bottom: "calc(1rem + var(--sabx))" }}>
           <div className="pointer-events-auto flex w-full items-center gap-3 rounded-2xl border border-white/10 py-2.5 pl-3 pr-2 text-white shadow-2xl" style={{ background: "rgba(10,25,47,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
             <img src="/icons/icon-192.png" alt="" className="h-11 w-11 shrink-0 rounded-[22%]" />
             <p className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">Get Unite on your home screen</p>

@@ -240,7 +240,8 @@ export const PhoneFrame = ({ children }) => (
   <div className="lg:mx-auto lg:w-[360px] lg:rounded-[2.75rem] lg:bg-[#020617] lg:p-2.5 lg:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] lg:ring-1 lg:ring-white/10">
     <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-white/10 lg:rounded-[2.2rem] lg:ring-0">
       <span className="pointer-events-none absolute left-1/2 top-2 z-20 hidden h-6 w-24 -translate-x-1/2 rounded-full bg-[#020617] lg:block" aria-hidden="true" />
-      <div className="max-h-[560px] overflow-y-auto overscroll-contain lg:h-[640px] lg:max-h-none">{children}</div>
+      {/* Phones: no scroll box of its own (it trapped the finger, so the form wouldn't scroll past the preview). */}
+      <div className="lg:h-[640px] lg:overflow-y-auto lg:overscroll-contain">{children}</div>
     </div>
   </div>
 );
@@ -457,10 +458,10 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
 
   return (
     <div className="u-keep u-fade u-vv u-full-pad fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 sm:items-center sm:p-6 sm:backdrop-blur-md">
-      {/* Touch: a tap on a button keeps the keyboard where it is. Otherwise the keyboard closing mid-tap resizes the
-          form, the button slides away under the finger and the tap is lost ("buttons don't respond"). */}
+      {/* A tap on a button while typing keeps the keyboard up (mousedown never cancels the click), so the form doesn't
+          resize under the finger. */}
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
-        onPointerDown={(e) => { if (e.pointerType !== "mouse" && e.target.closest("button") && document.activeElement && document.activeElement.matches("input, textarea")) e.preventDefault(); }}
+        onMouseDown={(e) => { if (e.target.closest("button") && document.activeElement && document.activeElement.matches("input, textarea")) e.preventDefault(); }}
         className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: "dark" }}>
         {/* Header */}
@@ -669,7 +670,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         </div>
 
         {/* Footer */}
-        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sab))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
+        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sabx))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {sendError && !confirm && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
           {step === "form" && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
           {typeStep ? (
@@ -693,7 +694,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           <div className="u-keep u-fade absolute inset-0 z-20 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
             onMouseDown={(e) => e.target === e.currentTarget && !submitting && setConfirm(false)}>
             <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
-              className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sab)" }}>
+              className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#0d1f3a] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sabx)" }}>
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-xl ring-1 ring-inset ring-crimson-400/30" aria-hidden="true">📨</span>
               <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit for review?</h3>
               <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>

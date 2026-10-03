@@ -88,7 +88,7 @@ export default function InstallPage() {
         <a href="/" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 ring-1 ring-white/10 hover:bg-white/10 hover:text-white">Open Unite</a>
       </header>
 
-      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint && tab === "ios" ? "calc(10rem + var(--sab))" : "calc(7rem + var(--sab))" }}>
+      <main className="relative mx-auto max-w-2xl px-5" style={{ paddingBottom: hint && tab === "ios" ? "calc(10rem + var(--sabx))" : "calc(7rem + var(--sabx))" }}>
         {inApp && <div className="u-inst-rise mb-6"><InAppCard /></div>}
 
         {/* Hero */}
@@ -152,7 +152,7 @@ export default function InstallPage() {
 
       {/* iPhone: floating hint pointing at Safari's toolbar */}
       {hint && tab === "ios" && (
-        <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sab))" }}>
+        <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sabx))" }}>
           <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
             <button onClick={closeHint} aria-label="Close hint" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4" /></button>
