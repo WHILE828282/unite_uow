@@ -9,21 +9,16 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
   return (
     <article id={"event-" + p.id} {...open}
       className={`group u-card u-rise flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ${wide ? "md:col-span-2" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400`} style={{ animationDelay: `${i * 60}ms` }}>
-      {p.cover && (
-        <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
-          <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-        </div>
-      )}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex gap-3.5">
-          {p.logo && !p.cover ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
+          {p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <h3 className="font-semibold leading-snug text-slate-900">{p.title}</h3>
               <span className="shrink-0 text-sm font-semibold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
             </div>
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-slate-500">
-              {(p.logo && !p.cover) || p.cover ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} <DayTag iso={p.date} />
+              {p.logo ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} <DayTag iso={p.date} />
             </p>
             <p className="mt-0.5 truncate text-sm text-slate-500">{p.category} · {p.lang} · by {p.host}</p>
           </div>
