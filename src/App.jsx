@@ -84,6 +84,12 @@ export default function App() {
     } catch (e) { /* storage full or blocked */ }
   }, [user, name, joinedClubs, bookings, waitlist]);
 
+  // One-off cleanup: test events created before launch, removed from this browser's saved applications.
+  useEffect(() => {
+    const gone = (t) => ["blabla", "цццц"].includes(String(t || "").trim().toLowerCase());
+    setSubmissions((x) => (x.some((y) => gone(y.title)) ? x.filter((y) => !gone(y.title)) : x));
+  }, [user]);
+
   // Browser tab title follows what's open (handy when sharing or switching tabs).
   const titleOf = !modal ? null
     : modal.type === "detail" ? (parties.find((x) => x.id === modal.id) || {}).title
