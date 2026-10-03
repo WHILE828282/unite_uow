@@ -645,6 +645,8 @@ export default function App() {
         })}
         onSignIn={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} />
 
+      {/* Everything under the header slides with the pull-to-refresh gesture (data-ptr). */}
+      <div data-ptr="">
       {/* Home: photo-collage hero (always dark). Other tabs start straight under the header. */}
       {tab === "home" ? (
         <HomeHero user={user} firstName={name ? name.split(" ")[0] : user ? firstName(user) : ""}
@@ -729,6 +731,7 @@ export default function App() {
           <p className="mt-8 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
         </footer>
       </main>
+      </div>
 
       <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
         side={user ? (
