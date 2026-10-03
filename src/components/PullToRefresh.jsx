@@ -9,6 +9,7 @@ import { isStandalone } from "../../install.js";
 const THRESHOLD = 70; // how far the content has to travel before release refreshes
 const HOLD = 56; // where the content rests while reloading
 const RANGE = 150; // rubber-band limit
+const SPOKES = 12;
 
 const rubber = (dy) => (1 - 1 / (dy / RANGE + 1)) * RANGE;
 
@@ -72,10 +73,16 @@ export function PullToRefresh() {
   return (
     <div className="u-keep pointer-events-none fixed inset-x-0 z-20 flex justify-center" aria-hidden="true"
       style={{ top: "calc(var(--sat) + 3.75rem)", height: pull, alignItems: "center", transition: dragging ? "none" : "height .35s cubic-bezier(.2,.8,.2,1)" }}>
-      <span className="u-keep flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-700 shadow-lg ring-1 ring-slate-200"
-        style={{ opacity: p, transform: `scale(${0.6 + 0.4 * p})` }}>
-        {busy ? <span className="u-spin h-5 w-5 rounded-full border-2 border-crimson-600 border-t-transparent" />
-          : <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${p * 180}deg)`, transition: "transform .1s" }}><path d="M12 5v14m0 0l-6-6m6 6l6-6" /></svg>}
+      <span className="u-keep flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-lg ring-1 ring-slate-200"
+        style={{ opacity: Math.min(1, p * 1.6), transform: `scale(${0.7 + 0.3 * p})` }}>
+        {/* A "screw": spokes appear one by one and twist in as you pull; once released it keeps spinning. */}
+        <svg viewBox="0 0 24 24" className={`h-6 w-6 ${busy ? "u-spin" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+          style={busy ? undefined : { transform: `rotate(${pull * 4}deg)` }}>
+          {Array.from({ length: SPOKES }, (_, i) => (
+            <line key={i} x1="12" y1="3.5" x2="12" y2="7.5" transform={`rotate(${i * (360 / SPOKES)} 12 12)`}
+              opacity={busy ? 0.25 + (0.75 * i) / (SPOKES - 1) : i < p * SPOKES ? 0.35 + (0.65 * i) / (SPOKES - 1) : 0} />
+          ))}
+        </svg>
       </span>
     </div>
   );
