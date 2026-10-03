@@ -30,6 +30,7 @@ import { CreateModal } from "./pages/HostEvent.jsx";
 import { MyEvents } from "./pages/MyEvents.jsx";
 import { MySchedulePage } from "./pages/MySchedule.jsx";
 import { MyTickets } from "./pages/MyTickets.jsx";
+import { UniteIcon } from "./components/UniteIcon.jsx";
 import { TeamsClubs } from "./pages/TeamsClubs.jsx";
 
 // Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
@@ -589,10 +590,21 @@ export default function App() {
 
         </div>
 
-        <footer className="mt-12 text-center text-xs text-slate-400">
-          {!isStandalone() && <div className="mb-6"><GetAppBadges heading="Get the Unite app" /></div>}
-          Unite · uniteuow.com · A student-built platform for UOWD · Payments via Ziina (demo mode)
-          <p className="mt-2 text-[11px] text-slate-400/80">{versionLabel()}</p>
+        <footer className="mt-16 border-t border-slate-200 pt-8 text-sm text-slate-500">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="flex items-center gap-2 font-extrabold tracking-tight text-slate-900"><UniteIcon className="h-6 w-6" /> unite</p>
+              <p className="mt-1.5 max-w-xs">A student-built platform for UOWD clubs, teams and events.</p>
+            </div>
+            <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
+              <button onClick={() => jumpTo("clubs")} className="hover:text-slate-900">Clubs</button>
+              <button onClick={() => jumpTo("parties")} className="hover:text-slate-900">Events</button>
+              <button onClick={hostEvent} className="hover:text-slate-900">Host an event</button>
+              {!isStandalone() && <a href="/install" className="hover:text-slate-900">Get the app</a>}
+            </nav>
+          </div>
+          {!isStandalone() && <div className="mt-8"><GetAppBadges heading="Get the Unite app" /></div>}
+          <p className="mt-8 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
         </footer>
       </main>
 
