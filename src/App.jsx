@@ -146,6 +146,13 @@ export default function App() {
 
   // A new version took over while something was open: offer to reload (updates.js).
   const [updateReady, setUpdateReady] = useState(false);
+  // Connection status: a slim bar while offline (saved tickets still work; booking and sign-in need the internet).
+  const [offline, setOffline] = useState(() => typeof navigator !== "undefined" && navigator.onLine === false);
+  useEffect(() => {
+    const on = () => setOffline(false), off = () => setOffline(true);
+    window.addEventListener("online", on); window.addEventListener("offline", off);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
   useEffect(() => {
     const h = () => setUpdateReady(true);
     window.addEventListener("unite:update-ready", h);
@@ -688,6 +695,11 @@ export default function App() {
         <WaitlistModal party={modal.party} pos={modal.pos} email={modal.email} fresh={modal.fresh} onClose={closeModal} onLeave={() => leaveWaitlist(modal.party)} />
       )}
 
+      {offline && (
+        <div role="status" className="u-keep pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
+          <span className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg ring-1 ring-white/10">You're offline · your tickets still work</span>
+        </div>
+      )}
       {updateReady && (
         <div className="u-keep pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1rem + var(--sab))" }}>
           <div role="status" className="u-up pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl py-2.5 pl-4 pr-2 text-sm text-white shadow-2xl ring-1 ring-white/10" style={glassDark}>
