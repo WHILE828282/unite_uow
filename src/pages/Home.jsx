@@ -126,10 +126,11 @@ const Rail = ({ children }) => (
   <div className="u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-1 sm:mx-0 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none]">{children}</div>
 );
 /* The one tile style of this page: picture or colour, dark fade, white text at the bottom. */
-const Tile = ({ onClick, bg, img, className = "", children }) => (
+const Tile = ({ onClick, bg, img, tint, className = "", children }) => (
   <button onClick={onClick} className={`u-keep u-card group relative shrink-0 snap-start overflow-hidden rounded-2xl text-left text-white shadow-sm ${className}`} style={{ background: bg || "#0f172a" }}>
     {img && <img src={img} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
     <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
+    {tint && <span className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tint}e6 0%, ${tint}66 38%, transparent 72%)` }} aria-hidden="true" />}
     <span className="relative flex h-full flex-col justify-between p-3.5">{children}</span>
   </button>
 );
@@ -139,11 +140,16 @@ const STEPS = [
   ["Show your QR", "at the door, it works offline"],
 ];
 
+/* Explore photos and the room colour that tints the bottom of each one. */
+const EXPLORE_ART = {
+  Events: ["/explore/parties.webp", "#7a1730"], Sports: ["/explore/sports.webp", "#7c3a0a"], Tech: ["/explore/tech.webp", "#1e3a8a"],
+  Business: ["/explore/finance.webp", "#064e3b"], Arts: ["/explore/arts.webp", "#881337"], Host: ["/explore/host.webp", "#0f172a"],
+};
 export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
   const explore = [
     ["Events", "party", "Parties & events", `${upcomingCount} upcoming`, goEvents],
     ["Sports", "trophy", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
-    ["Tech", "laptop", "Tech & E-sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
+    ["Tech", "laptop", "Tech & E\u2011sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
     ["Business", "chart", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
     ["Arts", "palette", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
     ["Host", "megaphone", "Host an event", "Sell tickets with QR", hostEvent],
@@ -154,9 +160,9 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
         <Head eyebrow="Explore" title="What are you into?" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {explore.map(([k, e, t, d, go]) => (
-            <Tile key={k} onClick={go} bg={ROOM_BG[k]} className="h-28 w-full sm:h-32">
-              <span className="u-glass-tile flex h-12 w-12 items-center justify-center rounded-2xl" style={{ color: "#FFFFFF" }}><Icon name={e} className="h-7 w-7" /></span>
-              <span><span className="block text-sm font-bold leading-tight">{t}</span><span className="block text-xs text-white/75">{d}</span></span>
+            <Tile key={k} onClick={go} bg={ROOM_BG[k]} img={EXPLORE_ART[k][0]} tint={EXPLORE_ART[k][1]} className="h-40 w-full sm:h-44">
+              <span className="u-glass-tile flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ color: "#FFFFFF" }}><Icon name={e} className="h-6 w-6" /></span>
+              <span><span className="block text-[15px] font-bold leading-tight [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]">{t}</span><span className="mt-0.5 block text-xs text-white/80">{d}</span></span>
             </Tile>
           ))}
         </div>
