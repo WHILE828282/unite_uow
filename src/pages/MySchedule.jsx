@@ -114,7 +114,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
               <Chevron />
             </div>
             <div className="ml-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900">Week {isoWeek(anchor)}{isCurrent && <span className="ml-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700">This week</span>}</p>
+              <p className="text-sm font-semibold text-slate-900">Week {isoWeek(anchor)}{isCurrent && <span className="ml-1.5 rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-semibold text-crimson-700">This week</span>}</p>
               <p className="text-xs text-slate-500">{range}</p>
             </div>
           </div>
@@ -190,7 +190,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
                         </button>
                       ) : (
                         <button key={it.key} onClick={() => onOpenTicket(it.b)} title={`${it.b.title} · ${it.b.time}`}
-                          className="absolute overflow-hidden rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-2 py-1 text-left hover:z-10 hover:shadow-md" style={style}>
+                          className="absolute overflow-hidden rounded-lg border border-dashed border-crimson-300 bg-crimson-50 px-2 py-1 text-left hover:z-10 hover:shadow-md" style={style}>
                           <span className="block truncate text-xs font-semibold text-crimson-700">{it.b.time} · Event</span>
                           <span className="block truncate text-xs font-bold text-slate-900">{it.b.emoji} {it.b.title}</span>
                           {tall && <span className="block truncate text-xs text-slate-500">{shortVenue(it.b.where)}</span>}
@@ -214,7 +214,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
               <span key={k} className="inline-flex items-center gap-1.5"><span className={`h-3 w-1 rounded-full ${c}`} /> {k}</span>
             ))}
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-amber-400 bg-amber-50 opacity-70" /> Pending approval</span>
-            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-crimson-400 bg-crimson-50" /> Ticketed event</span>
             {reviews.length > 0 && <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border-2 border-dashed border-amber-400 bg-amber-50" /> Party under review</span>}
             <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-rose-500" /> Now</span>
           </div>
