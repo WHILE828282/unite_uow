@@ -469,7 +469,7 @@ export default function App() {
   })();
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
-  const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
+  const tabs = [["clubs", "Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "Schedule", "Schedule"], ["tickets", "Tickets", "Tickets"],
     ...(showMyEvents ? [["events", "My Events", "Mine"]] : [])];
   const myEventItems = submissions.map((sub) => ({ s: sub, r: { ...sub, status: reviewOf(sub), left: reviewLeft(sub) } }));
   useEffect(() => { if (tab === "events" && !showMyEvents) setTab("clubs"); }, [tab, showMyEvents]);
