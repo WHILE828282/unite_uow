@@ -465,9 +465,11 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0a192f] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: "dark" }}>
         {/* Header */}
-        <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, var(--sat))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
+        <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, calc(var(--sat) + 1rem))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
+          {/* Below the status bar: in the installed iPhone app, taps up there belong to iOS and never reach the page. */}
           <button onClick={onClose} disabled={submitting} aria-label="Close"
-            className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
+            style={{ top: "max(1.25rem, calc(var(--sat) + 0.5rem))", right: "max(1.25rem, calc(var(--sar) + 0.75rem))" }}
+            className="u-keep absolute z-10 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
           <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events · Step {typeStep ? 1 : preview ? 3 : 2} of 3</p>
           <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : typeStep ? "What are you hosting?" : "Host an event"}</h2>
           <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Choose the type first. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>

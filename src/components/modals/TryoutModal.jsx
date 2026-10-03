@@ -40,7 +40,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
         style={{ colorScheme: "dark" }}>
 
         {/* Header: solid, locked dark */}
-        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "max(0.75rem, var(--sat))", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
+        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0a192f] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "calc(var(--sat) + 0.75rem)", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
               <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back
