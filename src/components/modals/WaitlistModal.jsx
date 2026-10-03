@@ -7,7 +7,7 @@ export function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
   return (
     <Modal onClose={onClose}>
       <div className="p-7 pt-9 text-center">
-        <div className="u-pop mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-3xl font-extrabold text-white shadow-lg">#{pos}</div>
+        <div className="u-pop mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-slate-900 text-3xl font-extrabold text-white shadow-lg">#{pos}</div>
         <h2 className="mt-4 text-xl font-bold text-slate-900">{fresh ? "You're on the waitlist" : "Your waitlist spot"}</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           You are <span className="font-semibold text-slate-900">#{pos}</span> on the waitlist. If a spot opens up, an automated confirmation code will be sent to your email.

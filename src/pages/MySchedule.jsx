@@ -176,7 +176,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
                             className={`absolute overflow-hidden rounded-lg border-2 border-dashed px-2 py-1 text-left hover:z-10 hover:shadow-md ${it.r.status === "approved" ? "border-emerald-400 bg-emerald-50" : "u-review border-amber-400 bg-amber-50"}`} style={style}>
                             <span className={`block truncate text-xs font-bold ${it.r.status === "approved" ? "text-emerald-700" : "text-amber-700"}`}>{it.r.status === "approved" ? "✓ Live · Hosting" : "Party Under Review"}</span>
                             <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.r.start, it.r.end)}</span>
-                            <span className="block truncate text-xs font-bold text-slate-900">{TYPE_EMOJI[it.r.category] || "🎉"} {it.r.title}</span>
+                            <span className="block truncate text-xs font-bold text-slate-900">{it.r.title}</span>
                             {tall && <span className="block truncate text-xs text-slate-500">{it.r.venueName}</span>}
                           </button>
                         );

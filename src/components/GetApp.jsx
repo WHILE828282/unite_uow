@@ -101,7 +101,7 @@ export function InstalledToast({ show, onDone }) {
   if (!show) return null;
   return (
     <div role="status" className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1.25rem + var(--sab))" }}>
-      <span className="rounded-2xl bg-[#0a192f] px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-white/10">🎉 Unite is installed. Open it from your home screen.</span>
+      <span className="rounded-2xl bg-[#0a192f] px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-white/10">Unite is installed. Open it from your home screen.</span>
     </div>
   );
 }

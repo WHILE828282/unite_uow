@@ -83,8 +83,14 @@ export default function App() {
     } catch (e) { /* storage full or blocked */ }
   }, [user, name, joinedClubs, bookings, waitlist]);
 
+  // Browser tab title follows what's open (handy when sharing or switching tabs).
+  const titleOf = !modal ? null
+    : modal.type === "detail" ? (parties.find((x) => x.id === modal.id) || {}).title
+    : modal.type === "club" ? (clubs.find((x) => x.id === modal.id) || {}).name
+    : modal.type === "create" ? "Host an event" : null;
+  useEffect(() => { document.title = titleOf ? `${titleOf} · Unite` : "Unite · UOWD clubs & events"; }, [titleOf]);
+
   useEffect(() => {
-    document.title = "Unite · UOWD clubs & events";
     try {
       const m = window.location.pathname.match(/\/events\/(\d+)/);
       if (m) { setTab("parties"); setModal({ type: "detail", id: Number(m[1]) }); }

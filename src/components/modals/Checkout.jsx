@@ -83,7 +83,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose }) {
         <div className="px-8 py-12 text-center">
           <div className="relative mx-auto h-16 w-16">
             <div className="absolute inset-0 rounded-full border-4 border-slate-100" />
-            <div className="u-spin absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600" />
+            <div className="u-spin absolute inset-0 rounded-full border-4 border-transparent border-t-slate-900" />
             <span className="absolute inset-0 flex items-center justify-center text-crimson-700"><Icon name={method === "Apple Pay" ? "phone" : "card"} className="h-6 w-6" /></span>
           </div>
           <p className="mt-6 text-3xl font-bold tabular-nums tracking-tight text-slate-900">{amount} <span className="text-base font-semibold text-slate-400">AED</span></p>
