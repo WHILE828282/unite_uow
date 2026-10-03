@@ -17,21 +17,9 @@ const versionLabel = () => {
 /* ------------------------------------------------------------------ */
 const TODAY = new Date().toISOString().slice(0, 10);
 
-const GRADIENTS = {
-  Sports: "from-emerald-500 to-teal-600",
-  Tech: "from-sky-500 to-indigo-600",
-  Culture: "from-amber-500 to-orange-600",
-  Arts: "from-pink-500 to-rose-600",
-  Business: "from-violet-500 to-purple-700",
-  Gaming: "from-cyan-500 to-blue-600",
-  Social: "from-fuchsia-500 to-violet-600",
-  Music: "from-rose-500 to-orange-500",
-  Career: "from-blue-500 to-cyan-600",
-  Party: "from-fuchsia-500 to-pink-600",
-  "Academic Study": "from-sky-500 to-blue-600",
-  Networking: "from-blue-500 to-cyan-600",
-  "Arts & Culture": "from-amber-500 to-rose-500",
-};
+// Tiles behind emoji/logos when there's no photo: one calm ink tone for every category.
+const INK = "from-slate-800 to-slate-900";
+const GRADIENTS = new Proxy({}, { get: () => INK });
 
 const CLUBS = [
   { id: 1, backgroundImage: "/teams/football-card.webp", form: ["Football"], name: "Football Team", emoji: "⚽", category: "Sports", desc: "UOWD's football squad: weekly training, friendlies and inter-university fixtures across Dubai.", members: 64, slots: [{ id: "fb-mon", day: 0, start: "17:00", end: "19:00", title: "Team training", level: "Squad & trialists", where: "Outdoor Pitch" }, { id: "fb-wed", day: 2, start: "17:00", end: "19:00", title: "Match practice", level: "Squad & trialists", where: "Outdoor Pitch" }], where: "Outdoor Pitch", lead: { name: "UOWD Sports & Recreation", role: "Football coordinator", email: "football@uniteuow.com" }, note: "Boots or turf shoes and shin pads. New players register through the tryouts form." },
@@ -411,7 +399,7 @@ const shortVenue = (where) => where.split(",")[0].replace(/^UOWD /, "");
 const VenueChip = ({ where, href }) =>
   href ? (
     <a href={href} target="_blank" rel="noopener noreferrer" title={`Open ${shortVenue(where)} in Google Maps`}
-      className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70 hover:bg-indigo-50 hover:text-indigo-700 hover:ring-indigo-200">
+      className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200/70 hover:bg-slate-100 hover:text-crimson-700 hover:ring-indigo-200">
       <Icon name="pin" className="h-3 w-3 text-slate-500" />{shortVenue(where)}<span aria-hidden="true" className="text-slate-400">↗</span>
     </a>
   ) : (
@@ -450,7 +438,7 @@ function ContactButtons({ contact: c, subject }) {
 }
 
 const LangBadge = ({ lang }) => (
-  <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-200">
+  <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
     <Icon name="globe" className="h-3 w-3" />{lang}
   </span>
 );
@@ -477,35 +465,44 @@ const Badge = ({ team }) => (
 );
 
 
-const ShareBtn = ({ onClick }) => (
+// Calendar-style date: "OCT / 9 / FRI".
+const DateBlock = ({ iso, className = "" }) => {
+  const d = new Date(iso + "T00:00:00");
+  return (
+    <div className={`flex w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-slate-200 bg-white py-1.5 leading-none ${className}`} aria-hidden="true">
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-crimson-700">{d.toLocaleDateString("en-GB", { month: "short" })}</span>
+      <span className="mt-1 text-xl font-bold tabular-nums text-slate-900">{d.getDate()}</span>
+      <span className="mt-0.5 text-[10px] font-medium uppercase text-slate-500">{d.toLocaleDateString("en-GB", { weekday: "short" })}</span>
+    </div>
+  );
+};
+const ShareBtn = ({ onClick, light = false }) => (
   <button onClick={onClick} aria-label="Share event" title="Share event"
-    className="u-keep flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"
-    style={{ background: "rgba(255,255,255,0.22)" }}>
+    className={light ? "u-btn flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50" : "u-keep flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white hover:bg-white hover:bg-opacity-30"}
+    style={light ? undefined : { background: "rgba(255,255,255,0.22)" }}>
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" />
     </svg>
   </button>
 );
 
-function Spots({ left, total, unit = "spots", wait = 0, long = false }) {
+function Spots({ left, total, unit = "spots", wait = 0, long = false, bar = true }) {
   const pct = Math.min(100, ((total - left) / total) * 100);
   const urgent = left > 0 && left <= 5;
   const noun = left > 1 ? unit : unit.replace(/s$/, "");
   return (
     <div>
-      <div className={`overflow-hidden rounded-full bg-slate-100 ${long ? "h-2.5" : "h-1.5"}`}>
+      {bar && <div className={`overflow-hidden rounded-full bg-slate-100 ${long ? "h-2" : "h-1"}`}>
         <div
-          className={`h-full rounded-full ${left <= 0 ? "bg-slate-400" : urgent ? "bg-gradient-to-r from-amber-400 to-orange-500" : "bg-indigo-500"}`}
+          className={`h-full rounded-full ${left <= 0 ? "bg-slate-400" : urgent ? "bg-crimson-600" : "bg-slate-700"}`}
           style={{ width: pct + "%", transition: "width .6s ease" }}
         />
-      </div>
-      <div className={`mt-1.5 flex items-center gap-2 ${long ? "text-sm" : "text-xs"}`}>
+      </div>}
+      <div className={`${bar ? "mt-1.5" : ""} flex items-center gap-2 ${long ? "text-sm" : "text-xs"}`}>
         {left <= 0 ? (
           <span className="font-semibold text-slate-500">Fully booked{wait > 0 ? ` · ${wait} on the waitlist` : ""}</span>
         ) : urgent ? (
-          <span className="inline-flex items-center gap-1.5 font-semibold text-amber-600">
-            <span className="u-ping h-2 w-2 rounded-full bg-amber-500" /> 🔥 Only {left} {noun} {long ? "remaining" : "left"}!
-          </span>
+          <span className="font-semibold text-crimson-700">Only {left} {noun} {long ? "remaining" : "left"}</span>
         ) : (
           <span className="text-slate-500">{left} of {total} {unit} {long ? "remaining" : "left"}</span>
         )}
@@ -564,7 +561,7 @@ function Ticket({ booking: b, justPaid, onClose, onDownload }) {
   return (
     <div className="bg-slate-100">
       <div className="u-keep relative overflow-hidden bg-slate-900 px-6 pb-16 pt-8 text-center text-white">
-        <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-indigo-600" style={{ filter: "blur(70px)", opacity: 0.55 }} />
+        <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-slate-900" style={{ filter: "blur(70px)", opacity: 0.55 }} />
         <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-emerald-500" style={{ filter: "blur(80px)", opacity: 0.22 }} />
         <div className="relative">
           <div className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
@@ -802,7 +799,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
               {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Email me a code"}
             </button>
-            <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
+            <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-crimson-700 hover:bg-slate-100">
               Try the demo instead
             </button>
 
@@ -856,7 +853,7 @@ function AuthModal({ reason, onClose, onSignIn }) {
               {seconds > 0 ? (
                 <span>Resend code in <span className="font-mono font-semibold text-slate-700">0:{String(seconds).padStart(2, "0")}</span></span>
               ) : (
-                <button onClick={resend} className="font-semibold text-indigo-600 hover:underline">Resend code</button>
+                <button onClick={resend} className="font-semibold text-crimson-700 hover:underline">Resend code</button>
               )}
             </div>
 
@@ -1580,7 +1577,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
           <div className="relative mx-auto h-16 w-16">
             <div className="absolute inset-0 rounded-full border-4 border-slate-100" />
             <div className="u-spin absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600" />
-            <span className="absolute inset-0 flex items-center justify-center text-indigo-600"><Icon name={method === "Apple Pay" ? "phone" : "card"} className="h-6 w-6" /></span>
+            <span className="absolute inset-0 flex items-center justify-center text-crimson-700"><Icon name={method === "Apple Pay" ? "phone" : "card"} className="h-6 w-6" /></span>
           </div>
           <p className="mt-6 text-3xl font-bold tabular-nums tracking-tight text-slate-900">{amount} <span className="text-base font-semibold text-slate-400">AED</span></p>
           <p className="mt-1 text-sm text-slate-500">Processing securely with Ziina · {label}</p>
@@ -1675,7 +1672,7 @@ function Checkout({ party, email, onPaid, onDownload, onClose }) {
           <div className="flex justify-between border-t border-slate-200/50 pt-2 font-semibold"><dt className="text-slate-900">Total</dt><dd className="tabular-nums text-slate-900">{amount} AED</dd></div>
         </dl>
 
-        <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-indigo-600 hover:bg-indigo-700"}`}>
+        <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-slate-900 hover:bg-slate-800"}`}>
           <Icon name="lock" className="h-4 w-4" /> Pay {amount} AED
         </button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Icon name="shield" className="h-3.5 w-3.5 text-emerald-600" /> Secured by Ziina · PCI DSS · 256-bit TLS</p>
@@ -1693,30 +1690,28 @@ function PartyCard({ p, i = 0, open = {}, onShare, actions }) {
   const left = p.spots - p.taken;
   return (
     <article id={"event-" + p.id} {...open}
-      className="group u-card u-rise cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
-      <div className={`relative flex justify-between gap-2 overflow-hidden px-4 ${p.cover ? "h-40 items-end bg-slate-900 pb-3" : `items-center bg-gradient-to-r py-4 ${GRADIENTS[p.category]}`}`}>
-        {p.cover && (
-          <>
-            <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" style={{ aspectRatio: "16 / 9" }} />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" aria-hidden="true" />
-          </>
-        )}
-        <span className="relative">{p.logo ? <EventLogo p={p} className="h-12 w-12 ring-2 ring-white/80 shadow-lg" /> : <span className="text-3xl">{p.emoji}</span>}</span>
-        <div className="relative flex items-center gap-2">
-          <ShareBtn onClick={onShare} />
-          <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-white" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
-          <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+      className="group u-card u-rise flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400" style={{ animationDelay: `${i * 60}ms` }}>
+      {p.cover && (
+        <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+          <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         </div>
-      </div>
-      <div className="p-5">
-        <h3 className="font-semibold text-slate-900">{p.title}</h3>
-        <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
-        <div className="mt-3 space-y-1.5 text-sm text-slate-600">
-          <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-4 w-4 text-slate-400" />{fmtDate(p.date)} · {p.time} <DayTag iso={p.date} /></p>
-          <p className="flex flex-wrap items-center gap-2"><VenueChip where={p.where} href={partyMapsUrl(p)} /><LangBadge lang={p.lang} /></p>
+      )}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex gap-3.5">
+          {p.logo && !p.cover ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="font-semibold leading-snug text-slate-900">{p.title}</h3>
+              <span className="shrink-0 text-sm font-semibold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+            </div>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-slate-500">
+              {(p.logo && !p.cover) || p.cover ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} <DayTag iso={p.date} />
+            </p>
+            <p className="mt-0.5 truncate text-sm text-slate-500">{p.category} · {p.lang} · by {p.host}</p>
+          </div>
         </div>
-        <div className="mt-4"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} /></div>
-        <div className="mt-4 flex gap-2">{actions}</div>
+        <div className="mt-3 text-xs"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} bar={false} /></div>
+        <div className="mt-auto flex gap-2 pt-3">{actions}<ShareBtn light onClick={onShare} /></div>
       </div>
     </article>
   );
@@ -1728,27 +1723,20 @@ function EventDetailBody({ p, onShare }) {
   const mapsUrl = partyMapsUrl(p);
   return (
     <>
-      <div className={`relative overflow-hidden px-6 pb-6 pt-7 text-white ${p.cover ? "bg-slate-900" : `bg-gradient-to-br ${GRADIENTS[p.category]}`}`}>
-        {p.cover && (
-          <>
-            <img src={p.cover} alt="" decoding="async" draggable={false} className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: "16 / 9" }} />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" aria-hidden="true" />
-          </>
-        )}
-        <div className={`relative flex items-start justify-between pr-10 ${p.cover ? "pt-16" : ""}`}>
-          {p.logo ? <EventLogo p={p} className="h-16 w-16 ring-2 ring-white/80 shadow-xl" /> : <span className="text-5xl">{p.emoji}</span>}
-          <ShareBtn onClick={() => onShare(p)} />
+      {p.cover && <img src={p.cover} alt="" decoding="async" draggable={false} className="aspect-[16/9] w-full object-cover" />}
+      <div className={`border-b border-slate-200 px-5 pb-5 ${p.cover ? "pt-5" : "pt-12"}`}>
+        <div className="flex items-start gap-4">
+          {p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{p.category} · {p.lang} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
+            <h2 className="mt-1 text-xl font-bold leading-tight text-slate-900 sm:text-2xl">{p.title}</h2>
+            <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
+          </div>
         </div>
-        <div className="relative mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{p.category}</span>
-          <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
-        </div>
-        <h2 className="relative mt-2 text-2xl font-bold leading-tight">{p.title}</h2>
-        <p className="relative mt-0.5 text-sm" style={{ opacity: 0.9 }}>Hosted by {p.host}</p>
+        <div className="absolute right-14 top-3 z-10"><ShareBtn light onClick={() => onShare(p)} /></div>
       </div>
 
       <div className="space-y-5 p-5">
-        <div className="flex flex-wrap items-center gap-2"><LangBadge lang={p.lang} /></div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
@@ -1762,7 +1750,7 @@ function EventDetailBody({ p, onShare }) {
           <h3 className="text-sm font-semibold text-slate-900">About this event</h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{p.desc}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {p.perks.map((t) => <span key={t} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{t}</span>)}
+            {p.perks.map((t) => <span key={t} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{t}</span>)}
           </div>
         </div>
 
@@ -1774,10 +1762,10 @@ function EventDetailBody({ p, onShare }) {
           <div className="flex gap-3">
             <InfoIcon name="pin" />
             <div>
-              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-indigo-600 hover:decoration-indigo-400">{p.where} ↗</a>
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 hover:text-crimson-700 hover:decoration-crimson-400">{p.where} ↗</a>
               {p.address !== p.where && p.address !== shortVenue(p.where) && <p className="text-slate-500">{p.address}</p>}
               <p className="mt-1 flex flex-wrap gap-x-4">
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-crimson-700 hover:underline">Open in Google Maps ↗</a>
               </p>
             </div>
           </div>
@@ -1826,7 +1814,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
-          {status === "pending" && <span className="u-keep rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">⏳ Pending approval</span>}
+          {status === "pending" && <span className="u-keep rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">Pending approval</span>}
         </div>
         <h2 className="relative mt-2 text-2xl font-bold leading-tight drop-shadow-sm">{c.name}</h2>
         <p className="relative mt-0.5 text-sm" style={{ opacity: 0.9 }}>{c.members + (joined ? 1 : 0)} members · Free to join</p>
@@ -1860,7 +1848,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
               <p className="font-semibold text-slate-900">{c.where}</p>
               <p className="text-slate-500">{UOWD_ADDRESS}</p>
               <p className="mt-1 flex flex-wrap gap-x-4">
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">Open in Google Maps ↗</a>
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-crimson-700 hover:underline">Open in Google Maps ↗</a>
               </p>
             </div>
           </div>
@@ -1868,7 +1856,7 @@ function ClubDetail({ club: c, status, action, onClose, onShare }) {
             <InfoIcon name="user" />
             <div>
               <p className="font-semibold text-slate-900">{c.lead.name} <span className="font-normal text-slate-500">· {c.lead.role}</span></p>
-              <a href={`mailto:${c.lead.email}?subject=${encodeURIComponent(c.name)}`} className="font-semibold text-indigo-600 hover:underline">{c.lead.email}</a>
+              <a href={`mailto:${c.lead.email}?subject=${encodeURIComponent(c.name)}`} className="font-semibold text-crimson-700 hover:underline">{c.lead.email}</a>
             </div>
           </div>
         </div>
@@ -1888,7 +1876,7 @@ function ReviewModal({ sub: s, r, onClose }) {
     ["Reference", <span className="font-mono font-semibold">{s.ref}</span>],
     ["Type", s.category],
     ["When", `${fmtDate(s.date)} · ${fmtRange(s.start, s.end)}`],
-    ["Venue", <a href={s.mapsUrl ? englishMapsUrl(s.mapsUrl) : mapsLink(s.venueName)} target="_blank" rel="noopener noreferrer" className="font-semibold text-indigo-600 hover:underline">{s.venueName}{s.room ? `, ${s.room}` : ""} ↗</a>],
+    ["Venue", <a href={s.mapsUrl ? englishMapsUrl(s.mapsUrl) : mapsLink(s.venueName)} target="_blank" rel="noopener noreferrer" className="font-semibold text-crimson-700 hover:underline">{s.venueName}{s.room ? `, ${s.room}` : ""} ↗</a>],
     ["Language", <LangBadge lang={s.lang} />],
     ["Spots · price", `${s.spots} · ${s.price > 0 ? s.price + " AED" : "Free"}`],
     ...(s.dress ? [["Dress code", s.dress]] : []),
@@ -1903,7 +1891,7 @@ function ReviewModal({ sub: s, r, onClose }) {
         {r.status === "rejected" ? (
           <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-semibold text-white">✕ Not approved</span>
         ) : (
-          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">{!s.moderated ? `⏳ Party Under Review · ~${r.left} left` : s.mod === "under_review" ? "🔍 Additional check in progress" : "⏳ Pending moderation"}</span>
+          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">{!s.moderated ? `Party Under Review · ~${r.left} left` : s.mod === "under_review" ? "🔍 Additional check in progress" : "Pending moderation"}</span>
         )}
       </div>
       <div className="space-y-4 p-5">
@@ -2075,9 +2063,9 @@ const ReviewBadge = ({ r }) =>
   ) : r.status === "rejected" ? (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">✕ Not approved</span>
   ) : r.moderated ? (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">{r.mod === "under_review" ? "🔍 Additional check" : "⏳ Pending moderation"}</span>
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">{r.mod === "under_review" ? "🔍 Additional check" : "Pending moderation"}</span>
   ) : (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Party Under Review · ~{r.left}</span>
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Party Under Review · ~{r.left}</span>
   );
 
 /* My Events: the host's own applications, split into "Pending Moderation" and "Live Events". */
@@ -2209,7 +2197,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
               <span className="min-w-0">
                 <span className="flex min-w-0 items-center gap-2">
                   <span className="truncate font-semibold text-slate-900">{nextSession.club.name} · {nextSession.slot.title}</span>
-                  {nextSession.pending && <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">⏳ Pending</span>}
+                  {nextSession.pending && <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Pending</span>}
                 </span>
                 <span className="block truncate text-sm text-slate-500">{whenLabel(nextSession.days)}, {fmtRange(nextSession.slot.start, nextSession.slot.end)} · {nextSession.slot.where}</span>
               </span>
@@ -2255,7 +2243,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
                 className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
                 <Icon name="chevron" className="h-4 w-4 rotate-90" /><span className="hidden sm:inline">Previous week</span>
               </button>
-              <button onClick={() => go(mondayOf(today))} disabled={isCurrent} className="border-x border-slate-200/50 px-3 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:hover:bg-transparent">Today</button>
+              <button onClick={() => go(mondayOf(today))} disabled={isCurrent} className="border-x border-slate-200/50 px-3 py-2 text-sm font-semibold text-crimson-700 hover:bg-slate-100 disabled:text-slate-400 disabled:hover:bg-transparent">Today</button>
               <button onClick={() => go(addDays(anchor, 7))} disabled={+anchor >= +maxAnchor} aria-label="Next week"
                 className="inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40">
                 <span className="hidden sm:inline">Next week</span><Icon name="chevron" className="h-4 w-4 -rotate-90" />
@@ -2276,8 +2264,8 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
                 const isToday = +d === +today;
                 return (
                   <div key={i} className={`border-l border-slate-200/50 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
-                    <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-indigo-600" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
-                    <p className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-base font-bold ${isToday ? "bg-indigo-600 text-white" : d < today ? "text-slate-400" : "text-slate-900"}`}>{d.getDate()}</p>
+                    <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-crimson-700" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
+                    <p className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-base font-bold ${isToday ? "bg-slate-900 text-white" : d < today ? "text-slate-400" : "text-slate-900"}`}>{d.getDate()}</p>
                   </div>
                 );
               })}
@@ -2304,7 +2292,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
                         return (
                           <button key={it.key} onClick={() => onOpenReview(it.r)} title={`${it.r.title} · ${fmtRange(it.r.start, it.r.end)} · ${it.r.status === "approved" ? "approved, live" : "party under review"}`}
                             className={`absolute overflow-hidden rounded-lg border-2 border-dashed px-2 py-1 text-left hover:z-10 hover:shadow-md ${it.r.status === "approved" ? "border-emerald-400 bg-emerald-50" : "u-review border-amber-400 bg-amber-50"}`} style={style}>
-                            <span className={`block truncate text-xs font-bold ${it.r.status === "approved" ? "text-emerald-700" : "text-amber-700"}`}>{it.r.status === "approved" ? "✓ Live · Hosting" : "⏳ Party Under Review"}</span>
+                            <span className={`block truncate text-xs font-bold ${it.r.status === "approved" ? "text-emerald-700" : "text-amber-700"}`}>{it.r.status === "approved" ? "✓ Live · Hosting" : "Party Under Review"}</span>
                             <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.r.start, it.r.end)}</span>
                             <span className="block truncate text-xs font-bold text-slate-900">{TYPE_EMOJI[it.r.category] || "🎉"} {it.r.title}</span>
                             {tall && <span className="block truncate text-xs text-slate-500">{it.r.venueName}</span>}
@@ -2313,7 +2301,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
                       return it.kind === "session" ? (
                         <button key={it.key} onClick={() => onOpenClub(it.x.club)} title={`${it.x.club.name} · ${it.x.slot.title} · ${fmtRange(it.x.slot.start, it.x.slot.end)}${it.x.pending ? " · pending approval" : ""}`}
                           className={`absolute overflow-hidden rounded-lg border-l-4 px-2 py-1 text-left shadow-sm hover:z-10 hover:opacity-100 hover:shadow-md ${CAT_TINT[it.x.club.category]} ${it.x.pending ? "u-pending border-dashed opacity-60" : ""}`} style={style}>
-                          {it.x.pending && <span className="block truncate text-xs font-bold text-amber-700">⏳ Pending</span>}
+                          {it.x.pending && <span className="block truncate text-xs font-bold text-amber-700">Pending</span>}
                           <span className="block truncate text-xs font-semibold tabular-nums text-slate-500">{shortRange(it.x.slot.start, it.x.slot.end)}</span>
                           <span className="block truncate text-xs font-bold text-slate-900">{it.x.club.emoji} {it.x.club.name}</span>
                           {tall && !narrow && <span className="block truncate text-xs text-slate-500">{it.x.slot.title}</span>}
@@ -2322,7 +2310,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
                       ) : (
                         <button key={it.key} onClick={() => onOpenTicket(it.b)} title={`${it.b.title} · ${it.b.time}`}
                           className="absolute overflow-hidden rounded-lg border border-dashed border-indigo-300 bg-indigo-50 px-2 py-1 text-left hover:z-10 hover:shadow-md" style={style}>
-                          <span className="block truncate text-xs font-semibold text-indigo-600">{it.b.time} · Event</span>
+                          <span className="block truncate text-xs font-semibold text-crimson-700">{it.b.time} · Event</span>
                           <span className="block truncate text-xs font-bold text-slate-900">{it.b.emoji} {it.b.title}</span>
                           {tall && <span className="block truncate text-xs text-slate-500">{shortVenue(it.b.where)}</span>}
                         </button>
@@ -2344,7 +2332,7 @@ function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, 
             {[["Sports", "bg-emerald-500"], ["Tech", "bg-sky-500"], ["Business", "bg-violet-500"], ["Arts", "bg-pink-500"]].map(([k, c]) => (
               <span key={k} className="inline-flex items-center gap-1.5"><span className={`h-3 w-1 rounded-full ${c}`} /> {k}</span>
             ))}
-            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-amber-400 bg-amber-50 opacity-70" /> ⏳ Pending approval</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-amber-400 bg-amber-50 opacity-70" /> Pending approval</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border border-dashed border-indigo-400 bg-indigo-50" /> Ticketed event</span>
             {reviews.length > 0 && <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded border-2 border-dashed border-amber-400 bg-amber-50" /> Party under review</span>}
             <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-3 bg-rose-500" /> Now</span>
@@ -2547,8 +2535,8 @@ function ClubCard({ c, i, open, members, button }) {
         style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <span className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/20 transition-opacity duration-300 group-hover:opacity-90" aria-hidden="true" />
         <div>
-          <Badge team={c.category === "Sports"} />
-          <h3 className="mt-2 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">{c.category === "Sports" ? "Team" : `${c.category} club`}</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-slate-200">{c.desc}</p>
         </div>
         <div className="mt-4 flex items-end justify-between gap-3">
@@ -2564,7 +2552,6 @@ function ClubCard({ c, i, open, members, button }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{c.name}</h3>
-            <Badge team={c.category === "Sports"} />
           </div>
           <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
         </div>
@@ -2715,9 +2702,9 @@ export default function App() {
       const prev = seenRef.current[sub.ref];
       seenRef.current[sub.ref] = st;
       if (prev === undefined || prev === st) return;
-      if (st === "approved") notify({ title: "Your party is approved 🎉", body: `"${sub.title}" passed the safety review and is now live in Parties.` }, 5000);
+      if (st === "approved") notify({ title: "Your event is approved", body: `"${sub.title}" passed the safety review and is now live in Parties.` }, 5000);
       else if (st === "rejected") notify({ title: "Application not approved", body: `The admin team didn't approve "${sub.title}". See My Events for details.` }, 5000);
-      else if (st === "review:check") notify({ title: "Additional check 🔍", body: `The admin team is taking a closer look at "${sub.title}".` }, 4500);
+      else if (st === "review:check") notify({ title: "Additional check", body: `The admin team is taking a closer look at "${sub.title}".` }, 4500);
     });
     // eslint-disable-next-line
   }, [clock, submissions]);
@@ -2845,7 +2832,7 @@ export default function App() {
     const clash = c.slots.map((sl) => sessions.find((o) => o.club.id !== c.id && overlaps(o.slot, sl))).find(Boolean);
     setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
-    if (pending) notify(`Form sent for ${c.name}! ⏳ Student Services usually confirms within 24 hours. ${scheduleLabel(c)} is already in My Schedule as pending.${heads}`, 5200);
+    if (pending) notify(`Form sent for ${c.name}. Student Services usually confirms within 24 hours. ${scheduleLabel(c)} is already in My Schedule as pending.${heads}`, 5200);
     else notify(`You're in ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
   };
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
@@ -2956,12 +2943,13 @@ export default function App() {
       : st === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
-        {st === "pending" ? `⏳ In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team ✓" : "Member ✓") : isSports(c) ? "Join tryouts" : "Join the club"}
+        {st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : "Join the club"}
       </button>
     );
   };
 
-  const partyBtn = (p, extra = "w-full") => {
+  // `short`: on cards, where the price is already shown next to the title.
+  const partyBtn = (p, extra = "w-full", short = false) => {
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
@@ -2969,7 +2957,7 @@ export default function App() {
     else if (p.spots - p.taken <= 0) {
       label = wl ? `Waitlisted · #${wl}` : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
-    } else { label = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve a free spot"; cls = "bg-indigo-600 text-white hover:bg-indigo-700"; }
+    } else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = "bg-slate-900 text-white hover:bg-slate-800"; }
     return <button onClick={() => onParty(p)} className={`u-btn ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 
@@ -2983,9 +2971,6 @@ export default function App() {
   const feedLangs = LANGUAGES.filter((l) => upcoming.some((p) => p.lang === l));
   const myClubs = clubs.filter(isJoined).length;
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
-  const hot = upcoming
-    .filter((p) => p.spots - p.taken > 0 && p.spots - p.taken <= 5 && !bookingFor(p.id))
-    .sort((a, b) => a.spots - a.taken - (b.spots - b.taken))[0];
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
   const weekSummary = (() => {
     const parts = [];
@@ -3011,12 +2996,12 @@ export default function App() {
           <button onClick={goHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
             <UniteIcon className="h-9 w-9" />
             <span className={`text-xl font-extrabold tracking-tight ${dark ? "text-white" : "text-[#0f172a]"}`}>unite</span>
-            <span className={`hidden rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${dark ? "text-crimson-200" : "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100"}`} style={dark ? glassChip : undefined}>for UOWD students</span>
+            <span className={`hidden border-l pl-2.5 text-xs font-medium sm:inline ${dark ? "border-white/15 text-slate-400" : "border-slate-200 text-slate-500"}`}>for UOWD students</span>
           </button>
           <div className="flex items-center gap-2">
           {!isStandalone() && (
             <a href={installPath(platform())} aria-label="Get the app"
-              className="u-keep group inline-flex h-9 items-center gap-2 rounded-full bg-black pl-2.5 pr-2.5 text-[13px] font-semibold text-white shadow-[0_6px_18px_-8px_rgba(0,0,0,0.55)] ring-1 ring-white/15 transition-all duration-200 hover:-translate-y-px hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.7)] active:scale-95 sm:pr-3.5">
+              className="u-keep group inline-flex h-9 items-center gap-2 rounded-full bg-black pl-2.5 pr-2.5 text-[13px] font-semibold text-white ring-1 ring-white/15 transition-colors duration-200 hover:bg-slate-800 active:scale-95 sm:pr-3.5">
               {/* iPhone: Apple only · Android: Android only · computer: both */}
               <span className="flex items-center gap-1.5" aria-hidden="true">
                 {platform() !== "android" && <AppleLogo className="h-[15px] w-[15px] -mt-px" />}
@@ -3053,20 +3038,17 @@ export default function App() {
           ) : (
             <>
             <h1 className={`max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
-              Where UOWD comes <span className={`bg-gradient-to-r bg-clip-text text-transparent ${dark ? "from-crimson-200 to-crimson-400" : "from-indigo-800 via-indigo-700 to-crimson-600"}`}>together.</span>
+              Where UOWD comes together.
             </h1>
-            <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
+            <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Teams, clubs and student events at UOWD, all in one place.</p>
             </>
           )}
-          {!user && <div className="mt-6 grid max-w-md grid-cols-3 gap-3">
-            {[[clubs.length, "Teams & clubs", "clubs"], [upcoming.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
-              <button key={l} onClick={() => jumpTo(t)}
-                className={`u-keep u-btn rounded-2xl p-3 text-left ${dark ? "hover:border-white" : "bg-white/80 shadow-sm ring-1 ring-gray-200/80 hover:ring-indigo-200"}`} style={dark ? glassChip : undefined}>
-                <p className={`text-xl font-bold tabular-nums ${dark ? "text-white" : "text-gray-900"}`}>{n}</p>
-                <p className={`text-xs ${dark ? "text-slate-300" : "text-gray-500"}`}>{l}</p>
-              </button>
-            ))}
-          </div>}
+          {!user && (
+            <p className={`mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
+              <button onClick={() => jumpTo("clubs")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{clubs.length}</b> teams & clubs</button>
+              <button onClick={() => jumpTo("parties")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{upcoming.length}</b> upcoming events</button>
+            </p>
+          )}
         </div>
       </section>
 
@@ -3095,27 +3077,24 @@ export default function App() {
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="u-chips flex min-w-0 flex-1 gap-2 pb-1 pr-4">
               {(tab === "clubs" ? CLUB_FILTERS : PARTY_FILTERS).map((f) => (
-                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
+                <button key={f} onClick={() => setFilter(f)} className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${filter === f ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200/50 bg-white shadow-sm text-slate-600 hover:border-slate-300"}`}>{f}</button>
               ))}
             </div>
             {tab === "parties" && (
-              <button onClick={hostEvent} className="u-btn mb-1 shrink-0 whitespace-nowrap rounded-xl bg-indigo-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 sm:px-4">+ Host event</button>
+              <button onClick={hostEvent} className="u-btn mb-1 shrink-0 whitespace-nowrap rounded-full bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:px-4">+ Host event</button>
             )}
           </div>
         )}
         {tab === "parties" && (
-          <div className="u-chips -mt-2 mb-5 flex items-center gap-2 pb-1 pr-4" role="group" aria-label="Filter by event language">
-            <span className="inline-flex shrink-0 items-center gap-1 pr-1 text-xs font-semibold uppercase tracking-wider text-slate-400"><Icon name="globe" className="h-3.5 w-3.5" /> Language</span>
-            {["All", ...feedLangs].map((l) => {
-              const n = l === "All" ? upcoming.length : upcoming.filter((p) => p.lang === l).length;
-              const on = langFilter === l;
-              return (
-                <button key={l} onClick={() => setLangFilter(l)} aria-pressed={on}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${on ? "bg-sky-600 text-white ring-sky-600" : "bg-white text-slate-600 shadow-sm ring-slate-200/60 hover:bg-slate-50"}`}>
-                  {l === "All" ? "All languages" : l}<span className={on ? "text-sky-100" : "text-slate-400"}>{n}</span>
-                </button>
-              );
-            })}
+          <div className="-mt-1 mb-4 flex items-center justify-between gap-3 text-sm text-slate-500">
+            <span>{filteredParties.length} {filteredParties.length === 1 ? "event" : "events"}</span>
+            <label className="inline-flex items-center gap-2">
+              <span className="sr-only">Language</span>
+              <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language"
+                className="rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
+                {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "All languages" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
+              </select>
+            </label>
           </div>
         )}
 
@@ -3136,20 +3115,6 @@ export default function App() {
         {/* Parties */}
         {tab === "parties" && (
           <>
-            {hot && (
-              <div className="u-fade mb-5 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="u-ping flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl">🔥</span>
-                  <div>
-                    <p className="font-semibold text-amber-950">Only {hot.spots - hot.taken} {hot.price > 0 ? "ticket" : "spot"}{hot.spots - hot.taken > 1 ? "s" : ""} left for the {hot.title}!</p>
-                    <p className="text-sm text-amber-800">Selling fast · {hot.taken} of {hot.spots} already booked</p>
-                  </div>
-                </div>
-                <button onClick={() => onParty(hot)} className="u-btn shrink-0 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
-                  {hot.price > 0 ? `Buy ticket · ${hot.price} AED` : "Reserve a free spot"}
-                </button>
-              </div>
-            )}
 
             {filteredParties.length === 0 && (
               <div className="u-fade rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center">
@@ -3158,7 +3123,7 @@ export default function App() {
                 <p className="mt-1 text-sm text-slate-500">Try another filter, or host one yourself.</p>
                 <div className="mt-4 flex justify-center gap-2">
                   <button onClick={() => { setFilter("All"); setLangFilter("All"); }} className="u-btn rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Clear filters</button>
-                  <button onClick={hostEvent} className="u-btn rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Host an event</button>
+                  <button onClick={hostEvent} className="u-btn rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Host an event</button>
                 </div>
               </div>
             )}
@@ -3168,7 +3133,7 @@ export default function App() {
                 const left = p.spots - p.taken;
                 return (
                   <PartyCard key={p.id} p={p} i={i} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
-                    actions={<>{partyBtn(p, "flex-1")}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
+                    actions={<>{partyBtn(p, "flex-1", true)}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
                 );
               })}
             </div>
@@ -3177,7 +3142,7 @@ export default function App() {
                 <p className="font-semibold text-indigo-950">Got an idea for an event?</p>
                 <p className="text-sm text-indigo-800">Submit it for review and sell tickets securely with Ziina.</p>
               </div>
-              <button onClick={hostEvent} className="u-btn shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Host an event</button>
+              <button onClick={hostEvent} className="u-btn shrink-0 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Host an event</button>
             </div>
           </>
         )}
@@ -3222,10 +3187,10 @@ export default function App() {
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tickets</h3>
                 {bookings.length === 0 ? (
                   <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-                    <div className="text-4xl">🎟️</div>
+                    <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="card" className="h-6 w-6" /></span>
                     <p className="mt-3 font-semibold">No tickets yet</p>
                     <p className="text-sm text-slate-500">Grab a spot at an upcoming student event.</p>
-                    <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Browse events</button>
+                    <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse events</button>
                   </div>
                 ) : (
                   <div className="grid gap-3 md:grid-cols-2">
@@ -3268,12 +3233,12 @@ export default function App() {
                 {submissions.length === 0 ? (
                   <div className="rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 text-sm text-slate-500">
                     Want to run your own party or meetup? The admin team reviews every application for safety.
-                    <button onClick={hostEvent} className="ml-1 font-semibold text-indigo-600 hover:underline">Host an event</button>
+                    <button onClick={hostEvent} className="ml-1 font-semibold text-crimson-700 hover:underline">Host an event</button>
                   </div>
                 ) : (
                   <button onClick={() => changeTab("events")} className="u-card flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left text-sm shadow-sm">
                     <span><span className="font-semibold text-slate-900">Your events are in My Events</span><span className="block text-slate-500">Pending moderation and live events, side by side.</span></span>
-                    <span className="font-semibold text-indigo-600">Open →</span>
+                    <span className="font-semibold text-crimson-700">Open →</span>
                   </button>
                 )}
               </section>
@@ -3316,11 +3281,11 @@ export default function App() {
               return (
                 <div className="space-y-2.5">
                   <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
-                    <span aria-hidden="true">⏳</span>
+                    
                     <span>Student Services is processing your tryout form. This usually takes about 24 hours (~{pendingHours(c)}h left). Your sessions already show in My Schedule as pending.</span>
                   </p>
                   <div className="flex gap-2">
-                    <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 py-3 text-sm font-semibold text-amber-700 ring-1 ring-amber-200">⏳ In review</span>
+                    <span className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-amber-50 py-3 text-sm font-semibold text-amber-700 ring-1 ring-amber-200">In review</span>
                     <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Cancel request</button>
                   </div>
                 </div>
