@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { UniteIcon } from "./UniteIcon.jsx";
 import { Check, EventLogo, Icon, QRCode } from "./ui.jsx";
 import { downloadCalendar } from "../lib/downloads.js";
@@ -46,11 +47,29 @@ function TripStatus({ b, onOpenFile }) {
   );
 }
 
+/* A short burst of confetti over a freshly bought ticket (skipped with reduced motion). */
+const CONFETTI = ["#e9b6bc", "#c45a68", "#fbbf24", "#34d399", "#60a5fa", "#ffffff"];
+function Confetti() {
+  const [on, setOn] = useState(() => !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches));
+  useEffect(() => { const t = setTimeout(() => setOn(false), 2600); return () => clearTimeout(t); }, []);
+  if (!on) return null;
+  return (
+    <div className="u-keep pointer-events-none absolute inset-x-0 top-0 z-20 h-72 overflow-hidden" aria-hidden="true">
+      {Array.from({ length: 42 }, (_, i) => (
+        <span key={i} className="u-confetti absolute top-0 block rounded-[2px]"
+          style={{ left: `${(i * 37) % 100}%`, width: 6 + (i % 3) * 2, height: 10 + (i % 4) * 2, background: CONFETTI[i % CONFETTI.length],
+            animationDelay: `${(i % 7) * 70}ms`, animationDuration: `${1500 + (i % 5) * 220}ms`, "--dx": `${((i * 53) % 120) - 60}px`, "--rot": `${(i * 97) % 720}deg` }} />
+      ))}
+    </div>
+  );
+}
+
 export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }) {
   const trip = b.kind === "trip";
   const rows = [["Date", fmtDate(b.date)], ["Time", b.time], ["Venue", shortVenue(b.where)], ["Admission", trip ? "Group trip · 1 place" : "General · 1 guest"]];
   return (
-    <div className="bg-slate-100">
+    <div className="relative bg-slate-100">
+      {justPaid && <Confetti />}
       <div className="u-keep relative overflow-hidden bg-slate-900 px-6 pb-16 pt-8 text-center text-white">
         <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-slate-900" style={{ filter: "blur(70px)", opacity: 0.55 }} />
         <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-emerald-500" style={{ filter: "blur(80px)", opacity: 0.22 }} />

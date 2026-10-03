@@ -215,3 +215,7 @@ html.u-typing { --nav: 0px; }
 .u-dark .u-nav-off { color: #8892b0; }
 .u-dark .u-nav-on { color: #f5dde0; }
 .u-dark .u-nav-pill { background: rgba(196, 90, 104, 0.25); }
+
+/* Ticket confetti */
+@keyframes uConfetti { 0% { transform: translate3d(0, -20px, 0) rotate(0); opacity: 1; } 100% { transform: translate3d(var(--dx), 300px, 0) rotate(var(--rot)); opacity: 0; } }
+.u-confetti { animation-name: uConfetti; animation-timing-function: cubic-bezier(.25,.6,.4,1); animation-fill-mode: both; }
