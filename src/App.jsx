@@ -467,7 +467,6 @@ export default function App() {
     const when = days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
     return { ...next, when: `${when} · ${next.at.toLocaleDateString("en-GB", { weekday: "short" })} ${fmtTime(`${String(next.at.getHours()).padStart(2, "0")}:${String(next.at.getMinutes()).padStart(2, "0")}`)}` };
   })();
-  const starter = clubs.filter(isSports).sort((a, b) => b.members - a.members)[0] || clubs[0];
 
   const showMyEvents = !!user && submissions.length > 0; // only for accounts that host or have applied
   const tabs = [["clubs", "Official Clubs", "Clubs"], ["parties", "Events", "Events"], ["schedule", "My Schedule", "Schedule"], ["tickets", "My Tickets", "Tickets"],
@@ -498,15 +497,15 @@ export default function App() {
           {user ? (
             <>
               <h1 className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
-              <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+              {(nextUp || myClubs > 0) && <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
                 {[
                   nextUp
                     ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open }
-                    : { k: "Next up", t: "Nothing planned yet", d: "See what's on this week →", go: () => jumpTo("parties") },
+                    : null,
                   myClubs === 0
-                    ? { k: "Teams & clubs", t: "You're not in a team yet", d: `Start with ${starter.name} →`, go: () => setModal({ type: "club", id: starter.id }) }
+                    ? null
                     : { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") },
-                ].map((x) => (
+                ].filter(Boolean).map((x) => (
                   <button key={x.k} onClick={x.go}
                     className={`u-keep u-btn min-w-0 rounded-2xl p-3.5 text-left ${dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
                     <span className={`block text-[11px] font-semibold uppercase tracking-wider ${dark ? "text-crimson-200" : "text-crimson-700"}`}>{x.k}</span>
@@ -514,7 +513,7 @@ export default function App() {
                     <span className={`mt-0.5 block truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>{x.d}</span>
                   </button>
                 ))}
-              </div>
+              </div>}
             </>
           ) : (
             <>
