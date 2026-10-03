@@ -3044,7 +3044,7 @@ export default function App() {
       {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
       {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
       <section className="u-keep relative">
-        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-14 pt-7 sm:pt-10" : "pb-16 pt-10 sm:pt-14"}`}>
+        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-12 pt-7 sm:pt-10" : "pb-14 pt-9 sm:pt-14"}`}>
           {user ? (
             <>
               <h1 className={`max-w-xl text-2xl font-bold leading-tight tracking-tight sm:text-4xl ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
@@ -3058,11 +3058,7 @@ export default function App() {
             <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Join official clubs, discover verified student events and host your own. One quick sign-in, tickets in seconds.</p>
             </>
           )}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={hostEvent} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "bg-white text-gray-900 hover:bg-gray-100" : "bg-gray-900 text-white shadow-sm hover:bg-gray-800"}`}>Host an event</button>
-            <button onClick={() => jumpTo("clubs")} className={`u-keep u-btn rounded-xl px-5 py-2.5 text-sm font-semibold ${dark ? "text-white" : "bg-white text-gray-800 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"}`} style={dark ? glassChip : undefined}>Explore clubs</button>
-          </div>
-          {!user && <div className="mt-8 grid max-w-md grid-cols-3 gap-3">
+          {!user && <div className="mt-6 grid max-w-md grid-cols-3 gap-3">
             {[[clubs.length, "Teams & clubs", "clubs"], [upcoming.length, "Upcoming events", "parties"], [totalMembers + "+", "Members", "clubs"]].map(([n, l, t]) => (
               <button key={l} onClick={() => jumpTo(t)}
                 className={`u-keep u-btn rounded-2xl p-3 text-left ${dark ? "hover:border-white" : "bg-white/80 shadow-sm ring-1 ring-gray-200/80 hover:ring-indigo-200"}`} style={dark ? glassChip : undefined}>
@@ -3079,7 +3075,7 @@ export default function App() {
         <div id="tabs-anchor" aria-hidden="true" />
         {/* Stays under the header while you scroll, so switching sections is always one tap away. The strip behind
             it has the page background, so cards don't show between the header and the tabs. */}
-        <div className="sticky z-20 -mx-4 mb-3 bg-slate-50 px-4 pb-2 pt-2" style={{ top: "calc(var(--sat) + 3.75rem)" }}>
+        <div className="u-tabbar sticky z-20 -mx-4 mb-3 px-4 pb-2 pt-2" style={{ top: "calc(var(--sat) + 3.75rem)" }}>
         <div id="tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }} className="relative grid rounded-2xl border border-slate-200/50 bg-white p-1.5 shadow-sm" role="tablist">
           <div className="u-keep absolute rounded-xl bg-crimson-700 shadow" style={{ top: 6, bottom: 6, left: 6, width: `calc((100% - 12px) / ${tabs.length})`, transform: `translateX(${tabs.findIndex((t) => t[0] === tab) * 100}%)`, transition: "transform .3s cubic-bezier(.2,.8,.2,1)" }} />
           {tabs.map(([k, l, short]) => (

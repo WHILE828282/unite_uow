@@ -91,6 +91,9 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 /*  as designed. :where() keeps specificity low so hover states win.   */
 /* ------------------------------------------------------------------ */
 .u-dark { color-scheme: dark; background-color: #0a192f; color: #e6f1ff; }
+/* Strip behind the sticky section tabs: exactly the page background in both themes. */
+.u-tabbar { background-color: #f8fafc; }
+.u-dark .u-tabbar { background-color: #0a192f; }
 .u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #0d1f3a; color: #e6f1ff; }
 .u-dark :where(input)::placeholder { color: #64748b; }
 
