@@ -168,7 +168,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted }) {
               placeholder="you@uowdubai.ac.ae"
               className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${error ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
             />
-            {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOWD student email (@uowdubai.ac.ae).</p>}
+            {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOW student email (@uowmail.edu.au or @uowdubai.ac.ae).</p>}
 
             <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
             <input
