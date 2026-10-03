@@ -50,7 +50,7 @@ export function MyEvents({ items, onOpen, onHost, hostData = {}, onManage }) {
   const live = items.filter(({ r }) => r.status === "approved");
   const declined = items.filter(({ r }) => r.status === "rejected");
   const Grid = ({ list, host }) => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, r }) => host ? (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, r }) => host ? (
       <div key={s.ref} className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm [&>button]:rounded-none [&>button]:border-0 [&>button]:shadow-none">
         <MyEventCard s={s} r={r} onOpen={onOpen} />
         <HostPanel s={s} d={hostData[s.ref]} onManage={onManage} />

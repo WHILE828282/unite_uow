@@ -36,7 +36,7 @@ export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clu
         })}
       </div>
       <p className="mb-4 mt-3 text-sm text-slate-500">{active.blurb}</p>
-      <div key={active.k} className="u-fade grid gap-4 md:grid-cols-2">
+      <div key={active.k} className="u-fade grid grid-cols-1 gap-4 md:grid-cols-2">
         {active.clubs.map((c, i) => (
           <ClubCard key={c.id} c={c} i={i} members={memberCount(c)}
             open={cardOpen(() => setModal({ type: "club", id: c.id }))}

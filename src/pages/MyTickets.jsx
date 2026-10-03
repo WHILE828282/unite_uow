@@ -36,7 +36,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
               <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse events</button>
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {bookings.map((b) => (
                 <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
                   {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
@@ -54,7 +54,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
         {Object.keys(waitlist).length > 0 && (
           <section>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Waitlists</h3>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {Object.entries(waitlist).map(([id, pos]) => {
                 const p = parties.find((x) => x.id === Number(id));
                 return p ? (

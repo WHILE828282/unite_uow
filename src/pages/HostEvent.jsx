@@ -572,7 +572,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                 <input id="c-venueName" value={f.venueName} onChange={set("venueName")} autoComplete="off" placeholder="e.g. Marina Rooftop Lounge" className={DK.input(!!errors.venueName)} />
                 <E k="venueName" />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className={DK.label} htmlFor="c-room">Room or meeting point <span className="text-slate-500">· optional</span></label>
                   <input id="c-room" value={f.room} onChange={set("room")} autoComplete="off" placeholder="Level 3 terrace" className={DK.input(false)} />
@@ -610,7 +610,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
                   <input id="c-seller" value={f.seller} onChange={set("seller")} autoComplete="off" placeholder="e.g. Platinumlist, Ticketmaster, the venue's website" className={DK.input(!!errors.seller)} />
                   {errors.seller ? <E k="seller" /> : <p className={DK.hint}>Where you'll buy the real tickets for your group.</p>}
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className={DK.label} htmlFor="c-minGroup">Minimum group size</label>
                     <input id="c-minGroup" type="number" inputMode="numeric" min="1" value={f.minGroup} onChange={set("minGroup")} className={DK.input(!!errors.minGroup)} />
@@ -643,7 +643,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
 
             <DkSection n={trip ? 6 : 5} title="Organizer contacts">
               <p className="-mt-2 text-sm text-slate-400">Shown on your event once it's approved. Add WhatsApp, Telegram or both.</p>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className={DK.label} htmlFor="c-whatsapp">WhatsApp number</label>
                   <input id="c-whatsapp" type="tel" inputMode="tel" autoComplete="tel" value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 123 4567" className={DK.input(!!errors.whatsapp)} />

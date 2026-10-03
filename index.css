@@ -5,6 +5,8 @@
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
 /* Taps fire immediately (no double-tap-to-zoom wait); pressed feedback comes from the :active styles. */
 button, a, [role="button"], [role="tab"], [role="switch"], label, summary, input, select, textarea { touch-action: manipulation; }
+/* No sideways page scroll on phones, whatever a long word does (clip, unlike hidden, keeps sticky headers working). */
+html, body { overflow-x: clip; }
 body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
 
 /* Installed app on phones with a notch / home bar: keep content clear of the unsafe areas.
