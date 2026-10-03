@@ -2,46 +2,46 @@ import { useState } from "react";
 import { ClubCard } from "../components/cards.jsx";
 import { CLUB_ROOMS } from "../data/clubs.js";
 
-/* Clubs tab: every UOWD team, then the clubs in three rooms (Tech & E-sports, Finance & Growth, Music & Arts). */
+/* Clubs tab: one switcher on top (Teams + the three club rooms), so every section is one tap away
+   instead of the clubs sitting below all the team cards. The choice is remembered for the visit. */
+const SECTIONS = [
+  { k: "Sports", label: "Sports Teams", emoji: "🏆", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
+  ...CLUB_ROOMS.map((r) => ({ ...r, ...{
+    Tech: { emoji: "💻", blurb: "Code, compete and create: tech, e-sports, cars and content." },
+    Business: { emoji: "📈", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
+    Arts: { emoji: "🎨", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
+  }[r.k] })),
+];
+
 export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clubBtn }) {
-  const list = filteredClubs;
-  const [room, setRoom] = useState(() => { try { return sessionStorage.getItem("unite-room") || "Tech"; } catch (e) { return "Tech"; } });
-  const pick = (k) => { setRoom(k); try { sessionStorage.setItem("unite-room", k); } catch (e) { /* ignore */ } };
-  const teams = list.filter((c) => c.category === "Sports");
-  const rooms = CLUB_ROOMS.map((r) => ({ ...r, clubs: list.filter((c) => c.category === r.k) })).filter((r) => r.clubs.length);
-  const active = rooms.find((r) => r.k === room) || rooms[0];
-  let n = 0;
-  const grid = (xs) => (
-    <div className="grid gap-4 md:grid-cols-2">
-      {xs.map((c) => (
-        <ClubCard key={c.id} c={c} i={n++} members={memberCount(c)}
-          open={cardOpen(() => setModal({ type: "club", id: c.id }))}
-          button={(onPhoto) => clubBtn(c, "shrink-0 px-4 py-2", onPhoto)} />
-      ))}
-    </div>
-  );
+  const [sec, setSec] = useState(() => { try { return sessionStorage.getItem("unite-room") || "Sports"; } catch (e) { return "Sports"; } });
+  const pick = (k) => { setSec(k); try { sessionStorage.setItem("unite-room", k); } catch (e) { /* ignore */ } };
+  const sections = SECTIONS.map((s) => ({ ...s, clubs: filteredClubs.filter((c) => c.category === s.k) })).filter((s) => s.clubs.length);
+  const active = sections.find((s) => s.k === sec) || sections[0];
+  if (!active) return null;
   return (
-    <div className="space-y-8">
-      {teams.length > 0 && (
-        <section>
-          <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-slate-900">Teams<span className="font-normal text-slate-400">{teams.length}</span></h2>
-          {grid(teams)}
-        </section>
-      )}
-      {active && (
-        <section>
-          <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-slate-900">Clubs<span className="font-normal text-slate-400">{rooms.reduce((s, r) => s + r.clubs.length, 0)}</span></h2>
-          <div role="tablist" aria-label="Club rooms" className="mb-4 grid grid-cols-3 gap-1 rounded-2xl border border-slate-800/50 bg-white p-1">
-            {rooms.map((r) => (
-              <button key={r.k} role="tab" aria-selected={r.k === active.k} onClick={() => pick(r.k)}
-                className={`rounded-xl border px-2 py-2 text-xs font-semibold leading-tight transition-colors sm:text-sm ${r.k === active.k ? "border-slate-800/50 bg-slate-900 text-white" : "border-transparent text-slate-500 hover:text-slate-800"}`}>
-                {r.label} <span className={r.k === active.k ? "text-white/60" : "text-slate-400"}>{r.clubs.length}</span>
-              </button>
-            ))}
-          </div>
-          <div key={active.k} className="u-fade">{grid(active.clubs)}</div>
-        </section>
-      )}
+    <div>
+      <div role="tablist" aria-label="Teams and club rooms" className="u-chips -mx-4 flex gap-2 px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-4 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none]">
+        {sections.map((s) => {
+          const on = s.k === active.k;
+          return (
+            <button key={s.k} role="tab" aria-selected={on} onClick={() => pick(s.k)}
+              className={`u-btn flex shrink-0 items-center gap-2 whitespace-nowrap rounded-2xl border px-3.5 py-2.5 text-left text-sm font-semibold sm:min-w-0 ${on ? "border-slate-800/50 bg-slate-900 text-white shadow-sm" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"}`}>
+              <span aria-hidden="true">{s.emoji}</span>
+              <span className="sm:truncate">{s.label}</span>
+              <span className={`ml-auto rounded-full px-1.5 text-xs tabular-nums ${on ? "bg-white/15 text-white/80" : "bg-slate-100 text-slate-500"}`}>{s.clubs.length}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mb-4 mt-3 text-sm text-slate-500">{active.blurb}</p>
+      <div key={active.k} className="u-fade grid gap-4 md:grid-cols-2">
+        {active.clubs.map((c, i) => (
+          <ClubCard key={c.id} c={c} i={i} members={memberCount(c)}
+            open={cardOpen(() => setModal({ type: "club", id: c.id }))}
+            button={(onPhoto) => clubBtn(c, "shrink-0 px-4 py-2", onPhoto)} />
+        ))}
+      </div>
     </div>
   );
 }
