@@ -104,7 +104,7 @@ export function ClubCard({ c, i, open, members, button }) {
 }
 
 /* Spotlight card for a pinned event (the launch party): locked dark in both themes, live countdown to doors. */
-const dubaiStart = (p) => {
+export const dubaiStart = (p) => {
   const [y, m, d] = p.date.split("-").map(Number);
   const t = /(\d+):(\d+)\s*(AM|PM)/i.exec(p.time || "") || [];
   const h = (Number(t[1]) % 12) + (/pm/i.test(t[3] || "") ? 12 : 0);

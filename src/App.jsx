@@ -654,6 +654,8 @@ export default function App() {
             bookings.length ? { k: "Tickets", t: `${bookings.length} ticket${bookings.length > 1 ? "s" : ""} in your wallet`, d: "Show QR at the door →", go: () => jumpTo("tickets"), hot: true } : null,
           ].filter(Boolean) : []}
           stats={[[clubs.length, "teams & clubs", () => jumpTo("clubs")], [upcoming.length, "upcoming events", () => jumpTo("parties")], [totalMembers.toLocaleString("en-US"), "students in clubs", () => jumpTo("clubs")]]}
+          spotlight={upcoming.find((p) => p.pinned)} spotlightBooked={!!(upcoming.find((p) => p.pinned) && bookingFor(upcoming.find((p) => p.pinned).id))}
+          onSpotlight={() => { const p = upcoming.find((x) => x.pinned); if (p) setModal({ type: "detail", id: p.id }); }}
           onEvents={() => jumpTo("parties")} onClubs={() => jumpTo("clubs")} />
       ) : <div className="h-12" aria-hidden="true" />}
 
@@ -672,10 +674,11 @@ export default function App() {
 
         {/* Home */}
         {tab === "home" && (
-          <HomeSections featured={upcoming.find((p) => p.pinned)} events={upcoming.filter((p) => !p.pinned).slice(0, 8)}
-            clubs={clubs.filter((c) => !isSports(c)).sort((a, b) => memberCount(b) - memberCount(a)).slice(0, 8)} teams={clubs.filter(isSports)}
-            memberCount={memberCount} partyBtn={partyBtn} cardOpen={cardOpen} setModal={setModal} shareEvent={shareEvent}
-            goEvents={() => jumpTo("parties")} goClubs={() => jumpTo("clubs")} hostEvent={hostEvent} />
+          <HomeSections events={upcoming.filter((p) => !p.pinned).slice(0, 8)} upcomingCount={upcoming.length}
+            clubs={clubs.filter((c) => !isSports(c)).sort((a, b) => memberCount(b) - memberCount(a)).slice(0, 8)}
+            roomCounts={["Sports", "Tech", "Business", "Arts"].reduce((o, k) => ({ ...o, [k]: clubs.filter((c) => c.category === k).length }), {})}
+            memberCount={memberCount} setModal={setModal} goEvents={() => jumpTo("parties")} hostEvent={hostEvent}
+            goRoom={(k) => { if (k) { try { sessionStorage.setItem("unite-section", k); } catch (e) { /* ignore */ } } jumpTo("clubs"); }} />
         )}
 
         {/* Clubs */}

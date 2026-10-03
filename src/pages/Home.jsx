@@ -1,10 +1,10 @@
-import { FeaturedCard } from "../components/cards.jsx";
-import { Icon } from "../components/ui.jsx";
-import { CLUB_ROOMS } from "../data/clubs.js";
+import { useEffect, useState } from "react";
+import { dubaiStart } from "../components/cards.jsx";
 import { fmtDate } from "../lib/format.js";
 
-/* Home: the first thing people see. A photo-collage hero (always dark), then the launch party, this week's events,
-   popular clubs, teams with open tryouts, how Unite works and a nudge to host. */
+/* Home: its own page, not a copy of the others. A dark photo-collage hero (with the launch party built in), a grid of
+   places to explore, two swipeable rails of visual tiles (events, clubs), a three-step explainer and a host banner.
+   Every tile on this page shares one style: full-bleed picture or colour, white text at the bottom. */
 
 const COLLAGE = [
   "/events/rooftop-sunset-mixer-small.webp", "/teams/football-card.webp", "/events/halloween-party-small.webp", "/events/ps5-tournament-small.webp",
@@ -12,11 +12,43 @@ const COLLAGE = [
   "/events/anime-matcha-night-small.webp", "/events/futsal-tournament-small.webp", "/teams/padel-tennis-card.webp", "/events/arabic-coffee-small.webp",
 ];
 const greeting = () => { const h = new Date().getHours(); return h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
+export const ROOM_BG = {
+  Tech: "linear-gradient(140deg, #0ea5e9 0%, #1e3a8a 100%)",
+  Business: "linear-gradient(140deg, #10b981 0%, #064e3b 100%)",
+  Arts: "linear-gradient(140deg, #f43f5e 0%, #7c2d12 100%)",
+  Sports: "linear-gradient(140deg, #f59e0b 0%, #7c2d12 100%)",
+  Events: "linear-gradient(140deg, #c45a68 0%, #4a0e1b 100%)",
+  Host: "linear-gradient(140deg, #334155 0%, #0f172a 100%)",
+};
 
-export function HomeHero({ user, firstName, cards, stats, onEvents, onClubs }) {
+/* Countdown to doors, ticking once a minute. */
+function useCountdown(p) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
+  const ms = p ? Math.max(0, dubaiStart(p) - now) : 0;
+  return [Math.floor(ms / 864e5), Math.floor(ms / 36e5) % 24, Math.floor(ms / 6e4) % 60];
+}
+
+function Spotlight({ p, booked, onOpen }) {
+  const [d, h, m] = useCountdown(p);
+  return (
+    <button onClick={onOpen}
+      className="u-keep u-btn mt-7 flex w-full max-w-2xl items-center gap-3.5 rounded-2xl p-3 pr-3.5 text-left ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-3.5"
+      style={{ background: "linear-gradient(110deg, rgba(116,22,41,.75), rgba(15,23,42,.55))" }}>
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl" aria-hidden="true">{p.emoji}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {fmtDate(p.date)}</span>
+        <span className="block truncate font-semibold text-white">{p.title}</span>
+        <span className="mt-0.5 block text-xs tabular-nums text-slate-300">Doors in {d}d {h}h {m}m · {p.spots - p.taken} tickets left</span>
+      </span>
+      <span className={`u-keep shrink-0 rounded-lg px-3 py-2 text-xs font-bold ${booked ? "bg-emerald-500 text-white" : "bg-white text-slate-900"}`}>{booked ? "Your ticket" : `${p.price} AED`}</span>
+    </button>
+  );
+}
+
+export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBooked, onSpotlight, onEvents, onClubs }) {
   return (
     <section className="u-keep relative isolate overflow-hidden bg-[#070d1a] text-white">
-      {/* Photo collage, tilted and dimmed behind the text */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-40 sm:-inset-x-10 sm:grid-cols-6">
           {[...COLLAGE, ...COLLAGE].slice(0, 18).map((src, i) => (
@@ -30,7 +62,7 @@ export function HomeHero({ user, firstName, cards, stats, onEvents, onClubs }) {
         <div className="u-hero-glow absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-60" />
       </div>
 
-      <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-10 pt-7 sm:pt-10" : "pb-12 pt-10 sm:pb-16 sm:pt-16"}`}>
+      <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-9 pt-7 sm:pt-10" : "pb-10 pt-10 sm:pb-14 sm:pt-16"}`}>
         {user ? (
           <>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-crimson-200">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}</p>
@@ -56,7 +88,7 @@ export function HomeHero({ user, firstName, cards, stats, onEvents, onClubs }) {
           <div className={`u-chips -mx-4 mt-5 flex snap-x snap-mandatory scroll-px-4 gap-2.5 px-4 py-1 sm:mx-0 sm:grid sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none] ${cards.length > 2 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             {cards.map((x) => (
               <button key={x.k} onClick={x.go}
-                className={`u-keep u-btn min-w-0 shrink-0 snap-start rounded-2xl p-3.5 text-left backdrop-blur-md sm:w-auto ${cards.length > 1 ? "w-[82%]" : "w-full"} ${x.hot ? "bg-crimson-700/40 ring-1 ring-inset ring-crimson-300/40 hover:bg-crimson-700/50" : "bg-white/[0.07] ring-1 ring-inset ring-white/10 hover:bg-white/[0.12]"}`}>
+                className={`u-keep u-btn min-w-0 shrink-0 snap-start rounded-2xl bg-white/[0.07] p-3.5 text-left ring-1 ring-inset ring-white/10 backdrop-blur-md hover:bg-white/[0.12] sm:w-auto ${cards.length > 1 ? "w-[82%]" : "w-full"}`}>
                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-crimson-200">{x.k}</span>
                 <span className="mt-1 block truncate font-semibold text-white">{x.t}</span>
                 <span className="mt-0.5 block truncate text-sm text-slate-300">{x.d}</span>
@@ -65,130 +97,131 @@ export function HomeHero({ user, firstName, cards, stats, onEvents, onClubs }) {
           </div>
         )}
 
-        <dl className="mt-7 grid max-w-lg grid-cols-3 gap-2">
+        {spotlight && <Spotlight p={spotlight} booked={spotlightBooked} onOpen={onSpotlight} />}
+
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
           {stats.map(([n, l, go]) => (
-            <button key={l} onClick={go} className="u-keep u-btn rounded-2xl bg-white/[0.05] px-3 py-2.5 text-left ring-1 ring-inset ring-white/10 hover:bg-white/10">
-              <dt className="sr-only">{l}</dt>
-              <dd className="text-xl font-bold tabular-nums sm:text-2xl">{n}</dd>
-              <dd className="text-[11px] font-medium text-slate-400">{l}</dd>
-            </button>
+            <button key={l} onClick={go} className="u-keep hover:text-white"><b className="text-lg font-bold tabular-nums text-white">{n}</b> {l}</button>
           ))}
-        </dl>
+        </div>
       </div>
     </section>
   );
 }
 
-const Section = ({ title, sub, onAll, children }) => (
-  <section>
-    <div className="mb-3 flex items-end justify-between gap-3">
-      <div>
-        <h2 className="text-lg font-bold tracking-tight text-slate-900">{title}</h2>
-        {sub && <p className="text-sm text-slate-500">{sub}</p>}
-      </div>
-      {onAll && <button onClick={onAll} className="shrink-0 rounded-lg px-2 py-1 text-sm font-semibold text-crimson-700 hover:bg-crimson-50">See all →</button>}
+const Head = ({ eyebrow, title, onAll }) => (
+  <div className="mb-3.5 flex items-end justify-between gap-3">
+    <div className="min-w-0">
+      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-crimson-700">{eyebrow}</p>
+      <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">{title}</h2>
     </div>
-    {children}
-  </section>
+    {onAll && <button onClick={onAll} className="shrink-0 rounded-lg px-2 py-1 text-sm font-semibold text-crimson-700 hover:bg-crimson-50">See all</button>}
+  </div>
 );
 const Rail = ({ children }) => (
-  <div className="u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-2 pt-0.5">{children}</div>
+  <div className="u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-1 sm:mx-0 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none]">{children}</div>
 );
-const ROOM_TILE = { Tech: "linear-gradient(135deg, #0ea5e9 0%, #1e3a8a 100%)", Business: "linear-gradient(135deg, #10b981 0%, #065f46 100%)", Arts: "linear-gradient(135deg, #f43f5e 0%, #7c2d12 100%)" };
+/* The one tile style of this page: picture or colour, dark fade, white text at the bottom. */
+const Tile = ({ onClick, bg, img, className = "", children }) => (
+  <button onClick={onClick} className={`u-keep u-card group relative shrink-0 snap-start overflow-hidden rounded-2xl text-left text-white shadow-sm ${className}`} style={{ background: bg || "#0f172a" }}>
+    {img && <img src={img} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+    <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
+    <span className="relative flex h-full flex-col justify-between p-3.5">{children}</span>
+  </button>
+);
 const STEPS = [
-  ["🎓", "Sign in with your student email", "Verified UOWD accounts unlock club communities."],
-  ["⚡", "Join a club or grab a ticket", "One tap to join, Apple Pay or card for tickets."],
-  ["📱", "Show your QR at the door", "Your ticket lives in the app, even offline."],
+  ["Sign in", "with your UOWD student email"],
+  ["Join or book", "a club in one tap, tickets with Apple Pay"],
+  ["Show your QR", "at the door, it works offline"],
 ];
 
-export function HomeSections({ featured, events, clubs, teams, memberCount, partyBtn, cardOpen, setModal, shareEvent, goEvents, goClubs, hostEvent }) {
+export function HomeSections({ events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
+  const explore = [
+    ["Events", "🎉", "Parties & events", `${upcomingCount} upcoming`, goEvents],
+    ["Sports", "🏆", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
+    ["Tech", "💻", "Tech & E-sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
+    ["Business", "📈", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
+    ["Arts", "🎨", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
+    ["Host", "🎤", "Host an event", "Sell tickets with QR", hostEvent],
+  ];
   return (
-    <div className="space-y-10 pt-2">
-      {featured && (
-        <FeaturedCard p={featured} open={cardOpen(() => setModal({ type: "detail", id: featured.id }))} onShare={() => shareEvent(featured)}
-          onDetails={() => setModal({ type: "detail", id: featured.id })}
-          action={partyBtn(featured, "u-keep flex-1 !bg-white !text-slate-900 !ring-0 hover:!bg-slate-100", true)} />
-      )}
+    <div className="space-y-11 pt-1">
+      <section>
+        <Head eyebrow="Explore" title="What are you into?" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {explore.map(([k, e, t, d, go]) => (
+            <Tile key={k} onClick={go} bg={ROOM_BG[k]} className="h-28 w-full sm:h-32">
+              <span className="text-3xl drop-shadow-sm" aria-hidden="true">{e}</span>
+              <span><span className="block text-sm font-bold leading-tight">{t}</span><span className="block text-xs text-white/75">{d}</span></span>
+            </Tile>
+          ))}
+        </div>
+      </section>
 
       {events.length > 0 && (
-        <Section title="This week on campus" sub="Parties, socials and tournaments coming up" onAll={goEvents}>
+        <section>
+          <Head eyebrow="This week" title="Happening on campus" onAll={goEvents} />
           <Rail>
             {events.map((p) => {
               const left = p.spots - p.taken;
               return (
-                <button key={p.id} onClick={() => setModal({ type: "detail", id: p.id })}
-                  className="u-card group w-60 shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200/60 bg-white text-left shadow-sm">
-                  <span className="relative block aspect-[16/10] bg-slate-900">
-                    {p.cover || p.logo ? <img src={p.cover || p.logo} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                      : <span className="flex h-full items-center justify-center text-4xl">{p.emoji}</span>}
-                    <span className="u-keep absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">{fmtDate(p.date)}</span>
-                    <span className="u-keep absolute right-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
-                    {left > 0 && left <= 10 && <span className="u-keep absolute bottom-2 left-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">🔥 {left} left</span>}
-                    {left <= 0 && <span className="u-keep absolute bottom-2 left-2 rounded-full bg-slate-900/80 px-2 py-0.5 text-[11px] font-semibold text-white">Waitlist</span>}
+                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.cover || p.logo} bg={ROOM_BG.Events} className="h-56 w-52 sm:w-56">
+                  <span className="flex items-start justify-between gap-2">
+                    <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{fmtDate(p.date)}</span>
+                    <span className="u-keep rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
                   </span>
-                  <span className="block p-3">
-                    <span className="block truncate font-semibold text-slate-900">{p.title}</span>
-                    <span className="mt-0.5 block truncate text-xs text-slate-500">{p.time} · {p.where.split(",")[0]}</span>
+                  <span>
+                    {left > 0 && left <= 10 && <span className="mb-1.5 inline-block rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold">🔥 {left} left</span>}
+                    {left <= 0 && <span className="mb-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">Waitlist open</span>}
+                    <span className="line-clamp-2 block font-bold leading-snug">{p.title}</span>
+                    <span className="mt-0.5 block truncate text-xs text-white/75">{p.time} · {p.where.split(",")[0]}</span>
                   </span>
-                </button>
+                </Tile>
               );
             })}
           </Rail>
-        </Section>
+        </section>
       )}
 
-      <Section title="Popular clubs" sub="17 student societies across three rooms" onAll={goClubs}>
+      <section>
+        <Head eyebrow="Clubs" title="Most popular right now" onAll={() => goRoom()} />
         <Rail>
           {clubs.map((c) => (
-            <button key={c.id} onClick={() => setModal({ type: "club", id: c.id })}
-              className="u-card w-44 shrink-0 snap-start rounded-2xl border border-slate-200/60 bg-white p-3.5 text-left shadow-sm">
-              <span className="u-keep flex h-12 w-12 items-center justify-center rounded-xl text-2xl shadow-sm" style={{ background: ROOM_TILE[c.category] }}>{c.emoji}</span>
-              <span className="mt-3 block truncate font-semibold text-slate-900">{c.name}</span>
-              <span className="block truncate text-xs text-slate-500">{(CLUB_ROOMS.find((r) => r.k === c.category) || {}).label}</span>
-              <span className="mt-2 inline-flex items-center gap-1 text-xs text-slate-500"><Icon name="users" className="h-3.5 w-3.5" />{memberCount(c)} members</span>
-            </button>
-          ))}
-        </Rail>
-      </Section>
-
-      <Section title="Tryouts are open" sub="Represent UOWD in inter-university fixtures" onAll={goClubs}>
-        <Rail>
-          {teams.map((c) => (
-            <button key={c.id} onClick={() => setModal({ type: "club", id: c.id })}
-              className="u-keep u-card relative h-32 w-52 shrink-0 snap-start overflow-hidden rounded-2xl bg-slate-900 text-left text-white shadow-sm">
-              {c.backgroundImage && <img src={c.backgroundImage} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />}
-              <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-              <span className="absolute inset-x-3 bottom-2.5">
-                <span className="block font-semibold">{c.emoji} {c.name}</span>
-                <span className="block text-xs text-white/75">{memberCount(c)} players · {c.where}</span>
+            <Tile key={c.id} onClick={() => setModal({ type: "club", id: c.id })} bg={ROOM_BG[c.category]} className="h-44 w-44">
+              <span className="text-4xl drop-shadow" aria-hidden="true">{c.emoji}</span>
+              <span>
+                <span className="block text-[15px] font-bold leading-tight [hyphens:auto]" lang="en">{c.name}</span>
+                <span className="mt-0.5 block text-xs text-white/75">{memberCount(c)} members</span>
               </span>
-            </button>
+            </Tile>
           ))}
         </Rail>
-      </Section>
+      </section>
 
-      <Section title="How Unite works">
-        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {STEPS.map(([e, t, d], i) => (
-            <li key={t} className="relative rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm">
-              <span className="absolute right-4 top-3 text-3xl font-extrabold text-slate-100">{i + 1}</span>
-              <span className="text-2xl" aria-hidden="true">{e}</span>
-              <p className="mt-2 font-semibold text-slate-900">{t}</p>
-              <p className="mt-0.5 text-sm text-slate-500">{d}</p>
-            </li>
+      <section className="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm sm:p-6">
+        <Head eyebrow="How it works" title="From sign-in to the door in a minute" />
+        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+          <span className="absolute left-4 top-4 hidden h-px w-[calc(100%-2rem)] bg-slate-200 sm:block" aria-hidden="true" />
+          {STEPS.map(([t, d], i) => (
+            <div key={t} className="relative flex items-start gap-3 sm:block">
+              <span className="u-keep relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-sm font-bold text-white ring-4 ring-white">{i + 1}</span>
+              <span className="block sm:mt-3">
+                <span className="block font-semibold text-slate-900">{t}</span>
+                <span className="block text-sm text-slate-500">{d}</span>
+              </span>
+            </div>
           ))}
-        </ol>
-      </Section>
+        </div>
+      </section>
 
       <button onClick={hostEvent}
-        className="u-keep u-btn flex w-full items-center gap-4 rounded-3xl p-5 text-left text-white shadow-lg sm:p-6"
+        className="u-keep u-btn flex w-full items-center gap-4 rounded-3xl p-5 text-left text-white shadow-lg"
         style={{ background: "radial-gradient(100% 120% at 100% 0%, rgba(196,90,104,.6), transparent 60%), linear-gradient(135deg, #741629, #2e0811)" }}>
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-2xl" aria-hidden="true">🎤</span>
         <span className="min-w-0 flex-1">
           <span className="block text-lg font-bold">Got an idea? Host it on Unite</span>
-          <span className="block text-sm text-white/75">Parties, trips, tournaments: sell tickets and check guests in with QR.</span>
+          <span className="block text-sm text-white/75">Parties, trips, tournaments. Sell tickets, check guests in with QR.</span>
         </span>
-        <span className="hidden shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900 sm:block">Start →</span>
+        <span className="u-keep shrink-0 rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-900">Start</span>
       </button>
     </div>
   );
