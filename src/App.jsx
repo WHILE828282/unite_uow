@@ -120,6 +120,7 @@ export default function App() {
 
   useEffect(() => {
     try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
+    document.documentElement.classList.toggle("u-boot-dark", dark);
     document.documentElement.style.backgroundColor = dark ? "#070c18" : "#f8fafc";
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   }, [dark]);
