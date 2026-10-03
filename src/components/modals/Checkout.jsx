@@ -108,7 +108,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
 
   return (
     <Modal onClose={onClose}>
-      <div className="px-5 pb-6 pt-3">
+      <div className="px-5 pb-4 pt-3">
         <div className="mx-auto h-1 w-10 rounded-full bg-slate-200" />
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
@@ -130,7 +130,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
         <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1" role="radiogroup" aria-label="Payment method">
           {[["Apple Pay", "phone"], ["Card", "card"]].map(([m, icon]) => (
             <button key={m} role="radio" aria-checked={method === m} onClick={() => { setMethod(m); setErrors({}); }}
-              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold ${method === m ? "u-seg-on bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold ${method === m ? "u-keep bg-crimson-700 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
               <Icon name={icon} className="h-4 w-4" /> {m}
             </button>
           ))}
@@ -179,7 +179,10 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
           <div className="flex justify-between border-t border-slate-200/50 pt-2 font-semibold"><dt className="text-slate-900">Total</dt><dd className="tabular-nums text-slate-900">{amount} AED</dd></div>
         </dl>
 
-        <button onClick={confirm} className={`u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-slate-900 hover:bg-slate-800"}`}>
+      </div>
+      {/* Always in view: the pay button stays at the bottom of the sheet while you scroll. */}
+      <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white px-5 pt-3">
+        <button onClick={confirm} className={`u-btn flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-slate-900 hover:bg-slate-800"}`}>
           <Icon name="lock" className="h-4 w-4" /> Pay {amount} AED
         </button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Icon name="shield" className="h-3.5 w-3.5 text-emerald-600" /> Secured by Ziina · PCI DSS · 256-bit TLS</p>

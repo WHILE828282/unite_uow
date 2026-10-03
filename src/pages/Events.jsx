@@ -30,7 +30,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
             <span className="sr-only">Language</span>
             <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language"
               className="max-w-[10.5rem] rounded-lg border border-slate-200 bg-white py-1.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
-              {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "All languages" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
+              {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "Language" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
             </select>
           </label>
           <button onClick={hostEvent} className="u-btn shrink-0 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-800">+ Host</button>

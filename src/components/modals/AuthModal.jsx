@@ -144,7 +144,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted }) {
         {step === "email" && (
           <>
             <div className="flex flex-col items-center">
-              <UniteIcon className="h-24 w-24 shadow-lg" />
+              <UniteIcon className="h-16 w-16 shadow-lg" />
               <span className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">unite</span>
             </div>
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">Campus Login</h2>

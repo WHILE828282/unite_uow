@@ -470,9 +470,9 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
           <button onClick={onClose} disabled={submitting} aria-label="Close"
             style={{ top: "max(1.25rem, calc(var(--sat) + 0.5rem))", right: "max(1.25rem, calc(var(--sar) + 0.75rem))" }}
             className="u-keep absolute z-10 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
-          <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events · Step {typeStep ? 1 : preview ? 3 : 2} of 3</p>
+          <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300"><span className="hidden sm:inline">Unite · Student events · </span>Step {typeStep ? 1 : preview ? 3 : 2} of 3</p>
           <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : typeStep ? "What are you hosting?" : "Host an event"}</h2>
-          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Choose the type first. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
+          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Tap the one that fits. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
         </div>
 
         {/* Body */}
@@ -482,7 +482,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               {EVENT_KINDS.map((x) => {
                 const on = f.kind === x.k;
                 return (
-                  <button key={x.k} type="button" role="radio" aria-checked={on} onClick={() => setF((y) => ({ ...y, kind: x.k }))}
+                  <button key={x.k} type="button" role="radio" aria-checked={on} onClick={() => { setF((y) => ({ ...y, kind: x.k })); setTimeout(() => setStep("form"), 180); }}
                     className={`u-keep flex w-full items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.99] sm:p-6 ${on ? "border-crimson-500 bg-crimson-700/15 shadow-[0_0_0_3px_rgba(196,90,104,0.18)]" : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"}`}>
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-2xl ring-1 ring-white/10" aria-hidden="true">{x.emoji}</span>
                     <span className="min-w-0 flex-1">
