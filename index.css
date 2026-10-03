@@ -197,8 +197,3 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
   .u-dark :where(.hover\:bg-sky-100:not(.u-keep)):hover { background-color: rgba(14, 165, 233, 0.22); }
   .u-dark .u-card:hover { border-color: rgba(196, 90, 104, 0.5); box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.7); }
 }
-
-/* Hero photos: slow zoom while a photo is on screen. */
-@keyframes uKen { from { transform: scale(1.04); } to { transform: scale(1.14); } }
-.u-ken { animation: uKen 7.5s ease-out both; }
-@media (prefers-reduced-motion: reduce) { .u-ken { animation: none; } }

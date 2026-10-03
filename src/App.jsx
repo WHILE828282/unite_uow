@@ -30,7 +30,6 @@ import { CreateModal } from "./pages/HostEvent.jsx";
 import { MyEvents } from "./pages/MyEvents.jsx";
 import { MySchedulePage } from "./pages/MySchedule.jsx";
 import { MyTickets } from "./pages/MyTickets.jsx";
-import HeroShow from "./components/HeroShow.jsx";
 import { TeamsClubs } from "./pages/TeamsClubs.jsx";
 
 // Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
@@ -491,61 +490,44 @@ export default function App() {
         })}
         onSignIn={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} />
 
-      {/* Hero: real team photos behind white type (same in both themes); fades into the page at the bottom. */}
-      <section className="u-keep relative isolate">
-        <HeroShow fade={dark ? "#0a192f" : "#f8fafc"} />
-        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-20 pt-10 sm:pt-14" : "pb-24 pt-16 sm:pb-32 sm:pt-24"}`}>
+      {/* Hero: explicit light and dark text/control palettes (u-keep opts out of the dark remap) */}
+      {/* No background of its own: the hero shows the page background, so it is seamless in both themes. */}
+      <section className="u-keep relative">
+        <div className={`relative mx-auto max-w-5xl px-4 ${user ? "pb-12 pt-6 sm:pt-8" : "pb-14 pt-9 sm:pt-14"}`}>
           {user ? (
             <>
-              <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
-              {(nextUp || myClubs > 0) && <div className="mt-4 grid max-w-2xl gap-2.5 sm:grid-cols-2">
+              <h1 className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>Hi, {name ? name.split(" ")[0] : firstName(user)}</h1>
+              {(nextUp || myClubs > 0) && <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
                 {[
-                  nextUp ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open } : null,
-                  myClubs === 0 ? null
+                  nextUp
+                    ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open }
+                    : null,
+                  myClubs === 0
+                    ? null
                     : { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") },
                 ].filter(Boolean).map((x) => (
-                  <button key={x.k} onClick={x.go} className="u-keep u-btn min-w-0 rounded-2xl bg-white/10 p-3.5 text-left ring-1 ring-white/15 backdrop-blur-md hover:bg-white/15">
-                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-crimson-200">{x.k}</span>
-                    <span className="mt-1 block truncate font-semibold text-white">{x.t}</span>
-                    <span className="mt-0.5 block truncate text-sm text-slate-300">{x.d}</span>
+                  <button key={x.k} onClick={x.go}
+                    className={`u-keep u-btn min-w-0 rounded-2xl p-3.5 text-left ${dark ? "hover:bg-white/10" : "bg-white ring-1 ring-slate-200 hover:ring-slate-300"}`} style={dark ? glassChip : undefined}>
+                    <span className={`block text-[11px] font-semibold uppercase tracking-wider ${dark ? "text-crimson-200" : "text-crimson-700"}`}>{x.k}</span>
+                    <span className={`mt-1 block truncate font-semibold ${dark ? "text-white" : "text-gray-900"}`}>{x.t}</span>
+                    <span className={`mt-0.5 block truncate text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>{x.d}</span>
                   </button>
                 ))}
               </div>}
             </>
           ) : (
             <>
-              <h1 className="u-inst-rise max-w-2xl text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl" style={{ animationDelay: "80ms" }}>
-                Where UOWD comes together.
-              </h1>
-              <p className="u-inst-rise mt-4 max-w-md text-base text-slate-200 sm:text-lg" style={{ animationDelay: "160ms" }}>Teams, clubs and student events, all in one place.</p>
-              <p className="u-inst-rise mt-5 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-300" style={{ animationDelay: "240ms" }}>
-                <button onClick={() => jumpTo("clubs")} className="u-keep hover:text-white"><b className="text-white">{clubs.length}</b> teams & clubs</button>
-                <button onClick={() => jumpTo("parties")} className="u-keep hover:text-white"><b className="text-white">{upcoming.length}</b> upcoming events</button>
-              </p>
+            <h1 className={`max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl ${dark ? "text-white" : "text-gray-900"}`}>
+              Where UOWD comes together.
+            </h1>
+            <p className={`mt-3 max-w-lg ${dark ? "text-slate-300" : "text-gray-600"}`}>Teams, clubs and student events at UOWD, all in one place.</p>
             </>
           )}
-          {upcoming.length > 0 && (
-            <div className="u-inst-rise mt-8" style={{ animationDelay: "320ms" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">Coming up</p>
-              <div className="-mx-4 mt-2 flex gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-                {upcoming.slice(0, 4).map((p) => {
-                  const d = new Date(p.date + "T00:00:00");
-                  return (
-                    <button key={p.id} onClick={() => setModal({ type: "detail", id: p.id })}
-                      className="u-keep u-btn flex w-60 shrink-0 items-center gap-3 rounded-2xl bg-white/10 p-2.5 text-left ring-1 ring-white/15 backdrop-blur-md hover:bg-white/15">
-                      <span className="flex h-12 w-11 shrink-0 flex-col items-center justify-center rounded-xl bg-white/95 leading-none">
-                        <span className="text-[10px] font-semibold uppercase text-crimson-700">{d.toLocaleDateString("en-GB", { month: "short" })}</span>
-                        <span className="mt-0.5 text-lg font-bold text-slate-900">{d.getDate()}</span>
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-white">{p.title}</span>
-                        <span className="block truncate text-xs text-slate-300">{p.time} · {p.price > 0 ? `${p.price} AED` : "Free"}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          {!user && (
+            <p className={`mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm ${dark ? "text-slate-400" : "text-gray-500"}`}>
+              <button onClick={() => jumpTo("clubs")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{clubs.length}</b> teams & clubs</button>
+              <button onClick={() => jumpTo("parties")} className="u-keep hover:underline"><b className={dark ? "text-white" : "text-gray-900"}>{upcoming.length}</b> upcoming events</button>
+            </p>
           )}
         </div>
       </section>
