@@ -9,7 +9,7 @@ import { STATUS_BAR_STRIP, glassChip, glassDark } from "../lib/styles.js";
 export function ThemeToggle({ dark, onToggle }) {
   return (
     <button onClick={onToggle} role="switch" aria-checked={dark} aria-label="Dark mode" title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${dark ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
+      className={`u-keep u-btn relative flex h-9 w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${dark ? "text-slate-200 hover:text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-900"}`}
       style={dark ? glassChip : undefined}>
       <span className="absolute inset-0 flex items-center justify-center" style={{ transition: "transform .35s cubic-bezier(.2,.8,.2,1), opacity .25s", transform: dark ? "rotate(90deg) scale(.5)" : "none", opacity: dark ? 0 : 1 }}>
         <Icon name="moon" className="h-[18px] w-[18px]" />
@@ -22,7 +22,7 @@ export function ThemeToggle({ dark, onToggle }) {
 }
 
 /* Avatar in the header; tap for account details, shortcuts and Sign out. */
-export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedule, onSignOut }) {
+export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedule, onSignOut, onMyEvents, up = false, label = "Account", triggerClass }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -36,12 +36,12 @@ export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedul
   const go = (fn) => () => { setOpen(false); fn(); };
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label="Account"
-        className="u-keep flex h-9 w-9 items-center justify-center rounded-full bg-crimson-700 text-xs font-bold text-white ring-2 ring-transparent hover:ring-crimson-200">
+      <button onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label={label}
+        className={triggerClass || "u-keep flex h-9 w-9 items-center justify-center rounded-full bg-crimson-700 text-xs font-bold text-white ring-2 ring-transparent hover:ring-crimson-200"}>
         {name ? nameInitials(name) : initials(email)}
       </button>
       {open && (
-        <div role="menu" className={`u-keep u-fade absolute right-0 top-11 z-40 w-64 rounded-2xl p-1.5 shadow-xl ring-1 ${dark ? "bg-[#112240] ring-white/10" : "bg-white ring-slate-200"}`}>
+        <div role="menu" className={`u-keep u-fade absolute right-0 ${up ? "bottom-full mb-3" : "top-11"} z-40 w-64 rounded-2xl p-1.5 shadow-xl ring-1 ${dark ? "bg-[#112240] ring-white/10" : "bg-white ring-slate-200"}`}>
           <div className="px-3 pb-2 pt-2">
             {name && <p className={`truncate text-sm font-semibold ${dark ? "text-white" : "text-slate-900"}`}>{name}</p>}
             <p className={`truncate text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>{email}{studentId ? ` · ID ${studentId}` : ""}</p>
@@ -49,6 +49,7 @@ export function AccountMenu({ name, email, studentId, dark, onTickets, onSchedul
           <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
           <button role="menuitem" onClick={go(onTickets)} className={item}><Icon name="ticket" /> My tickets</button>
           <button role="menuitem" onClick={go(onSchedule)} className={item}><Icon name="calendar" /> My schedule</button>
+          {onMyEvents && <button role="menuitem" onClick={go(onMyEvents)} className={item}><Icon name="party" /> My events</button>}
           <div className={`my-1 h-px ${dark ? "bg-white/10" : "bg-slate-100"}`} />
           <button role="menuitem" onClick={go(onSignOut)} className={`${item} ${dark ? "!text-rose-300" : "!text-rose-600"}`}><Icon name="lock" /> Sign out</button>
         </div>

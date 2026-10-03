@@ -1,0 +1,159 @@
+import { useId } from "react";
+
+/* Unite glass icons. Solid shapes with a soft top-to-bottom sheen (currentColor), an accent colour for the
+   highlight part (var(--icon-accent), crimson by default) and a soft drop shadow that sits slightly outside the
+   icon (so don't put icons in overflow-hidden boxes).
+   Portals-style states: active = color #FFFFFF with the default accent; inactive = color and --icon-accent both
+   rgba(255,255,255,0.28), so the whole icon fades.
+   Layers per icon, drawn in order: f = filled body, a = filled accent, s = body stroke, sa = accent stroke. */
+
+const C = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0z`;
+const ACCENT = "#e11d48";
+
+export const ICONS = {
+  calendar: [
+    ["f", "M6 5h12a3 3 0 013 3v10a3 3 0 01-3 3H6a3 3 0 01-3-3V8a3 3 0 013-3z" + C(8, 14, 1) + C(12, 14, 1) + C(16, 14, 1) + C(8, 17.6, 1) + C(12, 17.6, 1)],
+    ["a", "M6 5h12a3 3 0 013 3v2H3V8a3 3 0 013-3z"],
+    ["f", "M8.2 2.6a1 1 0 011 1v3a1 1 0 01-2 0v-3a1 1 0 011-1zM15.8 2.6a1 1 0 011 1v3a1 1 0 01-2 0v-3a1 1 0 011-1z"],
+  ],
+  ticket: [
+    ["f", "M3 8a2 2 0 012-2h14a2 2 0 012 2v2.2a1.8 1.8 0 000 3.6V16a2 2 0 01-2 2H5a2 2 0 01-2-2v-2.2a1.8 1.8 0 000-3.6V8zM15 7.6h1.2v1.6H15zM15 11.2h1.2v1.6H15zM15 14.8h1.2v1.6H15z"],
+    ["a", "M9.5 9L10.26 10.95L12.35 11.07L10.74 12.4L11.26 14.43L9.5 13.3L7.74 14.43L8.26 12.4L6.65 11.07L8.74 10.95Z"],
+  ],
+  trophy: [
+    ["f", "M7 3h10v5a5 5 0 01-10 0V3zM12 5.3L11.5 6.61L10.1 6.68L11.19 7.56L10.82 8.92L12 8.15L13.18 8.92L12.81 7.56L13.9 6.68L12.5 6.61Z"],
+    ["f", "M7 4.3H4v1.7a3.6 3.6 0 003.7 3.6l-.3-1.7A1.9 1.9 0 015.7 6V6H7zM17 4.3h3v1.7a3.6 3.6 0 01-3.7 3.6l.3-1.7A1.9 1.9 0 0018.3 6V6H17zM11 12.6h2v4h-2z"],
+    ["a", "M7.8 17h8.4a1.3 1.3 0 011.3 1.3V21h-11v-2.7A1.3 1.3 0 017.8 17z"],
+  ],
+  party: [
+    ["f", "M3.6 20.4l4.6-12.2 7.6 7.6zM6.6 15.2l2.2 2.2-1.6.6-1.2-1.2z"],
+    ["a", C(14.6, 4.4, 1.1) + C(19.6, 8.2, 1.2) + C(18.6, 13.8, 0.9) + "M10.6 2.8l1.7 1.1-1 1.5-1.7-1.1zM16.6 9.6c1.1-.9 2.4-1 3.4-.4l-.5 1c-.7-.4-1.5-.3-2.2.3z"],
+  ],
+  pin: [
+    ["f", "M11.2 10.5h1.6l-.3 9.4a.5.5 0 01-1 0z" + "M9 21a3 .8 0 106 0 3 .8 0 10-6 0z"],
+    ["a", C(12, 7, 4.2)],
+  ],
+  people: [
+    ["f", C(5.6, 9, 2.1) + C(18.4, 9, 2.1) + "M1.5 18.6a4 4 0 016.3-3.3A6.6 6.6 0 006.2 19.5H2a.5.5 0 01-.5-.5zM22.5 18.6a4 4 0 00-6.3-3.3 6.6 6.6 0 011.6 4.2H22a.5.5 0 00.5-.5z"],
+    ["a", C(12, 7.6, 2.9) + "M7 19.3a5 5 0 0110 0v.4a.6.6 0 01-.6.6H7.6a.6.6 0 01-.6-.6z"],
+  ],
+  person: [
+    ["f", C(12, 7.5, 4) + "M4.5 20.4a7.5 7.5 0 0115 0 .6.6 0 01-.6.6H5.1a.6.6 0 01-.6-.6z"],
+  ],
+  clock: [
+    ["f", C(12, 12, 9.5)],
+    ["a", "M11.2 6.4h1.6v5.3l3.3 2.1-.85 1.35-4.05-2.55z"],
+  ],
+  megaphone: [
+    ["f", "M3 10a1.2 1.2 0 011.2-1.2H7L16 4v16l-9-4.8H4.2A1.2 1.2 0 013 14zM6.6 15.6l1.3 4.6h2.5l-1.1-4.6z"],
+    ["a", "M18.1 8.4a4.9 4.9 0 010 7.2l-1.1-1.1a3.3 3.3 0 000-5z"],
+  ],
+  "plus-circle": [
+    ["a", C(12, 12, 9.5)],
+    ["f", "M11 7h2v4h4v2h-4v4h-2v-4H7v-2h4z"],
+  ],
+  home: [
+    ["f", "M12 3.2l8.6 7.3a1.1 1.1 0 01.4.8v8.9a1.5 1.5 0 01-1.5 1.5H15v-5.6a1.1 1.1 0 00-1.1-1.1h-3.8A1.1 1.1 0 009 16.1v5.6H4.5A1.5 1.5 0 013 20.2v-8.9a1.1 1.1 0 01.4-.8z"],
+    ["a", "M10 16.2h4v5.5h-4z"],
+  ],
+  bell: [
+    ["f", "M12 3a6 6 0 016 6v3.6l1.6 3a1 1 0 01-.9 1.5H5.3a1 1 0 01-.9-1.5l1.6-3V9a6 6 0 016-6zM9.8 18.5h4.4a2.2 2.2 0 01-4.4 0z"],
+    ["a", C(18.4, 5, 2.6)],
+  ],
+  star: [
+    ["f", "M12 2.8L14.35 9.06L21.04 9.36L15.8 13.54L17.58 19.99L12 16.3L6.42 19.99L8.2 13.54L2.96 9.36L9.65 9.06Z"],
+  ],
+  sun: [
+    ["s", "M12 2.5v2M12 19.5v2M4.6 4.6L6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"],
+    ["a", C(12, 12, 4.3)],
+  ],
+  moon: [
+    ["f", "M20 14.6A8.5 8.5 0 019.4 4a8.5 8.5 0 1010.6 10.6z"],
+    ["a", "M17 3.7L17.44 4.89L18.71 4.94L17.71 5.73L18.06 6.96L17 6.25L15.94 6.96L16.29 5.73L15.29 4.94L16.56 4.89Z"],
+  ],
+  lock: [
+    ["s", "M8 10.5V7.5a4 4 0 018 0v3"],
+    ["f", "M6.5 10.5h11a1.5 1.5 0 011.5 1.5v7.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 015 19.5V12a1.5 1.5 0 011.5-1.5z"],
+    ["a", C(12, 15.2, 1.6)],
+  ],
+  shield: [
+    ["f", "M12 2.5l8 3.2v5.8c0 5-3.4 9-8 10.5-4.6-1.5-8-5.5-8-10.5V5.7z"],
+    ["sa", "M8.5 12l2.5 2.5 4.5-5"],
+  ],
+  card: [
+    ["f", "M5 5h14a2.5 2.5 0 012.5 2.5v9A2.5 2.5 0 0119 19H5a2.5 2.5 0 01-2.5-2.5v-9A2.5 2.5 0 015 5z"],
+    ["a", "M2.5 8.6h19v2.6h-19zM6 14.5h4v1.6H6z"],
+  ],
+  phone: [
+    ["f", "M8 2.5h8A1.5 1.5 0 0117.5 4v16a1.5 1.5 0 01-1.5 1.5H8A1.5 1.5 0 016.5 20V4A1.5 1.5 0 018 2.5z"],
+    ["a", "M10.5 18.3h3v1.3h-3z"],
+  ],
+  mail: [
+    ["f", "M5.5 5h13A2.5 2.5 0 0121 7.5v9a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 16.5v-9A2.5 2.5 0 015.5 5z"],
+    ["sa", "M4 7.5l8 5.8 8-5.8"],
+  ],
+  globe: [
+    ["f", C(12, 12, 9.5)],
+    ["sa", "M3.5 12h17M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9s1.2-6.4 3.6-9z"],
+  ],
+  image: [
+    ["f", "M6 4.5h12A2.5 2.5 0 0120.5 7v10a2.5 2.5 0 01-2.5 2.5H6A2.5 2.5 0 013.5 17V7A2.5 2.5 0 016 4.5z"],
+    ["a", C(15.5, 9, 1.8)],
+    ["sa", "M5 17l4.5-4.5 4 4 2.5-2.5 3 3"],
+  ],
+  laptop: [
+    ["f", "M5.5 5h13A1.5 1.5 0 0120 6.5V16H4V6.5A1.5 1.5 0 015.5 5zM2 17h20v.8A1.7 1.7 0 0120.3 19.5H3.7A1.7 1.7 0 012 17.8z"],
+    ["a", "M6 7h12v7H6z"],
+  ],
+  chart: [
+    ["f", "M4 20.5h16.5v1.3H4zM5 14h3v5.5H5zM10.5 10.5h3v9h-3zM16 7h3v12.5h-3z"],
+    ["sa", "M4.5 11l5-4.5 4 2.5 6-5"],
+  ],
+  palette: [
+    ["f", "M12 3a9 9 0 000 18c1.4 0 2-1 1.6-2.2-.4-1.2.4-2.3 1.7-2.3H18a3 3 0 003-3A9 9 0 0012 3z" + C(7.5, 11.5, 1.3) + C(10, 7.3, 1.3) + C(15, 7.6, 1.3)],
+    ["a", C(7.5, 11.5, 1.3) + C(15, 7.6, 1.3)],
+  ],
+  // Line icons: drawn as soft glass strokes.
+  share: [["s", "M8.5 9.5H7a2 2 0 00-2 2V18a2 2 0 002 2h10a2 2 0 002-2v-6.5a2 2 0 00-2-2h-1.5M12 14V3.5M8.6 6.9L12 3.5l3.4 3.4"]],
+  search: [["s", "M10.5 17.5a7 7 0 100-14 7 7 0 000 14zM15.5 15.5l5 5"]],
+  close: [["s", "M6 6l12 12M18 6L6 18"]],
+  "chevron-down": [["s", "M6 9l6 6 6-6"]],
+  filter: [["s", "M4 7h16M7 12h10M10 17h4"]],
+  sort: [["s", "M8 4v16M4.5 7.5L8 4l3.5 3.5M16 20V4M12.5 16.5L16 20l3.5-3.5"]],
+  plus: [["s", "M12 5v14M5 12h14"]],
+  arrow: [["s", "M4.5 12h15M13 5.5l6.5 6.5-6.5 6.5"]],
+  check: [["s", "M4.5 12.5l5 5 10-11"]],
+};
+// Same names as before.
+ICONS.users = ICONS.people;
+ICONS.user = ICONS.person;
+ICONS.chevron = ICONS["chevron-down"];
+
+export const Icon = ({ name, className = "h-4 w-4" }) => {
+  const id = useId().replace(/:/g, "");
+  const layers = ICONS[name] || ICONS.check;
+  const g = `${id}g`, ga = `${id}a`, sh = `${id}s`;
+  return (
+    <svg viewBox="0 0 24 24" className={className} overflow="visible" aria-hidden="true">
+      <defs>
+        <linearGradient id={g} gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22">
+          <stop offset="0" style={{ stopColor: "currentColor", stopOpacity: 1 }} />
+          <stop offset="1" style={{ stopColor: "currentColor", stopOpacity: 0.74 }} />
+        </linearGradient>
+        <linearGradient id={ga} gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22">
+          <stop offset="0" style={{ stopColor: `var(--icon-accent, ${ACCENT})`, stopOpacity: 1 }} />
+          <stop offset="1" style={{ stopColor: `var(--icon-accent, ${ACCENT})`, stopOpacity: 0.82 }} />
+        </linearGradient>
+        <filter id={sh} x="-30%" y="-30%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="0.8" stdDeviation="0.8" floodColor="#000" floodOpacity="0.28" />
+        </filter>
+      </defs>
+      <g filter={`url(#${sh})`}>
+        {layers.map(([t, d], i) =>
+          t === "f" ? <path key={i} d={d} fill={`url(#${g})`} fillRule="evenodd" />
+            : t === "a" ? <path key={i} d={d} fill={`url(#${ga})`} fillRule="evenodd" />
+            : <path key={i} d={d} fill="none" stroke={`url(#${t === "sa" ? ga : g})`} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />)}
+      </g>
+    </svg>
+  );
+};

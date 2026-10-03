@@ -21,28 +21,32 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
   );
 }
 
-/* Phones: the same sections as an app-style bar at the bottom, in reach of the thumb (the top tabs are hidden there).
-   Hidden while typing so it never sits on top of the keyboard. */
-const NAV_ICON = { home: "home", clubs: "users", parties: "calendar", schedule: "clock", tickets: "ticket", events: "user" };
-export function BottomNav({ tabs, tab, changeTab, user, bookings, myEventItems }) {
+/* Phones: Portals-style floating glass bar at the bottom (thumb reach), plus a separate round profile button.
+   Active item: white icon and label on a lighter glass capsule; inactive: icon and label fade to 28% white.
+   Hidden while typing so it never sits on top of the keyboard. "My events" lives in the profile menu. */
+const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
+const FADED = "rgba(255,255,255,0.28)";
+export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   return (
-    <nav aria-label="Sections" className="u-keep u-hide-typing u-bottomnav fixed inset-x-0 bottom-0 z-30 border-t sm:hidden" style={{ paddingBottom: "var(--sabx)" }}>
-      <div className="mx-auto flex max-w-md">
-        {tabs.map(([k, l, short]) => {
+    <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-2 px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
+      <div className="u-glass-bar flex min-w-0 flex-1 items-center gap-0.5 rounded-[30px] p-1.5">
+        {tabs.filter(([k]) => k !== "events").map(([k, , short]) => {
           const on = tab === k;
-          const badge = k === "tickets" && user && bookings.length ? bookings.length : k === "events" ? myEventItems.filter(({ r }) => r.status === "review").length : 0;
+          const badge = k === "tickets" && user && bookings.length ? bookings.length : 0;
           return (
             <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
-              className={`u-keep relative flex flex-1 flex-col items-center gap-0.5 pb-2 pt-2.5 text-[11px] font-semibold ${on ? "u-nav-on" : "u-nav-off"}`}>
-              <span className={`relative flex h-7 w-12 items-center justify-center rounded-full transition-colors ${on ? "u-nav-pill" : ""}`}>
-                <Icon name={NAV_ICON[k] || "chevron"} className="h-5 w-5" />
-                {badge > 0 && <span className="absolute -right-0.5 -top-1 min-w-[1.1rem] rounded-full bg-crimson-600 px-1 text-center text-[10px] leading-[1.1rem] text-white">{badge}</span>}
+              className={`u-keep relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-[24px] px-1 pb-1.5 pt-2 text-[10.5px] font-semibold transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
+              style={on ? { color: "#FFFFFF" } : { color: FADED, "--icon-accent": FADED }}>
+              <span className="relative">
+                <Icon name={NAV_ICON[k] || "home"} className="h-[22px] w-[22px]" />
+                {badge > 0 && <span className="absolute -right-2.5 -top-1.5 min-w-[1rem] rounded-full bg-crimson-600 px-1 text-center text-[9.5px] leading-4 text-white">{badge}</span>}
               </span>
-              {short}
+              <span className="truncate">{short}</span>
             </button>
           );
         })}
       </div>
+      {side}
     </nav>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { isStandalone } from "../install.js";
 import { applyUpdate } from "../updates.js";
 import { GetAppBadges, InstallBanner } from "./components/GetApp.jsx";
-import { Header } from "./components/Header.jsx";
+import { AccountMenu, Header } from "./components/Header.jsx";
 import { PullToRefresh } from "./components/PullToRefresh.jsx";
 import { BottomNav, Tabs } from "./components/Tabs.jsx";
 import { Ticket } from "./components/Ticket.jsx";
@@ -730,8 +730,22 @@ export default function App() {
         </footer>
       </main>
 
-      <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} myEventItems={myEventItems}
-        changeTab={changeTab} />
+      <BottomNav tabs={tabs} tab={tab} user={user} bookings={bookings} changeTab={changeTab}
+        side={user ? (
+          <AccountMenu name={name} email={user} studentId={studentIdRef.current} dark up label="Profile"
+            triggerClass="u-keep u-glass-round flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+            onTickets={() => jumpTo("tickets")} onSchedule={() => jumpTo("schedule")} onMyEvents={showMyEvents ? () => jumpTo("events") : undefined}
+            onSignOut={() => setModal({
+              type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
+              confirmLabel: "Sign out", danger: true,
+              onConfirm: () => { setModal(null); setUser(null); setName(""); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
+            })} />
+        ) : (
+          <button onClick={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} aria-label="Sign in"
+            className="u-keep u-glass-round flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-full text-white">
+            <Icon name="person" className="h-6 w-6" />
+          </button>
+        )} />
       <InstallBanner />
       <PullToRefresh />
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { dubaiStart } from "../components/cards.jsx";
+import { Icon } from "../components/icons/Icon.jsx";
 import { fmtDate } from "../lib/format.js";
 
 /* Home: its own page, not a copy of the others. A dark photo-collage hero (with the launch party built in), a grid of
@@ -140,12 +141,12 @@ const STEPS = [
 
 export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
   const explore = [
-    ["Events", "🎉", "Parties & events", `${upcomingCount} upcoming`, goEvents],
-    ["Sports", "🏆", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
-    ["Tech", "💻", "Tech & E-sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
-    ["Business", "📈", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
-    ["Arts", "🎨", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
-    ["Host", "🎤", "Host an event", "Sell tickets with QR", hostEvent],
+    ["Events", "party", "Parties & events", `${upcomingCount} upcoming`, goEvents],
+    ["Sports", "trophy", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
+    ["Tech", "laptop", "Tech & E-sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
+    ["Business", "chart", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
+    ["Arts", "palette", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
+    ["Host", "megaphone", "Host an event", "Sell tickets with QR", hostEvent],
   ];
   return (
     <div className="space-y-12 pt-2">
@@ -154,7 +155,7 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {explore.map(([k, e, t, d, go]) => (
             <Tile key={k} onClick={go} bg={ROOM_BG[k]} className="h-28 w-full sm:h-32">
-              <span className="text-3xl drop-shadow-sm" aria-hidden="true">{e}</span>
+              <span className="u-glass-tile flex h-12 w-12 items-center justify-center rounded-2xl" style={{ color: "#FFFFFF" }}><Icon name={e} className="h-7 w-7" /></span>
               <span><span className="block text-sm font-bold leading-tight">{t}</span><span className="block text-xs text-white/75">{d}</span></span>
             </Tile>
           ))}

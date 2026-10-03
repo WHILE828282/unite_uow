@@ -1,6 +1,7 @@
 import { dayTag, shortVenue } from "../lib/format.js";
 import { tgHandle, waDigits } from "../lib/maps.js";
 import { qrMatrix } from "../lib/qr.js";
+import { ICONS, Icon } from "./icons/Icon.jsx";
 
 
 
@@ -15,43 +16,8 @@ export const Check = ({ className = "h-3.5 w-3.5" }) => (
   </svg>
 );
 
-// Outline icons with a crimson accent dot (Unite icon set). `d`: stroked path; `dot`: [cx, cy, r] filled accent.
-const ACCENT = "#e11d48";
-export const ICONS = {
-  home: { d: "M3.5 10.5L12 3.5l8.5 7M5.5 9v10a1.5 1.5 0 001.5 1.5h10a1.5 1.5 0 001.5-1.5V9", dot: [12, 15.5, 1.8] },
-  calendar: { d: "M4 7.5A2.5 2.5 0 016.5 5h11A2.5 2.5 0 0120 7.5v10a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-10zM4 10h16M8.5 3v4M15.5 3v4", dot: [15.5, 15.5, 1.6] },
-  pin: { d: "M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z", dot: [12, 10, 2.3] },
-  users: { d: "M5.5 20v-.5A4.5 4.5 0 0110 15h4a4.5 4.5 0 014.5 4.5v.5M2.5 17.5v-.3A3.2 3.2 0 015 14.1M21.5 17.5v-.3a3.2 3.2 0 00-2.5-3.1M5.5 9.3a2.2 2.2 0 100-4.4 2.2 2.2 0 000 4.4zM18.5 9.3a2.2 2.2 0 100-4.4 2.2 2.2 0 000 4.4z", dot: [12, 9, 3] },
-  user: { d: "M5.5 21v-1a6.5 6.5 0 0113 0v1", dot: [12, 7.5, 3.5] },
-  clock: { d: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 7.5V12l3 2", dot: [12, 12, 1.4] },
-  share: { d: "M9 9.5H7.5a2 2 0 00-2 2V18a2 2 0 002 2h9a2 2 0 002-2v-6.5a2 2 0 00-2-2H15M12 14V3.5M8.75 6.75L12 3.5l3.25 3.25" },
-  sun: { d: "M12 2.5v2M12 19.5v2M4.6 4.6L6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4", dot: [12, 12, 4] },
-  moon: { d: "M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z", dot: [18.5, 4.5, 1.4] },
-  chevron: { d: "M6 9l6 6 6-6" },
-  image: { d: "M3.5 7A2.5 2.5 0 016 4.5h12A2.5 2.5 0 0120.5 7v10a2.5 2.5 0 01-2.5 2.5H6A2.5 2.5 0 013.5 17V7zM3.5 16l5-5 4.5 4.5 2.5-2.5 5 5", dot: [15.5, 9, 1.6] },
-  ticket: { d: "M3.5 7.5A2 2 0 015.5 5.5h13a2 2 0 012 2v2a2.5 2.5 0 000 5v2a2 2 0 01-2 2h-13a2 2 0 01-2-2v-2a2.5 2.5 0 000-5v-2zM14.5 6v2M14.5 11v2M14.5 16v2", dot: [9, 12, 1.6] },
-  close: { d: "M6 6l12 12M18 6L6 18" },
-  plus: { d: "M12 5v14M5 12h14" },
-  arrow: { d: "M4.5 12h15M13 5.5l6.5 6.5-6.5 6.5" },
-  check: { d: "M4.5 12.5l5 5 10-11" },
-  search: { d: "M10.5 17.5a7 7 0 100-14 7 7 0 000 14zM15.5 15.5l5 5" },
-  lock: { d: "M6.5 11h11a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 015 19.5v-7A1.5 1.5 0 016.5 11zM8 11V7.5a4 4 0 018 0V11", dot: [12, 16, 1.5] },
-  shield: { d: "M12 3l7.5 3v5.5c0 4.6-3.2 8.4-7.5 9.5-4.3-1.1-7.5-4.9-7.5-9.5V6L12 3zM9 12l2 2 4-4" },
-  card: { d: "M3 7.5A2.5 2.5 0 015.5 5h13A2.5 2.5 0 0121 7.5v9a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 16.5v-9zM3 10h18M7 15h3" },
-  phone: { d: "M8 2.5h8A1.5 1.5 0 0117.5 4v16a1.5 1.5 0 01-1.5 1.5H8A1.5 1.5 0 016.5 20V4A1.5 1.5 0 018 2.5zM11 18.5h2" },
-  mail: { d: "M3 7.5A2.5 2.5 0 015.5 5h13A2.5 2.5 0 0121 7.5v9a2.5 2.5 0 01-2.5 2.5h-13A2.5 2.5 0 013 16.5v-9zM3.5 7l8.5 6.5L20.5 7" },
-  globe: { d: "M12 21a9 9 0 100-18 9 9 0 000 18zM3.5 9h17M3.5 15h17M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9s1.2-6.4 3.6-9z" },
-};
-ICONS.people = ICONS.users; ICONS.person = ICONS.user;
-export const Icon = ({ name, className = "h-4 w-4" }) => {
-  const ic = ICONS[name] || ICONS.check;
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={ic.d} />
-      {ic.dot && <circle cx={ic.dot[0]} cy={ic.dot[1]} r={ic.dot[2]} fill={ACCENT} stroke="none" />}
-    </svg>
-  );
-};
+// Icons live in components/icons/Icon.jsx (glass set); re-exported here so existing imports keep working.
+export { ICONS, Icon };
 export const InfoIcon = ({ name }) => (
   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200/70"><Icon name={name} /></span>
 );
