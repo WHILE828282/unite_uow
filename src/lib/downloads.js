@@ -27,7 +27,7 @@ export function downloadTicket(b) {
   g.fillStyle = "#fff"; font(700, 40); g.fillText(clip(b.title, 26), 48, 206);
   font(500, 26); g.fillStyle = "#e0e7ff"; g.fillText(`${fmtDate(b.date)} · ${b.time}`, 48, 250);
   g.fillStyle = "#fff"; rr(36, 320, W - 72, 740, 36); g.fill();
-  const m = qrMatrix(b.id), S = 14, qx = (W - 21 * S) / 2, qy = 360;
+  const m = qrMatrix(b.qr || b.id), S = Math.floor(294 / m.length), qx = (W - m.length * S) / 2, qy = 360;
   g.fillStyle = "#0f172a";
   m.forEach((row, y) => row.forEach((d, x) => { if (d) g.fillRect(qx + x * S, qy + y * S, S, S); }));
   g.textAlign = "center";

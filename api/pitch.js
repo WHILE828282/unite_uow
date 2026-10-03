@@ -3,7 +3,7 @@
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
 import crypto from "node:crypto";
-import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, moderationKeyboard, ensureWebhook } from "./_lib.js";
+import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
 
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
@@ -33,11 +33,20 @@ function buildParts(p) {
   const parts = [
     "🔔 <b>NEW EVENT PITCH FOR UNITE</b>",
     "",
+    p.kind === "trip" ? "🚌 <b>GROUP TRIP TO AN EXTERNAL EVENT</b>" : "🏠 <b>OUR OWN EVENT</b>",
     line("Event Name", p.title),
     line("Event Type", p.category),
     line("Language", p.lang),
     line("When", `${p.date} · ${p.start}–${p.end}`),
     line("Spots / Price", `${p.spots} spots · ${price}`),
+    ...(p.kind === "trip" ? [
+      "",
+      "🎫 <b>Group trip</b>",
+      line("External Event", p.extName),
+      line("Official Ticket Seller", p.seller),
+      line("Minimum Group", `${p.minGroup} people`),
+      line("Collect Payments Until", `${p.collectUntil} 23:59 (Dubai)`),
+    ] : []),
     "",
     "📍 <b>Venue</b>",
     line("Venue Name", p.room ? `${p.venueName} (${p.room})` : p.venueName),
@@ -130,7 +139,11 @@ export default async function handler(req, res) {
     studentId: str(b.studentId, 20), account: str(b.account, 120), accountName: str(b.accountName, 80), verified: b.verified === true,
     dress: str(b.dress, 80), reqs: str(b.reqs, 300),
     pitch: str(b.pitch, 2500),
+    kind: b.kind === "trip" ? "trip" : "own",
+    extName: str(b.extName, 120), seller: str(b.seller, 120),
+    minGroup: Math.max(0, Math.min(100000, parseInt(b.minGroup, 10) || 0)), collectUntil: str(b.collectUntil, 10),
   };
+  if (p.kind !== "trip") { delete p.extName; delete p.seller; delete p.minGroup; delete p.collectUntil; }
   const missing = [];
   if (p.title.length < 3) missing.push("title");
   if (p.venueName.length < 3) missing.push("venue name");
@@ -141,6 +154,13 @@ export default async function handler(req, res) {
   if (!cover) missing.push("cover photo");
   if (b.logo && !logo) missing.push("logo");
   if (p.mapsUrl && !isHttps(p.mapsUrl)) missing.push("Google Maps URL");
+  if (p.kind === "trip") {
+    if (p.extName.length < 2) missing.push("external event name");
+    if (p.seller.length < 2) missing.push("official ticket seller");
+    if (p.minGroup < 1 || p.minGroup > p.spots) missing.push("minimum group size");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(p.collectUntil) || !/^\d{4}-\d{2}-\d{2}$/.test(p.date) || !/^\d{2}:\d{2}$/.test(p.start)
+      || collectMs(p) > dubaiMs(p.date, p.start) - 24 * 36e5 || collectMs(p) < Date.now()) missing.push("collect payments until (at least 24 h before the event)");
+  }
   if (missing.length) return res.status(400).json({ ok: false, error: `Missing or invalid: ${missing.join(", ")}.` });
 
   // Moderation needs the database: the application is stored with status "pending" and the admin decides
@@ -183,6 +203,7 @@ export default async function handler(req, res) {
       if (stored.cover || stored.logo) {
         await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), hasCover: !!stored.cover, hasLogo: !!stored.logo }), "EX", TTL_S);
       }
+      if (p.kind === "trip") await kv("SADD", K.trips, p.ref);
       const hook = await ensureWebhook(token, req);
       if (!hook.ok) console.error("Moderation webhook not registered:", hook.error);
     } catch (e) { console.error("Database save failed, moderation buttons skipped:", e.message); moderated = false; }

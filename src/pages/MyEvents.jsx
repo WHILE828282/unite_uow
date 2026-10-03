@@ -3,6 +3,26 @@ import { LangBadge, ReviewBadge, VenueChip } from "../components/ui.jsx";
 import { TYPE_EMOJI } from "../lib/events.js";
 import { fmtDate, fmtRange } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
+import { DeliveryBar, payoutText, tripStateLabel } from "../components/modals/HostManage.jsx";
+
+/* Under a live event: where the money stands, the group trip's progress and the host tools. */
+function HostPanel({ s, d, onManage }) {
+  const trip = s.kind === "trip";
+  if (!s.moderated || !s.key) return <p className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">Check-in and ticket delivery need the Unite database, so they aren't available for this event.</p>;
+  return (
+    <div className="space-y-3 border-t border-slate-100 p-4">
+      <p className="text-sm font-semibold text-slate-900">{payoutText(s, d)}</p>
+      {trip && d && <p className="text-xs font-medium text-slate-600">{tripStateLabel(d)}</p>}
+      {trip && d && d.event.tripState === "confirmed" && <DeliveryBar d={d} />}
+      {!(trip && d && d.event.tripState === "cancelled") && (
+        <div className="flex gap-2">
+          <button onClick={() => onManage(s, !trip)} className="u-btn flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">{trip ? "Attendees & tickets" : "Check-in"}</button>
+          {!trip && <button onClick={() => onManage(s, false)} className="u-btn rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Attendees</button>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* My Events: the host's own applications, split into "Pending Moderation" and "Live Events". */
 export function MyEventCard({ s, r, onOpen }) {
@@ -25,12 +45,17 @@ export function MyEventCard({ s, r, onOpen }) {
   );
 }
 
-export function MyEvents({ items, onOpen, onHost }) {
+export function MyEvents({ items, onOpen, onHost, hostData = {}, onManage }) {
   const pending = items.filter(({ r }) => r.status === "review");
   const live = items.filter(({ r }) => r.status === "approved");
   const declined = items.filter(({ r }) => r.status === "rejected");
-  const Grid = ({ list }) => (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, r }) => <MyEventCard key={s.ref} s={s} r={r} onOpen={onOpen} />)}</div>
+  const Grid = ({ list, host }) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, r }) => host ? (
+      <div key={s.ref} className="flex flex-col overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm [&>button]:rounded-none [&>button]:border-0 [&>button]:shadow-none">
+        <MyEventCard s={s} r={r} onOpen={onOpen} />
+        <HostPanel s={s} d={hostData[s.ref]} onManage={onManage} />
+      </div>
+    ) : <MyEventCard key={s.ref} s={s} r={r} onOpen={onOpen} />)}</div>
   );
   const Empty = ({ children }) => <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500">{children}</div>;
   return (
@@ -48,7 +73,7 @@ export function MyEvents({ items, onOpen, onHost }) {
       </section>
       <section>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Live Events <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{live.length}</span></h3>
-        {live.length ? <Grid list={live} /> : <Empty>Approved events show up here and in Events for the whole campus.</Empty>}
+        {live.length ? <Grid list={live} host /> : <Empty>Approved events show up here and in Events for the whole campus.</Empty>}
       </section>
       {declined.length > 0 && (
         <section>

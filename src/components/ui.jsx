@@ -156,12 +156,12 @@ export function Spots({ left, total, unit = "spots", wait = 0, long = false, bar
 
 
 export function QRCode({ value, className = "h-40 w-40" }) {
-  const m = qrMatrix(value);
+  const m = qrMatrix(value), n = m.length;
   const rects = [];
   m.forEach((row, y) => row.forEach((d, x) => { if (d) rects.push(<rect key={x + "-" + y} x={x} y={y} width="1" height="1" />); }));
   return (
-    <svg viewBox="-3 -3 27 27" className={className} shapeRendering="crispEdges" role="img" aria-label={"Ticket QR code " + value} data-qr={value}>
-      <rect x="-3" y="-3" width="27" height="27" fill="#ffffff" />
+    <svg viewBox={`-3 -3 ${n + 6} ${n + 6}`} className={className} shapeRendering="crispEdges" role="img" aria-label={"Ticket QR code " + value} data-qr={value}>
+      <rect x="-3" y="-3" width={n + 6} height={n + 6} fill="#ffffff" />
       <g fill="#0f172a">{rects}</g>
     </svg>
   );

@@ -32,7 +32,7 @@ export function PayCard({ number = "", name, exp, wallet }) {
   );
 }
 
-export function Checkout({ party, email, onPaid, onDownload, onClose }) {
+export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b) => b, onOpenFile }) {
   const [step, setStep] = useState("review");
   const [method, setMethod] = useState("Apple Pay");
   const [stage, setStage] = useState(0);
@@ -75,7 +75,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose }) {
   const fmtCvc = (v) => v.replace(/\D/g, "").slice(0, 4);
   const fmtName = (v) => v.slice(0, 40);
 
-  if (step === "done" && booking) return <Modal onClose={onClose}><Ticket booking={booking} justPaid onClose={onClose} onDownload={onDownload} /></Modal>;
+  if (step === "done" && booking) return <Modal onClose={onClose}><Ticket booking={live(booking)} justPaid onClose={onClose} onDownload={onDownload} onOpenFile={onOpenFile} /></Modal>;
 
   if (step === "processing")
     return (

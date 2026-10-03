@@ -10,6 +10,7 @@ import { Checkout } from "./components/modals/Checkout.jsx";
 import { ClubDetail } from "./components/modals/ClubDetail.jsx";
 import { ConfirmModal, LeaveConfirm } from "./components/modals/ConfirmModal.jsx";
 import { EventDetail } from "./components/modals/EventDetail.jsx";
+import { HostManage } from "./components/modals/HostManage.jsx";
 import { Modal } from "./components/modals/Modal.jsx";
 import { ReviewModal } from "./components/modals/ReviewModal.jsx";
 import { TryoutModal } from "./components/modals/TryoutModal.jsx";
@@ -20,9 +21,10 @@ import { PARTIES } from "./data/events.js";
 import { LANGUAGES } from "./data/options.js";
 import { copyText } from "./lib/clipboard.js";
 import { downloadCalendar, downloadTicket } from "./lib/downloads.js";
-import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, submissionToParty } from "./lib/events.js";
+import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, submissionToParty, tripClosed } from "./lib/events.js";
 import { firstName, fmtDate, fmtLeft, fmtTime, isoDay, makeId, shortVenue, to24, weekdayIdx } from "./lib/format.js";
 import { overlaps, scheduleLabel } from "./lib/schedule.js";
+import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
 import { CSS, glassChip, glassDark } from "./lib/styles.js";
 import { versionLabel } from "./lib/version.js";
 import { Events } from "./pages/Events.jsx";
@@ -195,7 +197,8 @@ export default function App() {
   }, [clock, submissions]);
 
   // Live student events in the feed: your approved applications plus everyone else's from the database.
-  const ownLive = submissions.filter((sub) => reviewOf(sub) === "approved");
+  const [hostData, setHostData] = useState({}); // ref -> attendees, check-ins, deliveries and money for your live events
+  const ownLive = submissions.filter((sub) => reviewOf(sub) === "approved" && !(hostData[sub.ref] && hostData[sub.ref].event.tripState === "cancelled"));
   const liveKey = ownLive.map((x) => x.ref).join() + "|" + campus.map((e) => e.ref).join();
   useEffect(() => {
     const mine = new Set(submissions.map((x) => x.ref));
@@ -248,6 +251,73 @@ export default function App() {
     const t = setInterval(poll, 15000);
     return () => { stop = true; clearInterval(t); };
   }, [user, modKey]);
+
+  // Your Unite tickets for student-hosted events: QR check-ins, group trip progress and delivered tickets (every 45 s).
+  const tixKey = bookings.filter((b) => b.ref && b.key).map((b) => `${b.ref}.${b.id}.${b.key}`).join(",");
+  useEffect(() => {
+    if (!user || !tixKey) return;
+    let stop = false;
+    const poll = async () => {
+      const d = await myTickets(bookings.filter((b) => b.ref && b.key));
+      if (stop || !d.ok || !Array.isArray(d.tickets)) return;
+      const news = [];
+      setBookings((bs) => {
+        let changed = false;
+        const next = bs.map((b) => {
+          const t = d.tickets.find((x) => x.id === b.id);
+          if (!t) return b;
+          const upd = { ...b, state: t.state, checkedIn: t.checkedIn, delivery: t.delivery };
+          if (JSON.stringify([b.state, b.checkedIn, b.delivery]) === JSON.stringify([upd.state, upd.checkedIn, upd.delivery])) return b;
+          changed = true;
+          if (b.state && b.state !== t.state) news.push([b, t.state]);
+          return upd;
+        });
+        return changed ? next : bs;
+      });
+      setTimeout(() => news.forEach(([b, st]) => {
+        if (st === "ready") notify({ title: "Your ticket is ready", body: `${b.title}: open My Tickets to see it.` }, 6000);
+        else if (st === "preparing") notify({ title: "Group confirmed", body: `${b.title} is going ahead. The host is preparing your ticket.` }, 5000);
+        else if (st === "cancelled") notify({ title: "Trip cancelled · refunded", body: `${b.title} didn't reach its minimum group size. ${b.paid ? `Your ${b.price} AED was refunded.` : ""}` }, 6500);
+      }), 0);
+    };
+    poll();
+    const t = setInterval(poll, 45000);
+    return () => { stop = true; clearInterval(t); };
+    // eslint-disable-next-line
+  }, [user, tixKey]);
+
+  // Host tools: attendees and money for your live events (every 30 s), plus delivery reminders 48 h and 24 h before a group trip.
+  const hostKey = submissions.filter((x) => x.moderated && x.key && (x.mod === "approved")).map((x) => `${x.ref}.${x.key}`).join(",");
+  const loadHost = async (ref, key) => {
+    const d = await hostList(ref, key);
+    if (d.ok && d.event) setHostData((h) => (JSON.stringify(h[ref]) === JSON.stringify(d) ? h : { ...h, [ref]: d }));
+    return d;
+  };
+  useEffect(() => {
+    if (!user || !hostKey) return;
+    let stop = false;
+    const poll = async () => {
+      for (const pair of hostKey.split(",")) {
+        if (stop) return;
+        const [ref, key] = pair.split(".");
+        const d = await loadHost(ref, key);
+        if (!d.ok || !d.event || d.event.kind !== "trip" || d.event.tripState !== "confirmed") continue;
+        const missing = d.stats.sold - d.stats.delivered, left = d.event.startsAt - Date.now();
+        for (const h of [24, 48]) {
+          const k = `unite-remind:${ref}:${h}`;
+          if (!missing || left > h * 36e5 || left < 0) continue;
+          try { if (localStorage.getItem(k)) break; localStorage.setItem(k, "1"); } catch (e) { /* ignore */ }
+          const sub = submissions.find((x) => x.ref === ref);
+          notify({ title: `${missing} ticket${missing > 1 ? "s" : ""} still to deliver`, body: `${sub ? sub.title : "Your group trip"} starts in about ${Math.round(left / 36e5)} hours. Deliver every ticket at least 24 hours before: My Events → Attendees & tickets.` }, 8000);
+          break;
+        }
+      }
+    };
+    poll();
+    const t = setInterval(poll, 30000);
+    return () => { stop = true; clearInterval(t); };
+    // eslint-disable-next-line
+  }, [user, hostKey]);
 
   // Remember applications per account in this browser (artwork as server links, not raw uploads).
   useEffect(() => {
@@ -368,12 +438,29 @@ export default function App() {
 
   const bookingFor = (id) => (user ? bookings.find((b) => b.partyId === id) : undefined);
 
+  // Student-hosted events: the ticket is registered with Unite, which signs its QR code (own events) or holds the
+  // place in the group (group trips). If that fails, the (demo) payment is reversed and the ticket removed.
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null };
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
+      ...(p.ref ? { ref: p.ref, kind: p.kind || "own", state: p.kind === "trip" ? "waiting" : "valid", ...(p.kind === "trip" ? { extName: p.extName, collectUntil: p.collectUntil } : {}) } : {}) };
     setBookings((bs) => [b, ...bs]);
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
+    if (p.ref) {
+      (async () => {
+        let d = await issueTicket(b, p.ref);
+        for (let i = 0; i < 2 && d.offline; i++) { await new Promise((r) => setTimeout(r, 3000)); d = await issueTicket(b, p.ref); }
+        if (d.ok) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: d.code, key: d.key, state: d.ticket ? d.ticket.state : x.state } : x)));
+        if (d.store === false) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: x.id } : x))); // no database: demo ticket, booking ID as the code
+        setBookings((bs) => bs.filter((x) => x.id !== b.id));
+        setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: Math.max(0, x.taken - 1) } : x)));
+        setModal((m) => (m && ((m.type === "ticket" && m.booking.id === b.id) || m.type === "checkout") ? null : m));
+        notify({ title: "Ticket not confirmed", body: `${d.error || "Unite couldn't confirm it."}${b.paid ? ` Your ${b.price} AED payment was reversed (demo).` : ""}` }, 6500);
+      })();
+    }
     return b;
   };
+  const liveBooking = (b) => bookings.find((x) => x.id === b.id) || b;
+  const openFile = async (b) => { const r = await openTicketFile({ ref: b.ref, id: b.id, key: b.key }); if (r !== true) notify(r, 3500); };
 
   const joinWaitlist = (p, email) => {
     const pos = p.wait + 1;
@@ -392,6 +479,7 @@ export default function App() {
   const onParty = (p) => {
     const existing = bookingFor(p.id);
     if (existing) return setModal({ type: "ticket", booking: existing });
+    if (tripClosed(p)) return notify("Payments for this group trip are closed.");
     if (p.spots - p.taken <= 0) {
       if (user && waitlist[p.id]) return setModal({ type: "waitlist", party: p, pos: waitlist[p.id], email: user });
       return requireAuth(`Sign in to join the waitlist for ${p.title}`, (email) => setModal({
@@ -461,6 +549,7 @@ export default function App() {
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
     if (mine) { label = "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
+    else if (tripClosed(p, clock)) return <button disabled className={`u-btn ${extra} rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-500`}>Payments closed</button>;
     else if (p.spots - p.taken <= 0) {
       label = wl ? `Waitlisted · #${wl}` : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
@@ -593,7 +682,8 @@ export default function App() {
         )}
 
         {/* My events (hosts only) */}
-        {tab === "events" && showMyEvents && <MyEvents items={myEventItems} onOpen={openOwn} onHost={hostEvent} />}
+        {tab === "events" && showMyEvents && <MyEvents items={myEventItems} onOpen={openOwn} onHost={hostEvent} hostData={hostData}
+          onManage={(sub, scan) => { setModal({ type: "host", ref: sub.ref, scan }); loadHost(sub.ref, sub.key); }} />}
 
         {/* My tickets */}
         {tab === "tickets" && (
@@ -628,7 +718,7 @@ export default function App() {
       {modal && modal.type === "create" && (
         <CreateModal email={modal.email} onClose={closeModal} onSubmitted={submitParty} />
       )}
-      {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} />}
+      {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} live={liveBooking} onOpenFile={openFile} />}
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (
         <EventDetail
           party={parties.find((x) => x.id === modal.id)}
@@ -701,7 +791,11 @@ export default function App() {
         <ConfirmModal title={modal.title} body={modal.body} confirmLabel={modal.confirmLabel} danger={modal.danger}
           onConfirm={modal.onConfirm} onCancel={closeModal} />
       )}
-      {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={modal.booking} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} /></Modal>}
+      {modal && modal.type === "ticket" && <Modal onClose={closeModal}><Ticket booking={liveBooking(modal.booking)} justPaid={modal.justPaid} onClose={closeModal} onDownload={handleDownload} onOpenFile={openFile} /></Modal>}
+      {modal && modal.type === "host" && submissions.find((x) => x.ref === modal.ref) && (() => {
+        const sub = submissions.find((x) => x.ref === modal.ref);
+        return <HostManage sub={sub} data={hostData[sub.ref]} startScan={modal.scan} notify={notify} onClose={closeModal} onRefresh={() => loadHost(sub.ref, sub.key)} />;
+      })()}
       {modal && modal.type === "waitlist" && (
         <WaitlistModal party={modal.party} pos={modal.pos} email={modal.email} fresh={modal.fresh} onClose={closeModal} onLeave={() => leaveWaitlist(modal.party)} />
       )}

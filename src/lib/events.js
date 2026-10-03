@@ -13,6 +13,8 @@ export const submissionToParty = (sub) => ({
   contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
   desc: sub.pitch || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
   perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
+  kind: sub.kind === "trip" ? "trip" : "own",
+  ...(sub.kind === "trip" ? { extName: sub.extName, seller: sub.seller, minGroup: sub.minGroup, collectUntil: sub.collectUntil } : {}),
 });
 /* An approved event from another student, loaded from the moderation database (no email exposed). */
 export const eventImg = (ref, kind, key) => `/api/events?img=${ref}&kind=${kind}${key ? `&k=${key}` : ""}`;
@@ -20,6 +22,12 @@ export const campusToParty = (e) => ({
   ...submissionToParty({ ...e, email: "", cover: e.hasCover ? eventImg(e.ref, "cover") : null, logo: e.hasLogo ? eventImg(e.ref, "logo") : null }),
   host: "student", own: false, contact: { name: "Organizer", role: "Student host", whatsapp: e.whatsapp, telegram: e.telegram },
 });
+/* Group trips collect payments until 23:59 Dubai time on `collectUntil`. */
+export const collectEndsMs = (p) => {
+  const [y, m, d] = String(p.collectUntil || "").split("-").map(Number);
+  return y ? Date.UTC(y, m - 1, d, 23, 59) - 4 * 36e5 : 0;
+};
+export const tripClosed = (p, now = Date.now()) => p.kind === "trip" && !!p.collectUntil && now > collectEndsMs(p);
 export const MOD_STATUSES = ["pending", "under_review", "approved", "rejected"];
 export const partyMapsUrl = (p) => (p.mapsUrl ? englishMapsUrl(p.mapsUrl) : mapsLink(p.maps));
 

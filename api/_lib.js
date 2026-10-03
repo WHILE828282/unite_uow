@@ -61,6 +61,10 @@ export const K = {
   img: (ref, kind) => `unite:img:${ref}:${kind}`,
   approved: "unite:approved",
   webhook: "unite:webhook",
+  tix: (ref) => `unite:tix:${ref}`, // hash: ticket id -> ticket JSON (one per event)
+  tixFile: (id, i) => `unite:tixfile:${id}:${i}`, // private delivered-ticket upload, in chunks
+  trips: "unite:trips", // group trips the sweep keeps an eye on
+  sweep: "unite:sweep-lock",
 };
 export const STATUSES = ["pending", "under_review", "approved", "rejected"];
 export const isRef = (v) => /^UN-[A-Z0-9]{6}$/.test(String(v || ""));
@@ -76,6 +80,23 @@ export const ownerOk = (ref, key) => {
   const a = Buffer.from(ownerKey(ref)), b = Buffer.from(String(key || ""));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 };
+// Unite tickets: the QR carries "U1.<ticket id>.<signature>", so a code can't be made up or altered.
+export const ticketSig = (id) => hmac("unite-ticket", id).slice(0, 12);
+export const ticketCode = (id) => `U1.${id}.${ticketSig(id)}`;
+export const isTicketId = (v) => /^UNT-\d{4}-[A-Z0-9]{5}$/.test(String(v || ""));
+const same = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b || "")); return x.length === y.length && crypto.timingSafeEqual(x, y); };
+// The ticket holder's own key (returned once on purchase): needed to read the ticket's status and its delivered file.
+export const holderKey = (id) => hmac("unite-holder", id).slice(0, 20);
+export const holderOk = (id, key) => same(holderKey(id), key);
+export const parseTicketCode = (code) => {
+  const m = /^U1\.(UNT-\d{4}-[A-Z0-9]{5})\.([A-Za-z0-9_-]{12})$/.exec(String(code || "").trim());
+  return m && same(ticketSig(m[1]), m[2]) ? m[1] : null;
+};
+// Short-lived signed link to a private ticket file (5 minutes).
+export const FILE_LINK_MS = 5 * 60 * 1000;
+export const fileSig = (id, exp) => hmac("unite-file", `${id}|${exp}`).slice(0, 24);
+export const fileLink = (id) => { const exp = Date.now() + FILE_LINK_MS; return `/api/tickets?a=file&t=${id}&exp=${exp}&s=${fileSig(id, exp)}`; };
+export const fileLinkOk = (id, exp, sig) => Number(exp) > Date.now() && same(fileSig(id, Number(exp)), sig);
 // Telegram echoes this in X-Telegram-Bot-Api-Secret-Token on every webhook call (allowed chars: A-Z a-z 0-9 _ -).
 export const webhookSecret = (token) => crypto.createHmac("sha256", `unite-webhook:${token}`).update("telegram").digest("hex").slice(0, 48);
 
@@ -107,4 +128,93 @@ export const ensureWebhook = async (token, req, force = false) => {
   if (!r.ok) { console.error("Telegram setWebhook rejected:", JSON.stringify(r.data)); return { ok: false, url, error: explain(r.data, token) }; }
   if (storeConfigured()) { try { await kv("SET", K.webhook, url); } catch (e) { /* not critical */ } }
   return { ok: true, url };
+};
+
+/* ---------------------------- Event types ------------------------- */
+// Event times are Dubai time (UTC+4, no daylight saving).
+export const dubaiMs = (date, time = "00:00") => {
+  const [y, mo, d] = String(date).split("-").map(Number), [h, mi] = String(time).split(":").map(Number);
+  return Date.UTC(y, mo - 1, d, h || 0, mi || 0) - 4 * 36e5;
+};
+export const startMs = (rec) => dubaiMs(rec.date, rec.start);
+// Group trips collect payments until 23:59 Dubai time on the chosen date.
+export const collectMs = (rec) => dubaiMs(rec.collectUntil, "23:59");
+export const isTrip = (rec) => rec && rec.kind === "trip";
+// collecting -> confirmed (minimum reached at the deadline) or cancelled (everyone refunded).
+export const tripState = (rec) => (rec.tripState || "collecting");
+export const getTickets = async (ref) => {
+  const raw = (await kv("HGETALL", K.tix(ref))) || [];
+  const out = [];
+  for (let i = 0; i + 1 < raw.length; i += 2) { try { out.push(JSON.parse(raw[i + 1])); } catch (e) { /* skip */ } }
+  return out.sort((a, b) => a.at - b.at);
+};
+export const saveTicket = (t) => kv("HSET", K.tix(t.ref), t.id, JSON.stringify(t));
+export const savePitch = (rec) => kv("SET", K.pitch(rec.ref), JSON.stringify(rec), "EX", TTL_S);
+
+/* ---------------------------- Email (best effort) ----------------- */
+export const sendEmail = async (to, subject, text) => {
+  const key = clean(process.env.RESEND_API_KEY);
+  if (!key || !to) return false;
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: clean(process.env.RESEND_FROM) || "Unite <onboarding@resend.dev>", to: [to], subject, text }),
+    });
+    return r.ok;
+  } catch (e) { return false; }
+};
+
+/* ---------------------------- Group trip sweep -------------------- */
+// Runs at most every 2 minutes, piggybacking on the campus feed requests (no cron needed):
+// at the payment deadline a trip is confirmed or cancelled with automatic (demo) refunds; before the event the
+// host is reminded 48 h and 24 h ahead about undelivered tickets, and at 24 h missing tickets are flagged to the admin.
+export const sweepTrips = async () => {
+  if (!storeConfigured()) return;
+  try { if ((await kv("SET", K.sweep, "1", "NX", "EX", "120")) !== "OK") return; } catch (e) { return; }
+  const refs = ((await kv("SMEMBERS", K.trips)) || []).filter(isRef);
+  for (const ref of refs) await sweepTrip(ref);
+};
+// One trip's deadline, reminders and admin flag. A short per-trip lock stops two requests acting twice.
+export const sweepTrip = async (ref) => {
+  const token = readToken(), now = Date.now();
+  try { if ((await kv("SET", `${K.sweep}:${ref}`, "1", "NX", "EX", "30")) !== "OK") return; } catch (e) { return; }
+  {
+    try {
+      const rec = await getPitch(ref);
+      if (!rec || !isTrip(rec) || now > startMs(rec) + 864e5) { await kv("SREM", K.trips, ref); return; }
+      if (rec.status !== "approved") return;
+      let next = rec;
+      const tix = await getTickets(ref);
+      const live = tix.filter((t) => !t.refunded);
+      if (tripState(rec) === "collecting" && now >= collectMs(rec)) {
+        if (live.length >= rec.minGroup) next = { ...rec, tripState: "confirmed", confirmedAt: now };
+        else {
+          next = { ...rec, tripState: "cancelled", cancelledAt: now };
+          for (const t of live) {
+            await saveTicket({ ...t, refunded: true, refundedAt: now });
+            await sendEmail(t.email, `Cancelled: ${rec.title}`, `The group trip "${rec.title}" didn't reach its minimum of ${rec.minGroup} people by the deadline, so it's cancelled. Your payment of ${t.price || 0} AED has been refunded automatically.\n\nUnite · uniteuow.com`);
+          }
+          await kv("SREM", K.approved, ref);
+          if (token) await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `🚫 Group trip cancelled: "${rec.title}" (${ref}) reached ${live.length} of ${rec.minGroup} people by the deadline. ${live.length} purchase(s) marked refunded (demo).` }).catch(() => {});
+          await sendEmail(rec.email, `Your group trip "${rec.title}" was cancelled`, `It reached ${live.length} of the ${rec.minGroup} people needed by the payment deadline, so everyone has been refunded automatically.\n\nUnite · uniteuow.com`);
+        }
+      }
+      if (tripState(next) === "confirmed") {
+        const missing = live.filter((t) => !t.delivery).length, left = startMs(next) - now;
+        const remind = async (flag, hours) => {
+          if (next[flag] || left > hours * 36e5 || !missing) return;
+          next = { ...next, [flag]: now };
+          await sendEmail(next.email, `Reminder: ${missing} ticket(s) to deliver for "${next.title}"`, `${live.length - missing} of ${live.length} tickets are delivered. Every ticket must be delivered at least 24 hours before the event: open Unite → My Events → ${next.title} → Attendees.\n\nUnite · uniteuow.com`);
+        };
+        await remind("remind48", 48);
+        await remind("remind24", 24);
+        if (!next.flagged && left <= 24 * 36e5 && missing) {
+          next = { ...next, flagged: now };
+          if (token) await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `⚠️ Tickets missing for group trip "${next.title}" (${ref}): ${live.length - missing} of ${live.length} delivered, and the event starts ${new Date(startMs(next)).toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} (Dubai). Host: ${next.email}` }).catch(() => {});
+        }
+      }
+      if (next !== rec) await savePitch({ ...next, updatedAt: now });
+    } catch (e) { console.error(`Trip sweep failed for ${ref}:`, e && e.message); }
+    finally { await kv("DEL", `${K.sweep}:${ref}`).catch(() => {}); }
+  }
 };

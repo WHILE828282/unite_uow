@@ -3,7 +3,8 @@ import { PartyCard } from "../components/cards.jsx";
 import { EventDetailBody } from "../components/modals/EventDetail.jsx";
 import { Icon } from "../components/ui.jsx";
 import { DRESS_CODES, EVENT_TYPES, LANGUAGES } from "../data/options.js";
-import { submissionToParty } from "../lib/events.js";
+import { collectEndsMs, submissionToParty } from "../lib/events.js";
+import { TRIP_NOTE } from "../lib/tripText.js";
 import { fmtDate, fmtRange, fmtTime, makeId, toMin, validEmail } from "../lib/format.js";
 import { isGoogleMapsUrl, normalizeMapsUrl, tgHandle, waDigits } from "../lib/maps.js";
 
@@ -124,7 +125,15 @@ export const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Spo
 
 export const PITCH_MIN_CHARS = 50;
 /* Field order on the page, used to bring the first problem into view on submit. */
-export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "whatsapp", "telegram", "email"];
+export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "extName", "seller", "minGroup", "collectUntil", "whatsapp", "telegram", "email"];
+
+/* The two kinds of event a student can host. */
+export const EVENT_KINDS = [
+  { k: "own", emoji: "🏠", title: "Our own event", body: "You run it yourself: party, yacht, tournament, dinner, workshop." },
+  { k: "trip", emoji: "🚌", title: "Group trip to an external event", body: "You buy tickets from an official seller (concert, match, theme park) and bring a group." },
+];
+export const kindLabel = (k) => (k === "trip" ? "Group trip to an external event" : "Our own event");
+
 
 /* Event times are entered and checked in Dubai time (UTC+4, no daylight saving), whatever the device's zone.
    Applications must arrive at least 24 hours before the event starts. */
@@ -243,6 +252,13 @@ export function HostPreview({ sub, onEdit }) {
   );
   const buy = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve free spot";
   const rows = [
+    ["Event type", kindLabel(sub.kind), "kind"],
+    ...(sub.kind === "trip" ? [
+      ["External event", sub.extName, "extName"],
+      ["Official seller", sub.seller, "seller"],
+      ["Minimum group", `${sub.minGroup} people`, "minGroup"],
+      ["Collect payments until", `${fmtDate(sub.collectUntil)}, 11:59 PM (Dubai time)`, "collectUntil"],
+    ] : []),
     ["When", `${fmtDate(sub.date)} · ${fmtRange(sub.start, sub.end)} (Dubai time)`, "date"],
     ["Venue", sub.room ? `${sub.venueName}, ${sub.room}` : sub.venueName, "venueName"],
     ["Capacity · price", `${sub.spots} spots · ${sub.price > 0 ? `${sub.price} AED` : "Free"}`, "spots"],
@@ -293,9 +309,10 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const [f, setF] = useState({
     title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
     spots: 30, price: 0, dress: "", reqs: "", whatsapp: "", telegram: "", email: defaultEmail, logo: null, cover: null, website: "",
+    kind: "", extName: "", seller: "", minGroup: 10, collectUntil: "",
   });
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState("form"); // form | preview
+  const [step, setStep] = useState("type"); // type | form | preview
   const [confirm, setConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -307,7 +324,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   const set = (k) => (e) => {
     const v = e.target.value;
     setF((x) => ({ ...x, [k]: v }));
-    clearErr(k, ...(k === "whatsapp" || k === "telegram" ? ["whatsapp", "telegram"] : []), ...(k === "date" || k === "time" || k === "end" ? ["date", "time", "end"] : []));
+    clearErr(k, ...(k === "whatsapp" || k === "telegram" ? ["whatsapp", "telegram"] : []), ...(k === "date" || k === "time" || k === "end" ? ["date", "time", "end", "collectUntil"] : []), ...(k === "spots" ? ["minGroup"] : []));
   };
 
   // Escape steps back: closes the confirmation, then leaves the preview, then closes the form.
@@ -316,6 +333,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
       if (e.key !== "Escape" || submitting) return;
       if (confirm) setConfirm(false);
       else if (step === "preview") setStep("form");
+      else if (step === "form") setStep("type");
       else onClose();
     };
     window.addEventListener("keydown", h);
@@ -327,6 +345,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
       if (submitting) { e.preventDefault(); return; }
       if (confirm) { setConfirm(false); e.preventDefault(); }
       else if (step === "preview") { setStep("form"); e.preventDefault(); }
+      else if (step === "form") { setStep("type"); e.preventDefault(); }
     };
     window.addEventListener("unite:back", h);
     return () => window.removeEventListener("unite:back", h);
@@ -347,7 +366,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
   useEffect(() => { if (confirm && yesRef.current) yesRef.current.focus(); }, [confirm]);
   // After switching steps: top of the preview, or straight to the field the host wants to edit.
   useEffect(() => {
-    if (step === "preview") { if (bodyRef.current) bodyRef.current.scrollTop = 0; return; }
+    if (step !== "form") { if (bodyRef.current) bodyRef.current.scrollTop = 0; return; }
     if (!focusField) return;
     const t = setTimeout(() => {
       const el = document.getElementById(`c-${focusField}`);
@@ -380,6 +399,16 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     if (f.telegram.trim() && !/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(tg)) e.telegram = "Telegram usernames are 5–32 letters, numbers or underscores.";
     if (!wa && !tg && !e.whatsapp && !e.telegram) e.whatsapp = "Add a WhatsApp number or a Telegram username so guests can reach you.";
     if (!validEmail(f.email.trim())) e.email = "Enter a valid contact email.";
+    if (f.kind === "trip") {
+      if (f.extName.trim().length < 2) e.extName = "Add the name of the external event, e.g. Coldplay at Etihad Park.";
+      if (f.seller.trim().length < 2) e.seller = "Add the official ticket seller, e.g. Platinumlist.";
+      const min = Number(f.minGroup);
+      if (!(min >= 1) || !Number.isInteger(min)) e.minGroup = "At least 1 person.";
+      else if (Number(f.spots) >= 1 && min > Number(f.spots)) e.minGroup = "The minimum can't be bigger than the capacity.";
+      if (!f.collectUntil) e.collectUntil = "Pick the last day students can pay.";
+      else if (collectEndsMs({ collectUntil: f.collectUntil }) < Date.now()) e.collectUntil = "That date has already passed.";
+      else if (f.date && f.time && collectEndsMs({ collectUntil: f.collectUntil }) > dubaiStartMs(f.date, f.time) - LEAD_MS) e.collectUntil = "Payments must close at least 24 hours before the event (they close at 11:59 PM on this day).";
+    }
     return e;
   };
 
@@ -389,6 +418,8 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
     spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
     whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(),
     cover: f.cover ? f.cover.src : "", logo: f.logo ? f.logo.src : "",
+    kind: f.kind === "trip" ? "trip" : "own",
+    ...(f.kind === "trip" ? { extName: f.extName.trim(), seller: f.seller.trim(), minGroup: Number(f.minGroup), collectUntil: f.collectUntil } : {}),
   });
 
   // Step 1: check everything, then show the preview instead of sending.
@@ -412,11 +443,14 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
       setSendError(err.message || "The review team couldn't be reached. Please try again.");
     }
   };
-  const edit = (field) => { setConfirm(false); setStep("form"); setFocusField(field); };
+  const edit = (field) => { setConfirm(false); if (field === "kind") { setStep("type"); return; } setStep("form"); setFocusField(field); };
   const addReq = (r) => { if (!f.reqs.includes(r)) setF({ ...f, reqs: f.reqs.trim() ? `${f.reqs.trim().replace(/[.,;]$/, "")}; ${r}` : r }); };
   const E = ({ k }) => (errors[k] ? <p className={DK.err}>{errors[k]}</p> : null);
   const chars = f.pitch.trim().length;
   const preview = step === "preview";
+  const typeStep = step === "type";
+  const trip = f.kind === "trip";
+  const todayDubai = new Date(Date.now() + DUBAI_OFFSET_MS).toISOString().slice(0, 10);
   const dubai = <span className="ml-1 rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[11px] font-medium text-slate-300">Dubai time</span>;
 
   return (
@@ -428,17 +462,39 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, var(--sat))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           <button onClick={onClose} disabled={submitting} aria-label="Close"
             className="u-keep absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
-          <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events{preview ? " · Step 2 of 2" : ""}</p>
-          <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : "Host an event"}</h2>
-          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
+          <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300">Unite · Student events · Step {typeStep ? 1 : preview ? 3 : 2} of 3</p>
+          <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : typeStep ? "What are you hosting?" : "Host an event"}</h2>
+          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Choose the type first. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
         </div>
 
         {/* Body */}
         <div ref={bodyRef} onKeyDown={onFieldEnter} className="u-scroll min-h-0 flex-1 overflow-y-auto px-6 py-10 sm:px-10" style={{ paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
-          {preview ? (
+          {typeStep ? (
+            <div key="type" className="u-slide space-y-4" role="radiogroup" aria-label="Event type">
+              {EVENT_KINDS.map((x) => {
+                const on = f.kind === x.k;
+                return (
+                  <button key={x.k} type="button" role="radio" aria-checked={on} onClick={() => setF((y) => ({ ...y, kind: x.k }))}
+                    className={`u-keep flex w-full items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.99] sm:p-6 ${on ? "border-crimson-500 bg-crimson-700/15 shadow-[0_0_0_3px_rgba(196,90,104,0.18)]" : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"}`}>
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-2xl ring-1 ring-white/10" aria-hidden="true">{x.emoji}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-lg font-semibold text-white">{x.title}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-slate-400">{x.body}</span>
+                    </span>
+                    <span className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ring-2 ${on ? "bg-crimson-500 ring-crimson-500" : "ring-white/25"}`} aria-hidden="true">{on && <span className="h-2 w-2 rounded-full bg-white" />}</span>
+                  </button>
+                );
+              })}
+              {trip && <p className="rounded-xl bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-slate-300 ring-1 ring-white/10">{TRIP_NOTE}</p>}
+            </div>
+          ) : preview ? (
             <div key="preview" className="u-slide"><HostPreview sub={buildSub()} onEdit={edit} /></div>
           ) : (
           <div key="form" className="u-slide space-y-12">
+            <p className="-mb-4 flex flex-wrap items-center gap-x-2 text-sm text-slate-400">
+              <span>{trip ? "🚌" : "🏠"} <span className="font-semibold text-white">{kindLabel(f.kind)}</span></span>
+              <button type="button" onClick={() => setStep("type")} className="u-keep text-xs font-semibold text-crimson-300 hover:text-crimson-200 hover:underline">Change</button>
+            </p>
             <DkSection n={1} title="Photos">
               <p className="-mt-2 text-sm text-slate-400">Two photos: a square logo for the event card and a widescreen cover for the event page. Both are required.</p>
               <div className="grid gap-8 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:gap-6">
@@ -533,7 +589,35 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               </div>
             </DkSection>
 
-            <DkSection n={4} title="Details">
+            {trip && (
+              <DkSection n={4} title="Group trip">
+                <p className="-mt-2 rounded-xl bg-white/[0.04] px-4 py-3 text-sm leading-relaxed text-slate-300 ring-1 ring-white/10">{TRIP_NOTE}</p>
+                <div>
+                  <label className={DK.label} htmlFor="c-extName">External event name</label>
+                  <input id="c-extName" value={f.extName} onChange={set("extName")} autoComplete="off" placeholder="e.g. Coldplay · Music of the Spheres" className={DK.input(!!errors.extName)} />
+                  <E k="extName" />
+                </div>
+                <div>
+                  <label className={DK.label} htmlFor="c-seller">Official ticket seller</label>
+                  <input id="c-seller" value={f.seller} onChange={set("seller")} autoComplete="off" placeholder="e.g. Platinumlist, Ticketmaster, the venue's website" className={DK.input(!!errors.seller)} />
+                  {errors.seller ? <E k="seller" /> : <p className={DK.hint}>Where you'll buy the real tickets for your group.</p>}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className={DK.label} htmlFor="c-minGroup">Minimum group size</label>
+                    <input id="c-minGroup" type="number" inputMode="numeric" min="1" value={f.minGroup} onChange={set("minGroup")} className={DK.input(!!errors.minGroup)} />
+                    {errors.minGroup ? <E k="minGroup" /> : <p className={DK.hint}>The trip only goes ahead with at least this many people.</p>}
+                  </div>
+                  <div>
+                    <label className={DK.label} htmlFor="c-collectUntil">Collect payments until</label>
+                    <DkDatePicker id="c-collectUntil" min={todayDubai} value={f.collectUntil} onChange={(v) => set("collectUntil")({ target: { value: v } })} bad={!!errors.collectUntil} />
+                    {errors.collectUntil ? <E k="collectUntil" /> : <p className={DK.hint}>Closes at 11:59 PM (Dubai time) that day, at least 24 hours before the event.</p>}
+                  </div>
+                </div>
+              </DkSection>
+            )}
+
+            <DkSection n={trip ? 5 : 4} title="Details">
               <div>
                 <span className={DK.label}>Dress code</span>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -549,7 +633,7 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
               </div>
             </DkSection>
 
-            <DkSection n={5} title="Organizer contacts">
+            <DkSection n={trip ? 6 : 5} title="Organizer contacts">
               <p className="-mt-2 text-sm text-slate-400">Shown on your event once it's approved. Add WhatsApp, Telegram or both.</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -582,8 +666,11 @@ export function CreateModal({ email: defaultEmail, onClose, onSubmitted }) {
         {/* Footer */}
         <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0a192f] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sab))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {sendError && !confirm && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
-          {!preview && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
-          {preview ? (
+          {step === "form" && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
+          {typeStep ? (
+            <button onClick={() => { setStep("form"); }} disabled={!f.kind}
+              className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-40">{f.kind ? "Continue →" : "Choose a type to continue"}</button>
+          ) : preview ? (
             <div className="flex flex-col-reverse gap-3 sm:flex-row">
               <button onClick={() => setStep("form")} disabled={submitting}
                 className="u-keep rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50 sm:w-auto">← Keep editing</button>

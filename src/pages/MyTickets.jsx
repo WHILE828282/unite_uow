@@ -3,6 +3,17 @@ import { fmtDate } from "../lib/format.js";
 
 
 
+// Status of a ticket at a glance: group trips go Waiting for the group → Ticket being prepared → Ticket ready.
+const CHIP = {
+  waiting: ["Waiting for the group", "bg-amber-50 text-amber-700"], preparing: ["Ticket being prepared", "bg-sky-50 text-sky-700"],
+  ready: ["Ticket ready", "bg-emerald-50 text-emerald-700"], cancelled: ["Cancelled · refunded", "bg-rose-50 text-rose-700"],
+};
+const TicketChip = ({ b }) => {
+  const [label, cls] = b.kind === "trip" ? CHIP[b.state] || CHIP.waiting
+    : b.state === "cancelled" ? CHIP.cancelled : b.checkedIn ? ["Checked in", "bg-sky-50 text-sky-700"] : [b.paid ? "Paid" : "Free", "bg-emerald-50 text-emerald-700"];
+  return <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>{label}</span>;
+};
+
 /* My Tickets tab: tickets, waitlist spots and a pointer to hosting. */
 export function MyTickets({ user, bookings, waitlist, parties, submissions, setModal, changeTab, hostEvent }) {
   return (
@@ -34,7 +45,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                     <p className="text-sm text-slate-500">{fmtDate(b.date)} · {b.time}</p>
                     <p className="font-mono text-xs text-slate-400">{b.id}</p>
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{b.paid ? "Paid" : "Free"}</span>
+                  <TicketChip b={b} />
                 </button>
               ))}
             </div>
