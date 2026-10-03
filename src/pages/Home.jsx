@@ -37,9 +37,9 @@ function Spotlight({ p, booked, onOpen }) {
       style={{ background: "linear-gradient(110deg, rgba(116,22,41,.75), rgba(15,23,42,.55))" }}>
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl" aria-hidden="true">{p.emoji}</span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {fmtDate(p.date)}</span>
+        <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
         <span className="block truncate font-semibold text-white">{p.title}</span>
-        <span className="mt-0.5 block text-xs tabular-nums text-slate-300">Doors in {d}d {h}h {m}m · {p.spots - p.taken} tickets left</span>
+        <span className="mt-0.5 block truncate text-xs tabular-nums text-slate-300">Doors in {d}d {h}h {m}m · {p.spots - p.taken} left</span>
       </span>
       <span className={`u-keep shrink-0 rounded-lg px-3 py-2 text-xs font-bold ${booked ? "bg-emerald-500 text-white" : "bg-white text-slate-900"}`}>{booked ? "Your ticket" : `${p.price} AED`}</span>
     </button>
@@ -48,7 +48,7 @@ function Spotlight({ p, booked, onOpen }) {
 
 export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBooked, onSpotlight, onEvents, onClubs }) {
   return (
-    <section className="u-keep relative isolate overflow-hidden bg-[#070d1a] text-white">
+    <section className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#070d1a] text-white shadow-[0_20px_40px_-24px_rgba(7,13,26,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-40 sm:-inset-x-10 sm:grid-cols-6">
           {[...COLLAGE, ...COLLAGE].slice(0, 18).map((src, i) => (
@@ -99,9 +99,12 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
 
         {spotlight && <Spotlight p={spotlight} booked={spotlightBooked} onOpen={onSpotlight} />}
 
-        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-400">
+        <div className="mt-6 grid max-w-lg grid-cols-3 divide-x divide-white/10 rounded-2xl bg-white/[0.05] py-2.5 ring-1 ring-inset ring-white/10">
           {stats.map(([n, l, go]) => (
-            <button key={l} onClick={go} className="u-keep hover:text-white"><b className="text-lg font-bold tabular-nums text-white">{n}</b> {l}</button>
+            <button key={l} onClick={go} className="u-keep px-3 text-left">
+              <span className="block text-lg font-bold tabular-nums leading-tight text-white sm:text-xl">{n}</span>
+              <span className="block text-[11px] leading-tight text-slate-400">{l}</span>
+            </button>
           ))}
         </div>
       </div>
@@ -110,7 +113,7 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
 }
 
 const Head = ({ eyebrow, title, onAll }) => (
-  <div className="mb-3.5 flex items-end justify-between gap-3">
+  <div className="mb-4 flex items-end justify-between gap-3">
     <div className="min-w-0">
       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-crimson-700">{eyebrow}</p>
       <h2 className="mt-0.5 text-xl font-bold tracking-tight text-slate-900">{title}</h2>
@@ -135,7 +138,7 @@ const STEPS = [
   ["Show your QR", "at the door, it works offline"],
 ];
 
-export function HomeSections({ events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
+export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
   const explore = [
     ["Events", "🎉", "Parties & events", `${upcomingCount} upcoming`, goEvents],
     ["Sports", "🏆", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
@@ -145,7 +148,7 @@ export function HomeSections({ events, clubs, roomCounts, upcomingCount, memberC
     ["Host", "🎤", "Host an event", "Sell tickets with QR", hostEvent],
   ];
   return (
-    <div className="space-y-11 pt-1">
+    <div className="space-y-12 pt-2">
       <section>
         <Head eyebrow="Explore" title="What are you into?" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -198,21 +201,22 @@ export function HomeSections({ events, clubs, roomCounts, upcomingCount, memberC
         </Rail>
       </section>
 
-      <section className="rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm sm:p-6">
-        <Head eyebrow="How it works" title="From sign-in to the door in a minute" />
-        <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-          <span className="absolute left-4 top-4 hidden h-px w-[calc(100%-2rem)] bg-slate-200 sm:block" aria-hidden="true" />
-          {STEPS.map(([t, d], i) => (
-            <div key={t} className="relative flex items-start gap-3 sm:block">
-              <span className="u-keep relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-sm font-bold text-white ring-4 ring-white">{i + 1}</span>
-              <span className="block sm:mt-3">
-                <span className="block font-semibold text-slate-900">{t}</span>
-                <span className="block text-sm text-slate-500">{d}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {!user && (
+        <section>
+          <Head eyebrow="How it works" title="From sign-in to the door in a minute" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {STEPS.map(([t, d], i) => (
+              <div key={t} className="flex items-center gap-3.5 rounded-2xl border border-slate-200/70 bg-white p-4">
+                <span className="u-keep flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-sm font-bold text-white">{i + 1}</span>
+                <span className="min-w-0">
+                  <span className="block font-semibold text-slate-900">{t}</span>
+                  <span className="block text-sm text-slate-500">{d}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <button onClick={hostEvent}
         className="u-keep u-btn flex w-full items-center gap-4 rounded-3xl p-5 text-left text-white shadow-lg"
