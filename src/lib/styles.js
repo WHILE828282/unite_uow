@@ -4,7 +4,9 @@ export const GRADIENTS = new Proxy({}, { get: () => INK });
 
 /* Installed iPhone app uses the black-translucent status bar (white text over the page): a graphite strip the height of
    the status bar keeps it readable over the light header. Zero height everywhere else. */
-export const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(#0e0f13 0 var(--sat), transparent var(--sat))" };
+// Light header: iOS draws the status text white, so it needs something dark behind it. A soft dark glass that fades into
+// the header (no hard band); the header's own blur shows through its lower part.
+export const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(rgba(14,15,19,0.9) 0, rgba(14,15,19,0.78) calc(var(--sat) * 0.6), rgba(14,15,19,0) calc(var(--sat) + 10px))" };
 
 export const glassDark = { background: "rgba(14,15,19,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" };
 export const overlayStyle = { background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
