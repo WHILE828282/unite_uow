@@ -798,7 +798,7 @@ export default function App() {
       : st === "pending" || st === "applied" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
-        {st === "applied" ? "Applied" : st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : c.notifyAdmin ? "Apply to join" : "Join the club"}
+        {st === "applied" ? "Applied" : st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : "Join the club"}
       </button>
     );
   };
