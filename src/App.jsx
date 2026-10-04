@@ -69,8 +69,9 @@ export default function App() {
   const [clock, setClock] = useState(Date.now());
   const [bookings, setBookings] = useState(() => (saved && Array.isArray(saved.bookings) ? saved.bookings : []));
   // Seat and waitlist counts include your own saved tickets and waitlist spots.
+  // Built-in events are real events on the server too (DEMO-<id>): tickets, seats and waitlists live there.
   const [parties, setParties] = useState(() => PARTIES.map((p) => ({
-    ...p,
+    ...p, ref: p.ref || `DEMO-${p.id}`,
     taken: p.taken + bookings.filter((b) => b.partyId === p.id).length,
     wait: p.wait + (saved && saved.waitlist && saved.waitlist[p.id] ? 1 : 0),
   })));
@@ -82,6 +83,7 @@ export default function App() {
   });
   const [campus, setCampus] = useState([]); // approved student events from the database, visible to everyone
   const [campusLoaded, setCampusLoaded] = useState(false); // first feed request finished (either way)
+  const [demoSeats, setDemoSeats] = useState(null); // ref -> tickets issued on the server for built-in events
   const seenRef = useRef({}); // last review status shown per application, to announce changes once
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
@@ -252,6 +254,16 @@ export default function App() {
     });
     // eslint-disable-next-line
   }, [liveKey]);
+  // Built-in events: the listed base count plus the tickets actually issued on Unite (same number on every device).
+  useEffect(() => {
+    if (!demoSeats) return;
+    setParties((ps) => ps.map((x) => {
+      if (x.dyn) return x;
+      const base = PARTIES.find((p) => p.id === x.id);
+      const taken = (base ? base.taken : 0) + (demoSeats[x.ref] || 0);
+      return taken === x.taken ? x : { ...x, taken };
+    }));
+  }, [demoSeats]);
 
   // Campus feed of approved student events (refreshed every minute).
   useEffect(() => {
@@ -260,6 +272,7 @@ export default function App() {
       try {
         const d = await (await fetch("/api/events")).json();
         if (!stop && d && Array.isArray(d.events)) setCampus((old) => (JSON.stringify(old) === JSON.stringify(d.events) ? old : d.events));
+        if (!stop && d && d.seats && typeof d.seats === "object") setDemoSeats((old) => (JSON.stringify(old) === JSON.stringify(d.seats) ? old : d.seats));
       } catch (e) { /* offline or no database: keep what we have */ }
       if (!stop) setCampusLoaded(true);
     };
@@ -583,6 +596,34 @@ export default function App() {
     if (r.ok && w) w.location.href = r.url;
     else { if (w) w.close(); notify(r.error || "Couldn't open Telegram."); }
   };
+  // Your tickets live on the server: one bought on the phone shows on the laptop too (signed QR included).
+  useEffect(() => {
+    if (!user || isDemo || !tokenRef.current) return;
+    let stop = false;
+    const pull = async () => {
+      const r = await appsApi({ a: "tickets", s: tokenRef.current });
+      if (stop || !r.ok || !Array.isArray(r.tickets)) return;
+      setBookings((bs) => {
+        const have = new Set(bs.map((b) => b.id));
+        const added = r.tickets.filter((t) => !have.has(t.id) && !t.refunded).map((t) => {
+          const p = parties.find((x) => x.ref === t.ref) || {};
+          return {
+            id: t.id, partyId: p.id != null ? p.id : t.demoId || t.partyAt, title: p.title || t.title, emoji: p.emoji, logo: p.logo || t.logo,
+            date: p.date || t.date, time: p.time || t.time || (t.start ? fmtTime(t.start) : ""), where: p.where || t.where, price: t.price, paid: t.price > 0,
+            method: t.method, email: user, name: t.name, studentId: t.studentId, ref: t.ref, kind: t.kind, state: t.kind === "trip" ? "waiting" : "valid",
+            qr: t.qr, key: t.key, checkedIn: t.checkedIn, ...(t.kind === "trip" ? { extName: t.extName, collectUntil: t.collectUntil } : {}),
+          };
+        });
+        return added.length ? [...added, ...bs] : bs;
+      });
+    };
+    pull();
+    const onShow = () => { if (document.visibilityState === "visible") pull(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => { stop = true; document.removeEventListener("visibilitychange", onShow); };
+    // eslint-disable-next-line
+  }, [user, isDemo]);
+
   // Your hosted-event applications live on the server too: an event sent from the laptop shows on the phone and back.
   // Pulled on sign-in and whenever the app comes back to the screen; ones deleted on another device drop off here.
   useEffect(() => {
@@ -616,13 +657,19 @@ export default function App() {
         pulledMemberships.current = true;
         const r = await appsApi({ a: "sync", s: tokenRef.current });
         const missing = r.ok ? r.memberships.filter((m) => !joinedClubs[m.clubId] && clubs.some((c) => c.id === m.clubId)) : [];
+        // Waitlist spots saved from another device (by event ref).
+        const waits = r.ok && Array.isArray(r.waitlist) ? r.waitlist.map((ref) => parties.find((p) => p.ref === ref)).filter((p) => p && !waitlist[p.id]) : [];
+        if (waits.length) setWaitlist((w) => ({ ...w, ...Object.fromEntries(waits.map((p) => [p.id, Math.max(1, p.wait || 1)])) }));
         if (missing.length) { setJoinedClubs((x) => ({ ...x, ...Object.fromEntries(missing.map((m) => [m.clubId, { status: m.status, at: m.at || Date.now() }])) })); return; }
+        if (waits.length) return;
       }
       const memberships = Object.entries(joinedClubs).map(([id, r]) => {
         const c = clubs.find((x) => x.id === Number(id));
         return { clubId: Number(id), status: r.status === "pending" ? "pending" : "joined", source: c && isSports(c) ? "tryout" : "app" };
       });
-      appsApi({ a: "sync", s: tokenRef.current, memberships, waitlist: Object.keys(waitlist) });
+      // The server knows events by ref (DEMO-<id> or UN-…), not by this app's local ids.
+      const waitRefs = Object.keys(waitlist).map((id) => (parties.find((p) => String(p.id) === id) || {}).ref).filter(Boolean);
+      appsApi({ a: "sync", s: tokenRef.current, memberships, waitlist: waitRefs });
     }, 1500);
     return () => clearTimeout(t);
     // eslint-disable-next-line
@@ -661,7 +708,8 @@ export default function App() {
         let d = await issueTicket(b, p.ref);
         for (let i = 0; i < 2 && d.offline; i++) { await new Promise((r) => setTimeout(r, 3000)); d = await issueTicket(b, p.ref); }
         if (d.ok) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: d.code, key: d.key, state: d.ticket ? d.ticket.state : x.state } : x)));
-        if (d.store === false) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: x.id } : x))); // no database: demo ticket, booking ID as the code
+        // No database, or (built-in events only) the server couldn't be reached at all: keep it as a demo ticket.
+        if (d.store === false || (/^DEMO-/.test(p.ref) && (d.offline || d.unreachable))) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: x.id } : x)));
         setBookings((bs) => bs.filter((x) => x.id !== b.id));
         setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: Math.max(0, x.taken - 1) } : x)));
         setModal((m) => (m && ((m.type === "ticket" && m.booking.id === b.id) || m.type === "checkout") ? null : m));

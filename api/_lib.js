@@ -69,7 +69,8 @@ export const K = {
   sweep: "unite:sweep-lock",
 };
 export const STATUSES = ["pending", "under_review", "approved", "rejected"];
-export const isRef = (v) => /^UN-[A-Z0-9]{6}$/.test(String(v || ""));
+// Student events (UN-XXXXXX) and Unite's own built-in events (DEMO-<id>, seeded into the database).
+export const isRef = (v) => /^(UN-[A-Z0-9]{6}|DEMO-\d{1,4})$/.test(String(v || ""));
 // Events (hosted applications) live in Postgres.
 export const getPitch = (ref) => store.getEvent(ref);
 

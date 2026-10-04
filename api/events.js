@@ -3,7 +3,7 @@
    GET /api/events?mine=REF.KEY,REF.KEY    -> status of your own applications (KEY is returned on submit)
    GET /api/events?img=REF&kind=cover|logo -> artwork of an approved event (or your own, with &k=KEY) */
 import { isRef, getPitch, ownerOk, STATUSES, sweepTrips, isTrip, tripState } from "./_lib.js";
-import { dbConfigured, getEventImage, listApprovedEvents } from "./_store.js";
+import { dbConfigured, getEventImage, listApprovedEvents, demoSeats } from "./_store.js";
 import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
@@ -45,7 +45,8 @@ export default async function handler(req, res) {
     // Approved events, minus group trips that were cancelled at their payment deadline.
     const events = (await listApprovedEvents()).filter((r) => !(isTrip(r) && tripState(r) === "cancelled")).map(pick);
     res.setHeader("Cache-Control", "public, max-age=15");
-    return res.status(200).json({ ok: true, store: true, events });
+    const seats = await demoSeats().catch(() => ({})); // tickets taken on Unite's built-in events
+    return res.status(200).json({ ok: true, store: true, events, seats });
   } catch (e) {
     console.error("Events lookup failed:", e && e.message);
     return res.status(200).json({ ok: false, store: true, events: [], mine: [] });

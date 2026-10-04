@@ -110,7 +110,9 @@ export const syncWaitlist = async (email, eventRefs) => {
   const e = lower(email), refs = [...new Set(eventRefs.map(String))].slice(0, 100);
   await ensureUser(e);
   await db().delete(S.waitlist).where(refs.length ? and(eq(S.waitlist.userEmail, e), sql`${S.waitlist.eventRef} not in (${sql.join(refs.map((r) => sql`${r}`), sql`, `)})`) : eq(S.waitlist.userEmail, e));
-  for (const r of refs) await db().insert(S.waitlist).values({ eventRef: r, userEmail: e }).onConflictDoNothing();
+  // Only events that exist (the table points at events): unknown refs are skipped instead of failing the sync.
+  const known = refs.length ? (await db().select({ ref: S.events.ref }).from(S.events).where(inArray(S.events.ref, refs))).map((r) => r.ref) : [];
+  for (const r of known) await db().insert(S.waitlist).values({ eventRef: r, userEmail: e }).onConflictDoNothing();
 };
 
 /* ---------------------------- Club applications ------------------ */
@@ -219,6 +221,16 @@ const tixCols = {
 const tixQuery = () => db().select(tixCols).from(S.tickets).leftJoin(S.externalTicketDeliveries, eq(S.externalTicketDeliveries.ticketId, S.tickets.id));
 export const getTickets = async (ref) => (await tixQuery().where(eq(S.tickets.eventRef, ref)).orderBy(asc(S.tickets.createdAt))).map(tixOf);
 export const getTicket = async (ref, id) => { const [r] = await tixQuery().where(and(eq(S.tickets.eventRef, ref), eq(S.tickets.id, id))).limit(1); return tixOf(r); };
+// Tickets issued per built-in event (the feed adds them to the seat counts everyone sees).
+export const demoSeats = async () => Object.fromEntries((await db().select({ ref: S.tickets.eventRef, n: sql`count(*)::int` }).from(S.tickets)
+  .where(and(eq(S.tickets.status, "valid"), sql`${S.tickets.eventRef} like 'DEMO-%'`)).groupBy(S.tickets.eventRef)).map((r) => [r.ref, Number(r.n)]));
+// A student's own tickets with their event, newest first (so every device shows the same My Tickets).
+export const listTicketsFor = async (email) => db().select({
+  id: S.tickets.id, ref: S.tickets.eventRef, name: S.tickets.name, studentId: S.tickets.studentId, method: S.tickets.method, price: S.tickets.price,
+  status: S.tickets.status, checkedInAt: S.tickets.checkedInAt, createdAt: S.tickets.createdAt,
+  title: S.events.title, kind: S.events.kind, date: S.events.date, start: S.events.startTime, venue: S.events.venueName, data: S.events.data, hasLogo: sql`${S.events.logo} is not null`,
+}).from(S.tickets).innerJoin(S.events, eq(S.events.ref, S.tickets.eventRef)).where(eq(S.tickets.userEmail, lower(email))).orderBy(desc(S.tickets.createdAt)).limit(100);
+export const listWaitlist = async (email) => (await db().select({ ref: S.waitlist.eventRef }).from(S.waitlist).where(eq(S.waitlist.userEmail, lower(email)))).map((r) => r.ref);
 export const countTickets = async (ref) => Number((await db().select({ n: sql`count(*)` }).from(S.tickets).where(eq(S.tickets.eventRef, ref)))[0].n) || 0;
 // false if a ticket with this id already exists
 export const insertTicket = async (t, qrId) => {

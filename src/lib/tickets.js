@@ -3,7 +3,7 @@
 const call = async (url, body) => {
   try {
     const r = await fetch(url, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" } : { cache: "no-store" });
-    return await r.json().catch(() => ({ ok: false, error: "Unexpected reply from the server." }));
+    return await r.json().catch(() => ({ ok: false, unreachable: true, error: "Unexpected reply from the server." }));
   } catch (e) { return { ok: false, offline: true, error: "You're offline. Try again when you're connected." }; }
 };
 export const issueTicket = (b, ref) => call("/api/tickets", { a: "issue", ref, id: b.id, name: b.name, email: b.email, studentId: b.studentId, method: b.method });

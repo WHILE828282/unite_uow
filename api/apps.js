@@ -10,7 +10,7 @@
      consent  { version, at } → which Terms / Privacy Policy version the user accepted, and when
    GET ?a=wa&id&k → marks the application "contacted", then opens WhatsApp (link used in emails and Telegram). */
 import crypto from "node:crypto";
-import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook, ownerKey } from "./_lib.js";
+import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook, ownerKey, holderKey, ticketCode } from "./_lib.js";
 import { A, APP_CLUBS, clubById, isAppId, newAppId, getApp, studentView, getRoles, saveRoles, roleOf, getProfile, saveProfile,
   notifyTeam, setStatus, sweepApps, linkOk, waUrl, botUsername } from "./_apps.js";
 import * as store from "./_store.js";
@@ -119,7 +119,20 @@ export default async function handler(req, res) {
       if (clubsIn) await store.syncMemberships(me, clubsIn.filter((m) => m && CLUBS.some((c) => c.id === Number(m.clubId))).map((m) => ({ clubId: Number(m.clubId), status: m.status === "pending" ? "pending" : "joined", source: m.source === "tryout" ? "tryout" : "app" })));
       if (Array.isArray(b.waitlist)) await store.syncWaitlist(me, b.waitlist.map((x) => str(x, 20)).filter(Boolean));
       const memberships = (await store.listMemberships(me)).map((m) => ({ clubId: m.clubId, status: m.status, at: m.joinedAt ? new Date(m.joinedAt).getTime() : null }));
-      return res.status(200).json({ ok: true, memberships });
+      return res.status(200).json({ ok: true, memberships, waitlist: await store.listWaitlist(me) });
+    }
+
+    // Your tickets, so every device you sign in on shows the same My Tickets (with the signed QR code).
+    if (b.a === "tickets") {
+      const tickets = (await store.listTicketsFor(me)).map((t) => {
+        const d = t.data || {};
+        return { id: t.id, ref: t.ref, key: holderKey(t.id), qr: ticketCode(t.id), at: t.createdAt ? new Date(t.createdAt).getTime() : Date.now(), name: t.name || "", studentId: t.studentId || "",
+          method: t.method || "", price: Number(t.price) || 0, refunded: t.status === "refunded", checkedIn: t.checkedInAt ? new Date(t.checkedInAt).getTime() : null,
+          title: t.title, kind: t.kind || "own", date: t.date, start: t.start, time: d.time || "", where: d.where || (d.room ? `${t.venue}, ${d.room}` : t.venue) || "",
+          partyAt: d.at || null, demoId: d.demoId || null, logo: t.hasLogo ? `/api/events?img=${t.ref}&kind=logo` : d.logoUrl || null,
+          ...(t.kind === "trip" ? { extName: d.extName, collectUntil: d.collectUntil } : {}) };
+      });
+      return res.status(200).json({ ok: true, tickets });
     }
 
     // Your hosted-event applications, so every device you sign in on shows the same My Events.
