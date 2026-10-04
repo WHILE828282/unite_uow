@@ -138,7 +138,7 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
     document.documentElement.classList.toggle("u-boot-dark", dark);
-    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#f8fafc";
+    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#eeebe6";
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   }, [dark]);
 
@@ -782,7 +782,7 @@ export default function App() {
   const openOwn = (sub) => (reviewOf(sub) === "approved" ? setModal({ type: "detail", id: sub.at }) : setModal({ type: "review", ref: sub.ref }));
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : "u-light"}`}>
+    <div className={`u-page min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : "u-light"}`}>
       <style>{CSS}</style>
 
       {/* Nav */}

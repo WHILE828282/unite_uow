@@ -252,7 +252,7 @@ html.u-typing { --nav: 0px; }
 
 /* Host form in light mode. The form is built dark (u-keep); in light mode .u-host-light flips its colours here.
    The phone preview (.u-host-keep) already shows the light event page and is left alone. */
-.u-host-light.u-host-light { background-color: #f8fafc; color: #0f172a; --tw-ring-color: rgba(15, 23, 42, 0.08); }
+.u-host-light.u-host-light { background-color: #f4f1ec; color: #1d2230; --tw-ring-color: rgba(15, 23, 42, 0.08); }
 .u-host-light :is(.text-white, .text-slate-100, .text-slate-200):not([class*="bg-crimson"], [class*="bg-rose-5"], [class*="bg-black"], .bg-slate-900, .u-host-keep *) { color: #0f172a; }
 .u-host-light .text-slate-300:not(.u-host-keep *) { color: #475569; }
 .u-host-light .text-slate-400:not(.u-host-keep *) { color: #64748b; }
@@ -260,10 +260,10 @@ html.u-typing { --nav: 0px; }
 .u-host-light :is(.text-rose-200, .text-rose-300):not(.u-host-keep *) { color: #e11d48; }
 .u-host-light .text-emerald-400:not(.u-host-keep *) { color: #059669; }
 .u-host-light [class*="bg-white/"]:not(.u-host-keep *) { background-color: rgba(15, 23, 42, 0.04); }
-.u-host-light :is(.bg-\[\#0a192f\], .bg-\[\#0d1f3a\], .bg-\[\#112240\]):not(.u-host-keep, .u-host-keep *) { background-color: #ffffff; }
+.u-host-light :is(.bg-\[\#0a192f\], .bg-\[\#0d1f3a\], .bg-\[\#112240\]):not(.u-host-keep, .u-host-keep *) { background-color: #fbfaf8; }
 .u-host-light [class*="ring-white/"]:not(.u-host-keep, .u-host-keep *) { --tw-ring-color: rgba(15, 23, 42, 0.1); }
 .u-host-light :is([class*="border-white/"], [class*="divide-white/"] > *):not(.u-host-keep *) { border-color: rgba(15, 23, 42, 0.1); }
-.u-host-light :is(input, textarea, select):not(.u-host-keep *) { background-color: #ffffff; color: #0f172a; }
+.u-host-light :is(input, textarea, select):not(.u-host-keep *) { background-color: #fbfaf8; color: #1d2230; }
 .u-host-light :is(input, textarea):not(.u-host-keep *)::placeholder { color: #94a3b8; }
 .u-host-light option { background-color: #ffffff; color: #0f172a; }
 @media (hover: hover) and (pointer: fine) {
@@ -279,3 +279,31 @@ html.u-typing { --nav: 0px; }
 @keyframes uShake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
 .u-shake { animation: uShake .45s cubic-bezier(.36,.07,.19,.97) both; }
 @media (prefers-reduced-motion: reduce) { .u-shake { animation: none; } }
+
+/* ---- Light theme: soft "paper" palette instead of pure white, so it's easy on the eyes ----
+   Page a warm light grey, cards a shade lighter, text a deep navy-grey instead of near-black, softer borders.
+   .u-light.u-light raises specificity above Tailwind's own classes (which load later). */
+.u-light.u-page { background-color: #eeebe6; color: #1d2230; }
+.u-light .u-tabbar { background-color: #eeebe6; }
+.u-light.u-light :where(.bg-white:not(.u-keep)) { background-color: #fbfaf8; }
+.u-light.u-light :where(.bg-white\/80:not(.u-keep), .bg-white\/90:not(.u-keep)) { background-color: rgba(251, 250, 248, 0.86); }
+.u-light.u-light :where(.bg-slate-50:not(.u-keep)) { background-color: #f4f1ec; }
+.u-light.u-light :where(.bg-slate-100:not(.u-keep)) { background-color: #ebe7e1; }
+.u-light.u-light :where(.bg-slate-200:not(.u-keep)) { background-color: #e0dbd3; }
+.u-light.u-light :where(.border-slate-100:not(.u-keep), .divide-slate-100:not(.u-keep) > *) { border-color: rgba(110, 90, 70, 0.1); }
+.u-light.u-light :where(.border-slate-200:not(.u-keep), .border-slate-200\/50:not(.u-keep), .border-slate-200\/60:not(.u-keep), .border-slate-200\/70:not(.u-keep), .border-slate-200\/80:not(.u-keep)) { border-color: rgba(110, 90, 70, 0.16); }
+.u-light.u-light :where(.ring-slate-200:not(.u-keep), .ring-slate-200\/50:not(.u-keep), .ring-slate-200\/60:not(.u-keep), .ring-slate-200\/70:not(.u-keep), .ring-slate-200\/80:not(.u-keep)) { --tw-ring-color: rgba(110, 90, 70, 0.16); }
+.u-light.u-light :where(.text-slate-900:not(.u-keep)) { color: #1d2230; }
+.u-light.u-light :where(.text-slate-800:not(.u-keep)) { color: #2a3040; }
+.u-light.u-light :where(.text-slate-700:not(.u-keep)) { color: #3a4152; }
+.u-light.u-light :where(.text-slate-600:not(.u-keep)) { color: #515869; }
+.u-light.u-light :where(.text-slate-500:not(.u-keep)) { color: #656c7c; }
+.u-light.u-light :where(.text-slate-400:not(.u-keep)) { color: #8b909b; }
+.u-light.u-light :where(.shadow-sm:not(.u-keep)) { --tw-shadow: 0 1px 2px rgba(80, 60, 40, 0.06); }
+@media (hover: hover) and (pointer: fine) {
+  .u-light.u-light :where(.hover\:bg-slate-50:not(.u-keep)):hover { background-color: #f1eee9; }
+  .u-light.u-light :where(.hover\:bg-slate-100:not(.u-keep)):hover { background-color: #e8e4dd; }
+  .u-light.u-light :where(.hover\:bg-white:not(.u-keep)):hover { background-color: #fbfaf8; }
+}
+.u-light .u-glass-bar, .u-light .u-glass-round { background: rgba(251, 250, 248, 0.9); }
+.u-light .u-banner { background: rgba(251, 250, 248, 0.94); }

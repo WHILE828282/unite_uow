@@ -45,7 +45,7 @@ export function LegalPage({ kind }) {
   useEffect(() => { document.title = `${doc.title} · Unite`; }, [doc]);
   const back = () => { if (window.history.length > 1 && document.referrer.startsWith(window.location.origin)) window.history.back(); else window.location.href = "/"; };
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : ""}`}>
+    <div className={`u-page min-h-screen bg-slate-50 text-slate-900 ${dark ? "u-dark" : "u-light"}`}>
       <header className="u-safe-top sticky top-0 z-10 border-b border-slate-200/60 bg-white">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <button onClick={back} className="u-btn inline-flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
@@ -85,7 +85,7 @@ export function LegalSheet({ kind, onClose }) {
   const onMove = (e) => { if (start.current != null) setDrag(Math.max(0, e.touches[0].clientY - start.current)); };
   const onEnd = () => { if (drag > 110) onClose(); else setDrag(0); start.current = null; };
   return createPortal(
-    <div className={`u-fade fixed inset-0 z-[70] flex items-end justify-center bg-black/50 sm:items-center sm:p-6 ${dark ? "u-dark" : ""}`}
+    <div className={`u-fade fixed inset-0 z-[70] flex items-end justify-center bg-black/50 sm:items-center sm:p-6 ${dark ? "u-dark" : "u-light"}`}
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true" aria-label={doc.title}>
       <div className="u-up flex w-full flex-col overflow-hidden rounded-t-3xl bg-slate-50 shadow-2xl sm:max-w-2xl sm:rounded-3xl"
         style={{ height: "calc(var(--vvh, 100vh) - var(--sat) - 12px)", maxHeight: "min(calc(var(--vvh, 100vh) - var(--sat) - 12px), 860px)", transform: drag ? `translateY(${drag}px)` : undefined, transition: drag ? "none" : "transform .25s ease" }}>
@@ -143,7 +143,7 @@ export function UpdatedTermsSheet({ onAccept }) {
   const [doc, setDoc] = useState(null);
   const dark = !!document.querySelector(".u-dark");
   return createPortal(
-    <div className={`u-fade fixed inset-0 z-[65] flex items-end justify-center bg-black/50 sm:items-center sm:p-6 ${dark ? "u-dark" : ""}`} role="dialog" aria-modal="true" aria-labelledby="legal-upd">
+    <div className={`u-fade fixed inset-0 z-[65] flex items-end justify-center bg-black/50 sm:items-center sm:p-6 ${dark ? "u-dark" : "u-light"}`} role="dialog" aria-modal="true" aria-labelledby="legal-upd">
       <div className="u-up w-full rounded-t-3xl bg-white p-6 shadow-2xl sm:max-w-md sm:rounded-3xl" style={{ paddingBottom: "max(1.5rem, var(--sabx))" }}>
         <span className="mx-auto block h-1.5 w-10 rounded-full bg-slate-300 sm:hidden" aria-hidden="true" />
         <h2 id="legal-upd" className="mt-3 text-lg font-bold text-slate-900">We've updated our Terms</h2>
