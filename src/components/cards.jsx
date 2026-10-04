@@ -56,6 +56,7 @@ const ROOM_TILE = {
 };
 export function ClubCard({ c, i, open, members, button }) {
   const photo = useImageReady(c.backgroundImage);
+  const team = c.category === "Sports";
   const meta = (cls) => (
     <div className={`min-w-0 space-y-1.5 text-xs ${cls}`}>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -69,9 +70,10 @@ export function ClubCard({ c, i, open, members, button }) {
   );
   if (photo)
     return (
-      <article {...open} className="u-keep u-card u-rise group relative isolate flex min-h-[15rem] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl bg-slate-950 p-5 text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
-        style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: c.focus || (c.category === "Sports" ? "center" : "center 22%") }}>
-        <span className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/20 transition-opacity duration-300 group-hover:opacity-90" aria-hidden="true" />
+      <article {...open} className={`u-keep u-card u-rise group relative isolate flex min-h-[15rem] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl bg-slate-950 p-5 text-white ${team ? "" : "pt-32"} shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400`}
+        style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: c.focus || (team ? "center" : "center 22%") }}>
+        {/* Clubs: clear space on top so faces show, dark only behind the text. Teams keep the ball in the middle. */}
+        <span className={`absolute inset-0 -z-10 bg-gradient-to-t transition-opacity duration-300 group-hover:opacity-90 ${team ? "from-slate-950 via-slate-950/75 to-slate-950/20" : "from-slate-950 from-35% via-slate-950/70 via-60% to-transparent"}`} aria-hidden="true" />
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">{c.category === "Sports" ? "Team" : `${c.category} club`}</p>
           <h3 className="mt-1 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
