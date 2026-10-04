@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       const pairs = String(q.mine).split(",").slice(0, 30).map((x) => x.split(".")).filter(([ref, key]) => isRef(ref) && ownerOk(ref, key));
       const mine = await Promise.all(pairs.map(async ([ref]) => {
         const rec = await getPitch(ref);
-        return rec ? { ref, status: STATUSES.includes(rec.status) ? rec.status : "pending", updatedAt: rec.updatedAt } : { ref, status: "missing" };
+        return rec && rec.status !== "deleted" ? { ref, status: STATUSES.includes(rec.status) ? rec.status : "pending", updatedAt: rec.updatedAt } : { ref, status: "missing" };
       }));
       res.setHeader("Cache-Control", "no-store");
       return res.status(200).json({ ok: true, store: true, mine });

@@ -3,7 +3,7 @@
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
 import crypto from "node:crypto";
-import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
+import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, ownerOk, isRef, getPitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
 
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
@@ -130,6 +130,32 @@ export default async function handler(req, res) {
   if (!b || typeof b !== "object") return res.status(400).json({ ok: false, error: "Invalid request." });
   if (b.website) return res.status(200).json({ ok: true }); // honeypot field: bots fill it, people never see it
 
+  // The host deletes their own application: it leaves Events, the moderation buttons in Telegram are replaced with
+  // "Deleted by the host" (so nobody approves it by mistake) and the admin chat gets a note. Blocked once tickets are sold.
+  if (b.action === "delete") {
+    const ref = str(b.ref, 20);
+    if (!isRef(ref) || !ownerOk(ref, b.key)) return res.status(403).json({ ok: false, error: "You can only delete your own events." });
+    if (!storeConfigured()) return res.status(200).json({ ok: true });
+    try {
+      const rec = await getPitch(ref);
+      if (!rec || rec.status === "deleted") return res.status(200).json({ ok: true });
+      const sold = (await getTickets(ref)).filter((t) => !t.refunded).length;
+      if (sold) return res.status(409).json({ ok: false, code: "sold", error: `${sold} ticket${sold > 1 ? "s have" : " has"} already been sold, so this event can't be deleted here. Email events@uniteuow.com and we'll help cancel it and refund your guests.` });
+      await kv("SET", K.pitch(ref), JSON.stringify({ ...rec, status: "deleted", deletedAt: Date.now(), updatedAt: Date.now() }), "EX", 7 * 24 * 3600);
+      await kv("SREM", K.approved, ref);
+      await kv("SREM", K.trips, ref);
+      if (rec.kbMsg) {
+        const r = await tg(token, "editMessageReplyMarkup", { chat_id: CHAT_ID, message_id: rec.kbMsg, reply_markup: { inline_keyboard: [[{ text: "🗑 Deleted by the host", callback_data: `m:i:${ref}` }]] } });
+        if (!r.ok && !/not modified/i.test(String(r.data && r.data.description))) console.error("Telegram editMessageReplyMarkup (deleted) rejected:", JSON.stringify(r.data));
+      }
+      await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `🗑 <b>Application deleted by the host</b>\n"${esc(rec.title)}" (${ref}) was withdrawn${rec.status === "approved" ? " and removed from Events" : ""}. No action needed.`, parse_mode: "HTML", ...(rec.kbMsg ? { reply_to_message_id: rec.kbMsg, allow_sending_without_reply: true } : {}) });
+      return res.status(200).json({ ok: true });
+    } catch (e) {
+      console.error("Pitch delete failed:", e && e.message);
+      return res.status(500).json({ ok: false, error: "Couldn't delete it right now. Please try again." });
+    }
+  }
+
   const p = {
     ref: str(b.ref, 20), title: str(b.title, 120), category: str(b.category, 40), lang: str(b.lang, 40),
     date: str(b.date, 10), start: str(b.start, 5), end: str(b.end, 5),
@@ -212,7 +238,7 @@ export default async function handler(req, res) {
 
   // Artwork: each photo is optional. If Telegram rejects one, the text pitch above still stands, plus a note.
   // The moderation buttons go under the last photo; if no photo got through they follow as their own message.
-  let buttonsPlaced = false;
+  let buttonsPlaced = false, kbMsg = null;
   if (delivered) {
     const failed = [];
     const photos = [[cover, "Cover"], [logo, "Logo"]].filter(([img]) => img);
@@ -225,7 +251,7 @@ export default async function handler(req, res) {
         if (keyboard && last) form.append("reply_markup", keyboard);
         form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
         const pr = await tg(token, "sendPhoto", form);
-        if (pr.ok) { if (keyboard && last) buttonsPlaced = true; }
+        if (pr.ok) { if (keyboard && last) { buttonsPlaced = true; kbMsg = pr.data.result && pr.data.result.message_id; } }
         else { failed.push(label); console.error(`Telegram sendPhoto (${label}, ${img.type}, ${img.data.length} bytes) rejected:`, JSON.stringify(pr.data)); }
       } catch (e) { failed.push(label); console.error(`Telegram sendPhoto (${label}) error:`, e && e.message); }
     }
@@ -234,8 +260,13 @@ export default async function handler(req, res) {
       try {
         const r = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: note, ...(keyboard && !buttonsPlaced ? { reply_markup: JSON.parse(keyboard) } : {}) });
         if (!r.ok) console.error("Telegram note rejected:", JSON.stringify(r.data));
+        else if (keyboard && !buttonsPlaced) kbMsg = r.data.result && r.data.result.message_id;
       } catch (e) { console.error("Telegram artwork note error:", e && e.message); }
     }
+  }
+  // Remember which Telegram message carries the buttons, so a later "deleted by the host" can replace them.
+  if (kbMsg && moderated) {
+    try { const rec = await getPitch(p.ref); if (rec) await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, kbMsg }), "EX", TTL_S); } catch (e) { /* not critical */ }
   }
   return res.status(200).json({ ok: true, delivered, moderated: delivered && moderated, ...(delivered && moderated ? { ref: p.ref, key: ownerKey(p.ref) } : {}) });
 }

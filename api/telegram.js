@@ -53,6 +53,7 @@ export default async function handler(req, res) {
   try {
     const rec = await getPitch(ref);
     if (!rec) { await answer(`${ref} wasn't found (it may have expired).`, true); return res.status(200).json({ ok: true }); }
+    if (rec.status === "deleted") { await answer(`"${rec.title}" was deleted by the host. Nothing to decide.`, true); return res.status(200).json({ ok: true }); }
     if (code === "i") { await answer(`${rec.title}: currently ${rec.status.replace("_", " ")}.`); return res.status(200).json({ ok: true }); }
 
     const status = statusFromCode[code];

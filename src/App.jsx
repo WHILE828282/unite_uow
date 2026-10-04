@@ -984,7 +984,15 @@ export default function App() {
           onDelete={() => setModal({
             type: "confirm", title: `Delete “${sub.title}”?`, body: "It disappears from Events and My Events. This can't be undone.",
             confirmLabel: "Delete", danger: true,
-            onConfirm: () => { setSubmissions((x) => x.filter((y) => y !== sub)); setModal(null); notify(`“${sub.title}” deleted`); },
+            onConfirm: async () => {
+              // Moderated events are withdrawn on the server too, so the admin can't approve something that was deleted.
+              if (sub.moderated && sub.ref && sub.key) {
+                const r = await fetch("/api/pitch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", ref: sub.ref, key: sub.key }) })
+                  .then((x) => x.json().then((d) => ({ ...d, status: x.status }))).catch(() => ({ ok: false, error: "Couldn't reach Unite. Check your connection and try again." }));
+                if (!r.ok) { setModal({ type: "review", ref: sub.ref }); notify({ title: "Not deleted", body: r.error, tone: "lock" }, 6000); return; }
+              }
+              setSubmissions((x) => x.filter((y) => y !== sub)); setModal(null); notify(`“${sub.title}” deleted`);
+            },
           })} />;
       })()}
       {/* Leaving or cancelling a sign-up needs the code we email to the account. */}
