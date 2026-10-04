@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ClubCard } from "../components/cards.jsx";
+import { Icon } from "../components/ui.jsx";
 import { CLUB_ROOMS } from "../data/clubs.js";
 
 /* Clubs tab: one switcher on top (Teams + the three club rooms), so every section is one tap away
@@ -7,11 +8,11 @@ import { CLUB_ROOMS } from "../data/clubs.js";
 // Clubs first, teams last.
 const SECTIONS = [
   ...CLUB_ROOMS.map((r) => ({ ...r, ...{
-    Tech: { emoji: "💻", blurb: "Code, compete and create: tech, e-sports, cars and content." },
-    Business: { emoji: "📈", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
-    Arts: { emoji: "🎨", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
+    Tech: { icon: "laptop", blurb: "Code, compete and create: tech, e-sports, cars and content." },
+    Business: { icon: "chart", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
+    Arts: { icon: "palette", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
   }[r.k] })),
-  { k: "Sports", label: "Sports Teams", emoji: "🏆", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
+  { k: "Sports", label: "Sports Teams", icon: "trophy", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
 ];
 
 export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clubBtn }) {
@@ -28,7 +29,7 @@ export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clu
           return (
             <button key={s.k} role="tab" aria-selected={on} onClick={() => pick(s.k)}
               className={`u-btn flex shrink-0 items-center gap-2 whitespace-nowrap rounded-2xl border px-3.5 py-2.5 text-left text-sm font-semibold ${on ? "u-keep border-crimson-700 bg-crimson-700 text-white shadow-sm" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"}`}>
-              <span aria-hidden="true">{s.emoji}</span>
+              <span style={on ? { "--icon-accent": "#fda4af" } : undefined}><Icon name={s.icon} className="h-[18px] w-[18px]" /></span>
               <span>{s.label}</span>
               <span className={`ml-auto rounded-full px-1.5 text-xs tabular-nums ${on ? "bg-white/15 text-white/80" : "bg-slate-100 text-slate-500"}`}>{s.clubs.length}</span>
             </button>

@@ -52,7 +52,9 @@ export default defineConfig({
       workbox: {
         // App shell + static assets (JS, CSS, icons, team/party photos) are precached so the app opens fast.
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
-        globIgnores: ["screenshots/**", "install/*.png"], // install dialog screenshots; PNG fallbacks of the WebP install steps
+        // Install dialog screenshots and PNG fallbacks; club photos and large event covers are cached on first view
+        // instead (runtime "photos" cache below), so installing the app stays light.
+        globIgnores: ["screenshots/**", "install/*.png", "clubs/**", "events/*-large.webp"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
@@ -63,6 +65,11 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           { urlPattern: ({ url }) => url.pathname.startsWith("/api/"), handler: "NetworkOnly" },
+          {
+            urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events)\/.+\.webp$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: { cacheName: "photos", expiration: { maxEntries: 120, maxAgeSeconds: 30 * 24 * 3600 } },
+          },
           {
             // Google Fonts: stylesheet revalidates, font files are cached for a year.
             urlPattern: ({ url }) => url.origin === "https://fonts.googleapis.com",
