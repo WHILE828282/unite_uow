@@ -25,8 +25,9 @@ export default async function handler(req, res) {
         await kv("DEL", A.tgLink(m[1])).catch(() => {});
         await saveProfile(email, { tgChat: String(msg.chat.id) });
         await say(`✅ Connected to Unite as ${email}. Club applications and decisions will arrive here.`);
-      } else await say("This link has expired. Open your Unite profile and tap Connect Telegram again.");
-    } else await say("Hi! Connect this chat from your Unite profile (Profile & settings → Connect Telegram).");
+      } else await say("This link has expired. Open your Unite profile and tap Get notifications in Telegram again.");
+    } else if (String(msg.chat.id) === String(CHAT_ID)) await say("Hi! This is the Unite admin chat: new event applications arrive here with Approve and Reject buttons.");
+    else await say("Hi! To get club notifications here, open Unite → Profile & settings → Get notifications in Telegram.");
     return res.status(200).json({ ok: true });
   }
   const q = u && u.callback_query;
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
   const ca = /^ca:([ad]):(AP-[A-Z0-9]{8})$/.exec(String(q.data || ""));
   if (ca) {
     const email = dbConfigured() ? await emailByTelegramChat(q.message && q.message.chat && q.message.chat.id).catch(() => null) : null;
-    const r = email ? await setStatus(ca[2], ca[1] === "a" ? "accepted" : "declined", email).catch(() => "Couldn't save that. Please tap again.") : "Connect this chat from your Unite profile first.";
+    const r = email ? await setStatus(ca[2], ca[1] === "a" ? "accepted" : "declined", email).catch(() => "Couldn't save that. Please tap again.") : "Link this chat first: Unite → Profile & settings → Get notifications in Telegram.";
     if (typeof r === "string") { await answer(r, true); return res.status(200).json({ ok: true }); }
     await tg(token, "editMessageText", { chat_id: q.message.chat.id, message_id: q.message.message_id, text: tgCard(r, r.status === "accepted" ? `✅ <b>Accepted · ${r.club}</b>` : `✖️ <b>Declined · ${r.club}</b>`), parse_mode: "HTML",
       reply_markup: { inline_keyboard: [[{ text: "💬 WhatsApp", url: `https://wa.me/${r.whatsapp}` }]] } }).catch(() => {});
