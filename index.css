@@ -43,7 +43,12 @@ html.u-typing .u-hide-typing { display: none !important; }
 @supports (height: 100dvh) { :root { --vvh: 100dvh; } }
 html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 .u-vv { top: var(--kbtop) !important; bottom: var(--kb) !important; height: auto !important; }
-.u-vv::before, .u-vv::after { content: ""; position: absolute; left: 0; right: 0; height: 100vh; background: rgba(6, 16, 31, 0.96); pointer-events: auto; }
+.u-vv::before, .u-vv::after { content: ""; position: absolute; left: 0; right: 0; height: 100vh; background: rgba(0, 0, 0, 0.82); pointer-events: auto; }
+/* Keyboard up: the overlay resizes with the keyboard, and re-blurring the page behind it on every frame made it stutter
+   and flicker. Plain dim instead (same tone as the strips above and below), and no blur on the glass bars either. */
+html.u-kb .u-vv { background: rgba(0, 0, 0, 0.82) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.u-typing header, html.u-typing .u-glass-bar, html.u-typing .u-glass-round { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.u-typing { scroll-behavior: auto; }
 .u-vv::before { bottom: 100%; }
 .u-vv::after { top: 100%; }
 .u-sheet-h { max-height: 90vh; max-height: calc(var(--vvh) * 0.9); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }

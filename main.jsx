@@ -35,12 +35,15 @@ const syncViewport = () => {
 let lastViewport = "";
 // The keyboard animates for ~300ms and iOS doesn't always report the final size, so measure a few times.
 const syncSoon = () => { syncViewport(); [80, 200, 400, 700, 1000].forEach((t) => setTimeout(syncViewport, t)); };
+// visualViewport fires many times per frame while the keyboard slides: measure at most once per frame.
+let vvFrame = 0;
+const syncNextFrame = () => { if (!vvFrame) vvFrame = requestAnimationFrame(() => { vvFrame = 0; syncViewport(); }); };
 syncViewport();
 if (window.visualViewport) {
-  window.visualViewport.addEventListener("resize", syncViewport);
-  window.visualViewport.addEventListener("scroll", syncViewport);
+  window.visualViewport.addEventListener("resize", syncNextFrame);
+  window.visualViewport.addEventListener("scroll", syncNextFrame);
 }
-window.addEventListener("resize", syncViewport);
+window.addEventListener("resize", syncNextFrame);
 window.addEventListener("orientationchange", syncSoon);
 
 // Keyboard handling.
@@ -69,8 +72,12 @@ const revealFocused = () => {
   let delta = 0;
   if (r.bottom > limit) delta = r.bottom - limit; else if (r.top < top) delta = r.top - top;
   if (next) { const nb = next.getBoundingClientRect().bottom - delta; if (nb > limit) delta += Math.min(nb - limit, r.top - delta - top); }
-  if (delta) box.scrollTop += delta;
+  if (delta) box.scrollTo({ top: box.scrollTop + delta, behavior: "instant" });
 };
+// The keyboard opening fires focus, resize and scroll events in a burst: adjust once, after it settles.
+let revealTimer = 0, settleTimer = 0;
+const revealSoon = (ms) => { clearTimeout(revealTimer); revealTimer = setTimeout(revealFocused, ms); };
+const settleSoon = (ms) => { clearTimeout(settleTimer); settleTimer = setTimeout(settleAfterKeyboard, ms); };
 // Where the sheet/form was scrolled to before the keyboard came up, so closing the keyboard puts it back
 // (otherwise the sheet stays scrolled up and its top, e.g. the logo, is cut off).
 let before = null;
@@ -85,8 +92,9 @@ const settleAfterKeyboard = () => {
     if (r.top + shift >= b.top && r.bottom + shift <= b.bottom) before.box.scrollTo({ top: before.top, behavior: "instant" });
   }
   before = null;
-  if (document.body.style.position === "fixed") { if (window.scrollY !== 0) window.scrollTo(0, 0); } // modal open: page is pinned
-  else if (window.visualViewport && window.visualViewport.offsetTop > 0) window.scrollTo(window.scrollX, window.scrollY);
+  // "instant": the page has scroll-behavior: smooth, and an animated scroll here fights iOS's own and jolts the screen.
+  if (document.body.style.position === "fixed") { if (window.scrollY !== 0) window.scrollTo({ top: 0, behavior: "instant" }); } // modal open: page is pinned
+  else if (window.visualViewport && window.visualViewport.offsetTop > 0) window.scrollTo({ left: window.scrollX, top: window.scrollY, behavior: "instant" });
 };
 document.addEventListener("focusin", (e) => {
   if (!isField(e.target)) return;
@@ -94,9 +102,10 @@ document.addEventListener("focusin", (e) => {
   if (before) before.field = e.target;
   syncSoon();
   document.documentElement.classList.add("u-typing"); // hides floating bars (install banner) while typing
-  setTimeout(revealFocused, 350);
+  clearTimeout(settleTimer); // moving to the next field: the keyboard stays, nothing to put back
+  revealSoon(350);
 });
-document.addEventListener("focusout", () => setTimeout(settleAfterKeyboard, 120));
+document.addEventListener("focusout", () => settleSoon(150));
 
 // Phones: a tap on an empty spot closes the keyboard, like native apps (iOS keeps it open otherwise, covering the
 // buttons underneath). Taps on fields, labels, buttons and links behave as before; scrolls are ignored.
@@ -116,8 +125,8 @@ if (window.visualViewport) {
   let lastH = window.visualViewport.height;
   window.visualViewport.addEventListener("resize", () => {
     const h = window.visualViewport.height;
-    if (h < lastH - 80) setTimeout(revealFocused, 60); // keyboard opened
-    else if (h > lastH + 80) setTimeout(settleAfterKeyboard, 60); // keyboard closed
+    if (h < lastH - 80) revealSoon(120); // keyboard opened
+    else if (h > lastH + 80) settleSoon(120); // keyboard closed
     lastH = h;
   });
 }
