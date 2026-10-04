@@ -451,7 +451,6 @@ export default function App() {
   // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
   // queues it for review locally. Throws with a readable message if it couldn't be delivered.
   const submitParty = async (sub, website) => {
-    // Fail-safe: whatever happens on the way to Telegram, the student's submission completes.
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 20000);
     let saved = sub;
@@ -463,10 +462,14 @@ export default function App() {
         signal: ctrl.signal,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.delivered) console.warn("Pitch forwarding issue", res.status, data);
+      // Never say "sent" when it wasn't: the form stays open with the reason, so nothing is lost.
+      if (res.status === 413) throw new Error("Your photos are too large to send. Try different images.");
+      if (!res.ok) throw new Error(data.error || "The review team couldn't be reached. Please try again in a minute.");
+      if (!data.delivered) throw new Error("The review team couldn't be notified right now. Please try again in a few minutes, or email events@uniteuow.com.");
       if (data.moderated && data.ref && data.key) saved = { ...sub, ref: data.ref, key: data.key, moderated: true, mod: "pending" };
     } catch (e) {
-      console.warn("Pitch forwarding failed", e);
+      if (e.name === "AbortError" || e instanceof TypeError) throw new Error("Couldn't reach Unite. Check your connection and try again.");
+      throw e;
     } finally { clearTimeout(timer); }
     setSubmissions((x) => [saved, ...x]);
     agreeLegal();
