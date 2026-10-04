@@ -1,0 +1,126 @@
+/* Vercel serverless function: club applications.
+   POST { a, s (session from /api/otp), ... }
+     apply    { clubId, name, whatsapp, year, message, consent } → saves, notifies the owner and helpers
+     mine     → the student's own applications (status only)
+     manage   → clubs where you're owner/helper, with their applications and helpers
+     status   { id, status: contacted|accepted|declined } → owner/helper only; the student is told on accept/decline
+     helper   { clubId, op: add|remove, who: email or @telegram } → owner only
+     profile  { name, telegram, whatsapp } → saved for notifications and @username lookup
+     tglink   → t.me link that connects your Telegram to Unite notifications
+   GET ?a=wa&id&k → marks the application "contacted", then opens WhatsApp (link used in emails and Telegram). */
+import crypto from "node:crypto";
+import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook } from "./_lib.js";
+import { A, APP_CLUBS, clubById, isAppId, newAppId, getApp, putApp, listApps, studentView, getRoles, saveRoles, roleOf, getProfile, saveProfile,
+  notifyTeam, setStatus, sweepApps, linkOk, waUrl, botUsername } from "./_apps.js";
+
+const str = (v, max) => String(v == null ? "" : v).trim().replace(/\s+/g, " ").slice(0, max);
+const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+// "+971 50…", "0501234567" or "501234567" → 971501234567 (UAE by default).
+export const waNumber = (v) => {
+  const raw = String(v || "").trim();
+  let d = raw.replace(/\D/g, "");
+  if (raw.startsWith("00")) d = d.slice(2);
+  else if (!raw.startsWith("+")) { if (d.startsWith("0")) d = `971${d.slice(1)}`; else if (d.length <= 9) d = `971${d}`; }
+  return d.length >= 8 && d.length <= 15 ? d : "";
+};
+
+export default async function handler(req, res) {
+  if (req.method === "GET") {
+    const { a, id, k } = req.query || {};
+    if (a !== "wa" || !isAppId(id) || !linkOk(id, k) || !storeConfigured()) return res.status(400).send("This link isn't valid.");
+    const app = await getApp(id).catch(() => null);
+    if (!app) return res.status(404).send("This application is no longer available.");
+    await setStatus(id, "contacted", "link").catch(() => {});
+    res.setHeader("Cache-Control", "no-store");
+    return res.redirect(302, waUrl(app));
+  }
+  if (req.method !== "POST") { res.setHeader("Allow", "GET, POST"); return res.status(405).json({ ok: false }); }
+  let b = req.body;
+  if (typeof b === "string") { try { b = JSON.parse(b); } catch (e) { b = {}; } }
+  b = b || {};
+  const me = sessionEmail(b.s);
+  if (!me) return res.status(401).json({ ok: false, code: "session", error: "Sign in with your UOWD email to use club applications." });
+  if (!storeConfigured()) return res.status(503).json({ ok: false, code: "store", error: "Applications aren't available right now. Try again later." });
+  sweepApps().catch(() => {});
+  // Telegram must deliver button taps and /start links here (registered once, remembered in the database).
+  if (readToken() && (b.a === "tglink" || b.a === "apply")) await ensureWebhook(readToken(), req).catch(() => {});
+
+  try {
+    if (b.a === "apply") {
+      const c = clubById(b.clubId);
+      if (!c) return res.status(400).json({ ok: false, error: "This club doesn't take applications here." });
+      const name = str(b.name, 60), year = str(b.year, 60), message = str(b.message, 300), whatsapp = waNumber(b.whatsapp);
+      if (name.length < 2) return res.status(400).json({ ok: false, field: "name", error: "Enter your name." });
+      if (!whatsapp) return res.status(400).json({ ok: false, field: "whatsapp", error: "Enter a WhatsApp number with country code, e.g. +971 50 123 4567." });
+      if (b.consent !== true) return res.status(400).json({ ok: false, field: "consent", error: "Tick the box to share your contact details with the club." });
+      const id = newAppId();
+      if ((await kv("SET", A.dup(c.id, me), id, "NX")) !== "OK") {
+        const prev = await getApp(await kv("GET", A.dup(c.id, me))).catch(() => null);
+        if (prev) return res.status(409).json({ ok: false, code: "duplicate", error: `You've already applied to ${c.name}.`, app: studentView(prev) });
+        await kv("SET", A.dup(c.id, me), id); // stale lock from an expired record
+      }
+      const app = { id, clubId: c.id, club: c.name, name, email: me, whatsapp, year, message, consent: true, status: "new", at: Date.now() };
+      await putApp(app);
+      await kv("SADD", A.club(c.id), id);
+      await kv("SADD", A.user(me), id);
+      await kv("ZADD", A.fresh, String(app.at), id);
+      await saveProfile(me, { ...(await getProfile(me)), name, whatsapp });
+      await notifyTeam(app).catch((e) => console.error("Application notify failed:", e && e.message));
+      return res.status(200).json({ ok: true, app: studentView(app) });
+    }
+
+    if (b.a === "mine") return res.status(200).json({ ok: true, apps: (await listApps(A.user(me))).map(studentView) });
+
+    if (b.a === "manage") {
+      const out = [];
+      for (const c of APP_CLUBS) {
+        const roles = await getRoles(c.id), role = roleOf(roles, me);
+        if (role) out.push({ clubId: c.id, club: c.name, role, owner: roles.owner, helpers: roles.helpers, apps: await listApps(A.club(c.id)) });
+      }
+      return res.status(200).json({ ok: true, clubs: out });
+    }
+
+    if (b.a === "status") {
+      if (!isAppId(b.id)) return res.status(400).json({ ok: false, error: "Unknown application." });
+      const r = await setStatus(b.id, String(b.status || ""), me);
+      if (typeof r === "string") return res.status(403).json({ ok: false, error: r });
+      return res.status(200).json({ ok: true, app: r });
+    }
+
+    if (b.a === "helper") {
+      const c = clubById(b.clubId);
+      if (!c) return res.status(400).json({ ok: false, error: "Unknown club." });
+      const roles = await getRoles(c.id);
+      if (roleOf(roles, me) !== "owner") return res.status(403).json({ ok: false, error: "Only the club owner can change helpers." });
+      const who = String(b.who || "").trim().toLowerCase();
+      let email = who;
+      if (who.startsWith("@") || (!who.includes("@") && who)) email = (await kv("GET", A.tgUser(who.replace(/^@/, "")))) || "";
+      if (!isEmail(email)) return res.status(400).json({ ok: false, error: who.includes("@") && !who.startsWith("@") ? "Enter a valid email." : "No Unite user has that Telegram username yet. Use their email instead." });
+      const helpers = b.op === "remove" ? roles.helpers.filter((h) => h !== email) : [...new Set([...roles.helpers, email])].filter((h) => h !== roles.owner).slice(0, 10);
+      await saveRoles(c.id, { owner: roles.owner, helpers });
+      return res.status(200).json({ ok: true, helpers });
+    }
+
+    if (b.a === "profile") {
+      const prev = await getProfile(me);
+      const telegram = str(b.telegram, 32).replace(/^@/, "");
+      if (prev.telegram && prev.telegram.toLowerCase() !== telegram.toLowerCase()) await kv("DEL", A.tgUser(prev.telegram)).catch(() => {});
+      if (/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegram)) await kv("SET", A.tgUser(telegram), me);
+      await saveProfile(me, { ...prev, name: str(b.name, 60) || prev.name, telegram, whatsapp: waNumber(b.whatsapp) || prev.whatsapp });
+      return res.status(200).json({ ok: true, tgLinked: !!prev.tgChat });
+    }
+
+    if (b.a === "tglink") {
+      const bot = await botUsername();
+      if (!bot) return res.status(503).json({ ok: false, error: "Telegram isn't set up yet." });
+      const code = crypto.randomBytes(12).toString("base64url");
+      await kv("SET", A.tgLink(code), me, "EX", "900");
+      return res.status(200).json({ ok: true, url: `https://t.me/${bot}?start=${code}`, linked: !!(await getProfile(me)).tgChat });
+    }
+
+    return res.status(400).json({ ok: false, error: "Unknown action." });
+  } catch (e) {
+    console.error("Applications API failed:", e && e.message);
+    return res.status(500).json({ ok: false, error: "Something went wrong. Please try again." });
+  }
+}

@@ -4,6 +4,7 @@
    Stateless: the challenge carries the email and expiry, signed with HMAC so it can't be forged or reused
    for another address. Needs RESEND_API_KEY. Sender: Unite Team <welcome@uniteuow.com>. Only UOW addresses (@uowdubai.ac.ae, @uowmail.edu.au, @uow.edu.au) and @uniteuow.com. */
 import crypto from "node:crypto";
+import { sessionToken } from "./_lib.js";
 
 const TTL_MS = 10 * 60 * 1000; // codes expire after 10 minutes
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -89,7 +90,7 @@ export default async function handler(req, res) {
     if (Date.now() > exp) return res.status(400).json({ ok: false, code: "expired", error: "This code has expired. Tap Resend code for a new one." });
     const want = Buffer.from(sign(email, code, exp)), got = Buffer.from(mac);
     if (want.length !== got.length || !crypto.timingSafeEqual(want, got)) return res.status(400).json({ ok: false, code: "wrong", error: "That code isn't right. Check the email and try again." });
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, session: sessionToken(email) });
   }
 
   return res.status(400).json({ ok: false, error: "Unknown action." });

@@ -3,6 +3,7 @@
    GET /api/events?mine=REF.KEY,REF.KEY    -> status of your own applications (KEY is returned on submit)
    GET /api/events?img=REF&kind=cover|logo -> artwork of an approved event (or your own, with &k=KEY) */
 import { kv, K, storeConfigured, isRef, getPitch, ownerOk, STATUSES, sweepTrips } from "./_lib.js";
+import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
 const PUBLIC = ["ref", "title", "category", "lang", "date", "start", "end", "spots", "price", "venueName", "room", "mapsUrl", "whatsapp", "telegram", "dress", "reqs", "pitch", "at", "hasCover", "hasLogo",
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
     }
 
     await sweepTrips().catch((e) => console.error("Trip sweep failed:", e && e.message)); // group trip deadlines (at most every 2 min)
+    await sweepApps().catch((e) => console.error("Application sweep failed:", e && e.message)); // 48-hour application reminders
     const refs = ((await kv("SMEMBERS", K.approved)) || []).filter(isRef).slice(0, 100);
     const recs = refs.length ? await kv("MGET", ...refs.map(K.pitch)) : [];
     const events = recs.map((v) => { try { return v && JSON.parse(v); } catch (e) { return null; } })

@@ -37,6 +37,9 @@ import { MySchedulePage } from "./pages/MySchedule.jsx";
 import { MyTickets } from "./pages/MyTickets.jsx";
 import { UniteIcon } from "./components/UniteIcon.jsx";
 import { TeamsClubs } from "./pages/TeamsClubs.jsx";
+import { ApplyModal } from "./components/modals/ApplyModal.jsx";
+import { ManageClub } from "./components/modals/ManageClub.jsx";
+import { DEMO_CLUB_ID, appsApi, loadDemoClub, saveDemoClub, waNumber } from "./lib/apps.js";
 
 // Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
 // tickets, teams/clubs and waitlist spots.
@@ -90,13 +93,18 @@ export default function App() {
   // Profile extras: photo (small data URL) and linked Telegram / WhatsApp, saved with the session.
   const [extra, setExtra] = useState(() => ({ photo: (saved && saved.photo) || "", telegram: (saved && saved.telegram) || "", whatsapp: (saved && saved.whatsapp) || "" }));
   const verifiedRef = useRef(saved ? !!saved.verified : false); // true when the email was confirmed with a live code
+  const tokenRef = useRef(saved ? saved.tok || "" : ""); // signed session from /api/otp, needed for club applications
+  // Club applications: the student's own (status only) and, for owners/helpers, the clubs they manage.
+  const [myApps, setMyApps] = useState(() => (saved && Array.isArray(saved.apps) ? saved.apps : []));
+  const [managed, setManaged] = useState([]);
+  const [demoClub, setDemoClub] = useState(loadDemoClub);
 
   useEffect(() => {
     try {
       if (!user) localStorage.removeItem(SESSION_KEY);
-      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, ...extra, joinedClubs, bookings, waitlist }));
+      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, tok: tokenRef.current, ...extra, apps: myApps, joinedClubs, bookings, waitlist }));
     } catch (e) { /* storage full or blocked */ }
-  }, [user, name, extra, joinedClubs, bookings, waitlist]);
+  }, [user, name, extra, myApps, joinedClubs, bookings, waitlist]);
 
   // One-off cleanup: test events created before launch, removed from this browser's saved applications.
   useEffect(() => {
@@ -360,8 +368,9 @@ export default function App() {
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
 
-  const signIn = (email, sid, verified, fullName) => {
+  const signIn = (email, sid, verified, fullName, session) => {
     const action = modal && modal.action;
+    tokenRef.current = (verified && session) || "";
     // Changing email from Profile: same account, new address. Everything stays; saved events move to the new key.
     if (modal && modal.changeEmail) {
       verifiedRef.current = !!verified;
@@ -407,14 +416,15 @@ export default function App() {
     window.location.reload();
   };
 
+  const openApp = (c) => user && myApps.find((a) => a.clubId === c.id && (a.status === "new" || a.status === "contacted"));
   const statusOf = (c) => {
     const r = user && joinedClubs[c.id];
-    if (!r) return null;
+    if (!r) return openApp(c) ? "applied" : null;
     return r.status === "pending" && clock - r.at >= PROCESSING_MS ? "joined" : r.status;
   };
   // clock ticks once a minute, so it can trail a just-made submission: clamp to the 24h window.
   const pendingHours = (c) => Math.min(24, Math.max(1, Math.ceil((joinedClubs[c.id].at + PROCESSING_MS - clock) / 36e5)));
-  const isJoined = (c) => !!statusOf(c); // pending or registered: either way the sessions are on the schedule
+  const isJoined = (c) => ["pending", "joined"].includes(statusOf(c)); // pending or registered: either way the sessions are on the schedule
   const memberCount = (c) => c.members + (statusOf(c) === "joined" ? 1 : 0);
   const sessions = clubs.filter(isJoined).flatMap((c) => c.slots.map((slot) => ({ club: c, slot, pending: statusOf(c) === "pending" })));
 
@@ -457,25 +467,15 @@ export default function App() {
   // "I've submitted the form" (pending, then registered once Student Services processes it).
   const openJoin = (c) => {
     if (isJoined(c)) return setModal({ type: "club", id: c.id });
-    // Teams: the official UOWD tryouts form. Clubs: join in one tap; business clubs' applications also reach the admin in Telegram.
-    requireAuth(`Sign in to join ${c.name}`, (email) => setModal(isSports(c) ? {
+    if (statusOf(c) === "applied") return setModal({ type: "club", id: c.id });
+    // Teams: the official UOWD tryouts form. Clubs: an application to the club's owner and helpers.
+    requireAuth(`Sign in to join ${c.name}`, () => setModal(isSports(c) ? {
       type: "confirm",
       title: `Sign up for ${c.name} tryouts?`,
       body: `Next you'll fill in the official UOWD form. ${scheduleLabel(c)} will be added to My Schedule.`,
       confirmLabel: "Continue",
       onConfirm: () => setModal({ type: "tryout", id: c.id }),
-    } : {
-      type: "confirm",
-      title: c.notifyAdmin ? `Apply to ${c.name}?` : `Join ${c.name}?`,
-      body: `${scheduleLabel(c)} will be added to My Schedule.${c.notifyAdmin ? " The committee is notified of your application straight away." : ""}`,
-      confirmLabel: c.notifyAdmin ? "Apply" : "Join",
-      onConfirm: () => {
-        setModal({ type: "club", id: c.id });
-        registerClub(c);
-        if (c.notifyAdmin) fetch("/api/club", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ club: c.name, room: c.category, email, name, studentId: studentIdRef.current, verified: isVerified }) }).catch(() => {});
-      },
-    }));
+    } : { type: "apply", id: c.id }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
@@ -483,6 +483,97 @@ export default function App() {
     setModal(null);
     notify(wasPending ? `Sign-up for ${c.name} cancelled` : `You left ${c.name}`);
   };
+
+  /* ---- Club applications ---- */
+  // Demo account (not verified with a live code): owns Music Club with sample applications, all in this browser.
+  const isDemo = !!user && !verifiedRef.current;
+  const updateDemo = (fn) => setDemoClub((d) => { const n = fn(d); saveDemoClub(n); return n; });
+  const submitApplication = async (c, f) => {
+    if (myApps.some((a) => a.clubId === c.id && a.status !== "declined")) return `You've already applied to ${c.name}.`;
+    let app;
+    if (isDemo) app = { id: makeId("AP-DM", 4), clubId: c.id, club: c.name, status: "new", at: Date.now() };
+    else {
+      if (!tokenRef.current) return "Please sign in again with your UOWD email to send applications.";
+      const r = await appsApi({ a: "apply", s: tokenRef.current, clubId: c.id, ...f });
+      if (!r.ok) { if (r.app) setMyApps((x) => (x.some((y) => y.id === r.app.id) ? x : [r.app, ...x])); return r.error; }
+      app = r.app;
+    }
+    setMyApps((x) => [app, ...x.filter((y) => y.clubId !== c.id)]);
+    if (!extra.whatsapp) setExtra((x) => ({ ...x, whatsapp: f.whatsapp }));
+    if (isDemo && c.id === DEMO_CLUB_ID) updateDemo((d) => ({ ...d, apps: [{ ...app, name: f.name, email: user, whatsapp: waNumber(f.whatsapp), year: f.year, message: f.message }, ...d.apps] }));
+    setModal({ type: "club", id: c.id });
+    notify({ title: "Application sent", body: `${c.name}'s committee has been notified and will get back to you on WhatsApp or email.` }, 4500);
+    return null;
+  };
+  // Clubs you manage, shaped for the profile list and the Manage club screen.
+  const manageList = isDemo ? [{ clubId: DEMO_CLUB_ID, club: "Music Club", role: "owner", owner: demoClub.owner, helpers: demoClub.helpers, apps: demoClub.apps }] : managed;
+  const refreshApps = async () => {
+    if (!user || isDemo || !tokenRef.current) return;
+    const [m, g] = await Promise.all([appsApi({ a: "mine", s: tokenRef.current }), appsApi({ a: "manage", s: tokenRef.current })]);
+    if (m.ok) setMyApps(m.apps);
+    if (g.ok) setManaged(g.clubs);
+  };
+  useEffect(() => {
+    refreshApps();
+    const t = setInterval(refreshApps, 120000);
+    const vis = () => document.visibilityState === "visible" && refreshApps();
+    document.addEventListener("visibilitychange", vis);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", vis); };
+    // eslint-disable-next-line
+  }, [user]);
+  // Decisions on your own applications: accepted → member (sessions added to My Schedule), declined → a polite note.
+  const seenApps = useRef(null);
+  useEffect(() => {
+    const prev = seenApps.current;
+    seenApps.current = Object.fromEntries(myApps.map((a) => [a.id, a.status]));
+    if (!prev) return;
+    myApps.forEach((a) => {
+      if (prev[a.id] === a.status) return;
+      const c = clubs.find((x) => x.id === a.clubId);
+      if (!c) return;
+      if (a.status === "accepted" && !joinedClubs[c.id]) { registerClub(c); notify({ title: `You're in ${c.name}!`, body: `${scheduleLabel(c)} added to My Schedule.` }, 5000); }
+      if (a.status === "declined") notify({ title: c.name, body: "They can't take new members right now. Have a look at the other clubs on Unite." }, 5000);
+    });
+    // eslint-disable-next-line
+  }, [myApps]);
+  const setAppStatus = async (a, status, quiet = false) => {
+    if (isDemo) {
+      updateDemo((d) => ({ ...d, apps: d.apps.map((x) => (x.id === a.id ? { ...x, status, updatedAt: Date.now() } : x)) }));
+      if (!quiet) notify(status === "accepted" ? `${a.name} accepted. They've been notified (demo).` : status === "declined" ? `${a.name} declined. They've been notified politely (demo).` : `Marked ${status}`);
+      return;
+    }
+    const r = await appsApi({ a: "status", s: tokenRef.current, id: a.id, status });
+    if (!r.ok) return notify(r.error);
+    setManaged((cs) => cs.map((c) => ({ ...c, apps: c.apps.map((x) => (x.id === a.id ? r.app : x)) })));
+    if (!quiet) notify(status === "accepted" ? `${a.name} accepted. They've been notified.` : status === "declined" ? `${a.name} declined. They've been notified politely.` : `Marked ${status}`);
+  };
+  const setHelper = async (clubId, op, who) => {
+    if (isDemo) {
+      const email = who.trim().toLowerCase();
+      if (op === "add" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "In the demo, add helpers by email.";
+      updateDemo((d) => ({ ...d, helpers: op === "remove" ? d.helpers.filter((h) => h !== email) : [...new Set([...d.helpers, email])] }));
+      return null;
+    }
+    const r = await appsApi({ a: "helper", s: tokenRef.current, clubId, op, who });
+    if (!r.ok) return r.error;
+    setManaged((cs) => cs.map((c) => (c.clubId === clubId ? { ...c, helpers: r.helpers } : c)));
+    return null;
+  };
+  const connectTelegram = async () => {
+    const w = window.open("", "_blank");
+    const r = await appsApi({ a: "tglink", s: tokenRef.current });
+    if (r.ok && w) w.location.href = r.url;
+    else { if (w) w.close(); notify(r.error || "Couldn't open Telegram."); }
+  };
+  // Links from notification emails: /?manage=<clubId> opens that club's applications.
+  useEffect(() => {
+    const id = Number(new URLSearchParams(window.location.search).get("manage"));
+    if (!id) return;
+    try { window.history.replaceState(window.history.state, "", "/"); } catch (e) { /* ignore */ }
+    if (!user) setModal({ type: "auth", reason: "Sign in to see your club's applications." });
+    else setModal({ type: "manage", id });
+    // eslint-disable-next-line
+  }, []);
 
   // Verified UOWD student: signed in with a live emailed code on a campus address (not the demo account).
   const isVerified = !!user && verifiedRef.current && isCampusEmail(user);
@@ -585,11 +676,11 @@ export default function App() {
   const clubBtn = (c, extra = "shrink-0 px-4 py-2", onPhoto = false) => {
     const st = statusOf(c);
     const tone = onPhoto
-      ? `u-keep ${st === "pending" ? "bg-amber-700 text-white hover:bg-amber-600" : st === "joined" ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-white text-slate-900 hover:bg-slate-100"}`
-      : st === "pending" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
+      ? `u-keep ${st === "pending" || st === "applied" ? "bg-amber-700 text-white hover:bg-amber-600" : st === "joined" ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-white text-slate-900 hover:bg-slate-100"}`
+      : st === "pending" || st === "applied" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>
-        {st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : c.notifyAdmin ? "Apply to join" : "Join the club"}
+        {st === "applied" ? "Applied" : st === "pending" ? `In review · ~${pendingHours(c)}h` : st === "joined" ? (isSports(c) ? "On the team" : "Member") : isSports(c) ? "Join tryouts" : c.notifyAdmin ? "Apply to join" : "Join the club"}
       </button>
     );
   };
@@ -642,7 +733,7 @@ export default function App() {
   const signOut = () => setModal({
     type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
     confirmLabel: "Sign out", danger: true,
-    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
+    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); tokenRef.current = ""; setMyApps([]); setManaged([]); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
   });
 
   // Light theme, top of Home: the header sits on the dark hero, so it turns dark glass until the hero scrolls away.
@@ -790,11 +881,26 @@ export default function App() {
       {/* Modals */}
       {modal && modal.type === "profile" && user && (
         <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }}
-          onSave={(p) => { setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved"); }}
+          onSave={(p) => {
+            setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved");
+            if (!isDemo && tokenRef.current) appsApi({ a: "profile", s: tokenRef.current, name: p.name, telegram: p.telegram, whatsapp: p.whatsapp });
+          }}
           onChangeEmail={() => setModal({ type: "auth", changeEmail: true, reason: "Enter your new email. We'll send a code to confirm it's yours." })}
           onMyEvents={showMyEvents ? () => { setModal(null); jumpTo("events"); } : undefined}
+          myClubs={manageList.map((c) => ({ clubId: c.clubId, club: c.club, role: c.role, total: c.apps.length, fresh: c.apps.filter((a) => a.status === "new").length }))}
+          myApps={myApps} onOpenClub={(id) => setModal({ type: "manage", id })}
+          onConnectTelegram={!isDemo && tokenRef.current ? connectTelegram : undefined}
           onSignOut={signOut} onClose={closeModal} />
       )}
+      {modal && modal.type === "manage" && user && (() => {
+        const c = manageList.find((x) => x.clubId === modal.id);
+        if (!c) return <ConfirmModal key="nomanage" title="No access" body="Only this club's owner and helpers can see its applications. If that's you, sign in with the email the club uses." confirmLabel="OK" onConfirm={closeModal} onCancel={closeModal} />;
+        return <ManageClub club={c} onStatus={setAppStatus} onHelper={(op, who) => setHelper(c.clubId, op, who)} onClose={() => setModal({ type: "profile" })} />;
+      })()}
+      {modal && modal.type === "apply" && user && clubs.find((x) => x.id === modal.id) && (() => {
+        const c = clubs.find((x) => x.id === modal.id);
+        return <ApplyModal club={c} name={name} email={user} whatsapp={extra.whatsapp} onSubmit={(f) => submitApplication(c, f)} onClose={() => setModal({ type: "club", id: c.id })} />;
+      })()}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} title={modal.changeEmail ? "Change email" : undefined} defaultName={modal.changeEmail ? name : ""} defaultSid={modal.changeEmail ? studentIdRef.current : ""} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
         <CreateModal email={modal.email} contacts={extra} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
@@ -829,6 +935,12 @@ export default function App() {
                     <button onClick={() => askLeave(c)} className="u-btn rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-rose-600">Cancel request</button>
                   </div>
                 </div>
+              );
+            if (st === "applied")
+              return (
+                <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-3 text-sm leading-relaxed text-amber-800 ring-1 ring-inset ring-amber-200">
+                  <span>Application sent. {c.name}'s committee will contact you on WhatsApp or email. You can follow it in Profile → My applications.</span>
+                </p>
               );
             if (st === "joined")
               return (

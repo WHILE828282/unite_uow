@@ -72,17 +72,17 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     later(() => { setSending(false); setDigits(["", "", "", ""]); setSeconds(45); setStep("otp"); }, 800);
   };
 
-  const finish = (verified) => {
+  const finish = (verified, session) => {
     setVerifying(false);
     setStep("success");
-    later(() => onSignIn(email, studentId.trim(), verified, cleanName() || (mode === "demo" ? "Demo Student" : "")), 1300);
+    later(() => onSignIn(email, studentId.trim(), verified, cleanName() || (mode === "demo" ? "Demo Student" : ""), session), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
     // Demo mode: any complete 4-digit code verifies.
     if (mode === "demo") return later(() => finish(false), 700);
     const r = await otpApi({ action: "verify", email, code, challenge });
-    if (r.ok) return finish(true);
+    if (r.ok) return finish(true, r.session);
     const n = attempts + 1;
     setVerifying(false); setAttempts(n);
     setOtpError(n >= 5 ? "Too many tries. Tap Resend code for a new one." : r.error);

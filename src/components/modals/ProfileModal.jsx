@@ -3,6 +3,7 @@ import { Modal } from "./Modal.jsx";
 import { Icon } from "../ui.jsx";
 import { initials, nameInitials } from "../../lib/format.js";
 import { tgHandle, waDigits } from "../../lib/maps.js";
+import { MINE_LABEL, STATE_TONE } from "../../lib/apps.js";
 
 /* Round avatar: the profile photo, or initials on crimson. */
 export function Avatar({ name, email, photo, className = "h-9 w-9 text-xs" }) {
@@ -37,7 +38,7 @@ const Section = ({ title, children }) => (
 const ErrLine = ({ msg }) => (msg ? <p className="mt-1.5 text-xs text-rose-600">{msg}</p> : null);
 
 /* Profile & settings: the only place to edit your details, change email and sign out. */
-export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut, onMyEvents, onClose }) {
+export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram }) {
   const [f, setF] = useState({ name: profile.name || "", sid: profile.sid || "", photo: profile.photo || "", telegram: profile.telegram || "", whatsapp: profile.whatsapp || "" });
   const [errors, setErrors] = useState({});
   const fileRef = useRef(null);
@@ -106,6 +107,40 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
           <p className="mt-1.5 text-xs text-slate-400">We'll email a code to the new address. Your tickets, clubs and events move with you.</p>
         </Section>
 
+        {myClubs.length > 0 && (
+          <Section title="My clubs">
+            <div className="space-y-2">
+              {myClubs.map((c) => (
+                <button key={c.clubId} type="button" onClick={() => onOpenClub(c.clubId)} className="u-btn flex w-full items-center gap-3 rounded-xl border border-slate-200 px-3.5 py-3 text-left hover:bg-slate-50">
+                  <Icon name="people" className="h-5 w-5 text-slate-700" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-slate-900">{c.club}</span>
+                    <span className="block text-xs text-slate-500">{c.role === "owner" ? "Owner" : "Helper"} · {c.total} application{c.total === 1 ? "" : "s"}</span>
+                  </span>
+                  {c.fresh > 0 && <span className="u-keep rounded-full bg-crimson-700 px-2 py-0.5 text-xs font-bold text-white">{c.fresh} new</span>}
+                  <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+                </button>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {myApps.length > 0 && (
+          <Section title="My applications">
+            <ul className="space-y-2">
+              {myApps.map((a) => (
+                <li key={a.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-3">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-slate-900">{a.club}</span>
+                    <span className="block text-xs text-slate-500">Sent {new Date(a.at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                  </span>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${STATE_TONE[a.status]}`}>{MINE_LABEL[a.status]}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
         <Section title="Linked contacts">
           <label className="block text-sm font-medium text-slate-700" htmlFor="p-tg">Telegram</label>
           <div className="relative">
@@ -116,7 +151,12 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
           <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="p-wa">WhatsApp</label>
           <input id="p-wa" type="tel" inputMode="tel" autoComplete="tel" value={f.whatsapp} onChange={set("whatsapp")} placeholder="+971 50 123 4567" className={field(errors.whatsapp)} />
           <Err k="whatsapp" />
-          <p className="mt-1.5 text-xs text-slate-400">Filled in for you when you host an event, so guests can reach you.</p>
+          <p className="mt-1.5 text-xs text-slate-400">Filled in for you when you host an event or apply to a club.</p>
+          {onConnectTelegram && (
+            <button type="button" onClick={onConnectTelegram} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-sky-700 ring-1 ring-slate-200 hover:bg-sky-50">
+              <Icon name="bell" className="h-4 w-4" /> Get notifications in Telegram
+            </button>
+          )}
         </Section>
 
         {onMyEvents && (

@@ -97,6 +97,21 @@ export const FILE_LINK_MS = 5 * 60 * 1000;
 export const fileSig = (id, exp) => hmac("unite-file", `${id}|${exp}`).slice(0, 24);
 export const fileLink = (id) => { const exp = Date.now() + FILE_LINK_MS; return `/api/tickets?a=file&t=${id}&exp=${exp}&s=${fileSig(id, exp)}`; };
 export const fileLinkOk = (id, exp, sig) => Number(exp) > Date.now() && same(fileSig(id, Number(exp)), sig);
+// Signed-in session: issued by /api/otp after a live code is verified, sent back with club application requests.
+// "S1.<email, base64url>.<expiry ms>.<signature>", valid for 60 days. Signing key: OTP_SECRET, else the Resend key or bot token.
+const sessKey = () => clean(process.env.OTP_SECRET) || clean(process.env.RESEND_API_KEY) || readToken();
+const sessSig = (email, exp) => crypto.createHmac("sha256", `unite-session:${sessKey()}`).update(`${email}|${exp}`).digest("base64url").slice(0, 32);
+export const sessionToken = (email) => {
+  if (!sessKey()) return "";
+  const exp = Date.now() + 60 * 864e5;
+  return `S1.${Buffer.from(email).toString("base64url")}.${exp}.${sessSig(email, exp)}`;
+};
+export const sessionEmail = (tok) => {
+  const m = /^S1\.([A-Za-z0-9_-]+)\.(\d+)\.([A-Za-z0-9_-]{32})$/.exec(String(tok || ""));
+  if (!m || !sessKey() || Number(m[2]) < Date.now()) return null;
+  const email = Buffer.from(m[1], "base64url").toString();
+  return same(sessSig(email, Number(m[2])), m[3]) ? email : null;
+};
 // Telegram echoes this in X-Telegram-Bot-Api-Secret-Token on every webhook call (allowed chars: A-Z a-z 0-9 _ -).
 export const webhookSecret = (token) => crypto.createHmac("sha256", `unite-webhook:${token}`).update("telegram").digest("hex").slice(0, 48);
 
@@ -123,10 +138,11 @@ export const webhookUrl = (req) => {
 export const ensureWebhook = async (token, req, force = false) => {
   const url = webhookUrl(req);
   if (!url) return { ok: false, error: "Unknown site address." };
-  if (!force && storeConfigured()) { try { if ((await kv("GET", K.webhook)) === url) return { ok: true, url, cached: true }; } catch (e) { /* re-register */ } }
-  const r = await tg(token, "setWebhook", { url, secret_token: webhookSecret(token), allowed_updates: ["callback_query"] });
+  const mark = `${url}|v2`; // v2: also receives messages (Telegram connect links)
+  if (!force && storeConfigured()) { try { if ((await kv("GET", K.webhook)) === mark) return { ok: true, url, cached: true }; } catch (e) { /* re-register */ } }
+  const r = await tg(token, "setWebhook", { url, secret_token: webhookSecret(token), allowed_updates: ["callback_query", "message"] });
   if (!r.ok) { console.error("Telegram setWebhook rejected:", JSON.stringify(r.data)); return { ok: false, url, error: explain(r.data, token) }; }
-  if (storeConfigured()) { try { await kv("SET", K.webhook, url); } catch (e) { /* not critical */ } }
+  if (storeConfigured()) { try { await kv("SET", K.webhook, mark); } catch (e) { /* not critical */ } }
   return { ok: true, url };
 };
 
@@ -152,13 +168,13 @@ export const saveTicket = (t) => kv("HSET", K.tix(t.ref), t.id, JSON.stringify(t
 export const savePitch = (rec) => kv("SET", K.pitch(rec.ref), JSON.stringify(rec), "EX", TTL_S);
 
 /* ---------------------------- Email (best effort) ----------------- */
-export const sendEmail = async (to, subject, text) => {
+export const sendEmail = async (to, subject, text, html) => {
   const key = clean(process.env.RESEND_API_KEY);
   if (!key || !to) return false;
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Unite Team <welcome@uniteuow.com>", to: [to], subject, text }),
+      body: JSON.stringify({ from: "Unite Team <welcome@uniteuow.com>", to: [to], subject, text, ...(html ? { html } : {}) }),
     });
     return r.ok;
   } catch (e) { return false; }
