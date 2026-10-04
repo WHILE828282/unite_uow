@@ -239,15 +239,16 @@ export default function App() {
   // Live student events in the feed: your approved applications plus everyone else's from the database.
   const [hostData, setHostData] = useState({}); // ref -> attendees, check-ins, deliveries and money for your live events
   const ownLive = submissions.filter((sub) => reviewOf(sub) === "approved" && !(hostData[sub.ref] && hostData[sub.ref].event.tripState === "cancelled"));
-  const liveKey = ownLive.map((x) => x.ref).join() + "|" + campus.map((e) => e.ref).join();
+  const liveKey = ownLive.map((x) => x.ref).join() + "|" + campus.map((e) => `${e.ref}:${e.taken || 0}`).join();
   useEffect(() => {
     const mine = new Set(submissions.map((x) => x.ref));
-    const want = [...ownLive.map(submissionToParty), ...campus.filter((e) => !mine.has(e.ref)).map(campusToParty)];
+    const seats = new Map(campus.map((e) => [e.ref, Number(e.taken) || 0])); // tickets issued so far, from the server
+    const want = [...ownLive.map((s) => ({ ...submissionToParty(s), taken: seats.get(s.ref) || 0 })), ...campus.filter((e) => !mine.has(e.ref)).map(campusToParty)];
     setParties((ps) => {
       const prev = new Map(ps.filter((x) => x.dyn).map((x) => [x.id, x]));
-      if (want.length === prev.size && want.every((x) => prev.has(x.id))) return ps;
-      // Keep ticket and waitlist counts for events that stay.
-      return [...ps.filter((x) => !x.dyn), ...want.map((x) => (prev.has(x.id) ? { ...x, taken: prev.get(x.id).taken, wait: prev.get(x.id).wait } : x))];
+      if (want.length === prev.size && want.every((x) => prev.has(x.id) && prev.get(x.id).taken === x.taken)) return ps;
+      // Seats come from the server whenever the feed has loaded; waitlist counts stay.
+      return [...ps.filter((x) => !x.dyn), ...want.map((x) => (prev.has(x.id) ? { ...x, taken: seats.size ? x.taken : prev.get(x.id).taken, wait: prev.get(x.id).wait } : x))];
     });
     // eslint-disable-next-line
   }, [liveKey]);

@@ -21,6 +21,7 @@ export const eventImg = (ref, kind, key) => `/api/events?img=${ref}&kind=${kind}
 export const campusToParty = (e) => ({
   ...submissionToParty({ ...e, email: "", cover: e.hasCover ? eventImg(e.ref, "cover") : null, logo: e.hasLogo ? eventImg(e.ref, "logo") : null }),
   host: "student", own: false, contact: { name: "Organizer", role: "Student host", whatsapp: e.whatsapp, telegram: e.telegram },
+  taken: Number(e.taken) || 0,
 });
 /* Group trips collect payments until 23:59 Dubai time on `collectUntil`. */
 export const collectEndsMs = (p) => {

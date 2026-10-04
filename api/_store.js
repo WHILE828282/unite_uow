@@ -163,7 +163,7 @@ export const purgeDeclinedApps = () => db().delete(S.clubApplications).where(and
 const HEAVY = ["cover", "logo"];
 const evOf = (r) => r && {
   ...(r.data || {}), ref: r.ref, status: r.status, kind: r.kind, title: r.title, at: (r.data && r.data.at) || ms(r.createdAt), updatedAt: ms(r.updatedAt),
-  hasCover: !!r.hasCover, hasLogo: !!r.hasLogo, ...(r.tgMessageId ? { kbMsg: r.tgMessageId } : {}), ...(r.deletedAt ? { deletedAt: ms(r.deletedAt) } : {}),
+  hasCover: !!r.hasCover, hasLogo: !!r.hasLogo, ...(r.taken != null ? { taken: Number(r.taken) } : {}), ...(r.tgMessageId ? { kbMsg: r.tgMessageId } : {}), ...(r.deletedAt ? { deletedAt: ms(r.deletedAt) } : {}),
 };
 const evCols = { ref: S.events.ref, status: S.events.status, kind: S.events.kind, title: S.events.title, data: S.events.data, createdAt: S.events.createdAt, updatedAt: S.events.updatedAt,
   tgMessageId: S.events.tgMessageId, deletedAt: S.events.deletedAt, hasCover: sql`${S.events.cover} is not null`.as("has_cover"), hasLogo: sql`${S.events.logo} is not null`.as("has_logo") };
@@ -199,7 +199,8 @@ export const getEventImage = async (ref, kind) => {
   const [r] = await db().select({ img: kind === "logo" ? S.events.logo : S.events.cover }).from(S.events).where(eq(S.events.ref, ref)).limit(1);
   return r ? r.img : null;
 };
-export const listApprovedEvents = async () => (await db().select(evCols).from(S.events)
+// With "taken": tickets issued so far (valid ones), so everyone sees the same availability.
+export const listApprovedEvents = async () => (await db().select({ ...evCols, taken: sql`(select count(*)::int from tickets t where t.event_ref = ${S.events.ref} and t.status = 'valid')`.as("taken") }).from(S.events)
   .where(and(eq(S.events.status, "approved"), eq(S.events.source, "hosted"))).orderBy(asc(S.events.date)).limit(100)).map(evOf);
 export const listActiveTrips = async () => (await db().select(evCols).from(S.events)
   .where(and(eq(S.events.kind, "trip"), eq(S.events.source, "hosted"), inArray(S.events.status, ["pending", "under_review", "approved"]))).limit(200)).map(evOf);

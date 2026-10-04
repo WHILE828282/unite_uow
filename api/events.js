@@ -7,7 +7,7 @@ import { dbConfigured, getEventImage, listApprovedEvents } from "./_store.js";
 import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
-const PUBLIC = ["ref", "title", "category", "lang", "date", "start", "end", "spots", "price", "venueName", "room", "mapsUrl", "whatsapp", "telegram", "dress", "reqs", "pitch", "at", "hasCover", "hasLogo",
+const PUBLIC = ["ref", "taken", "title", "category", "lang", "date", "start", "end", "spots", "price", "venueName", "room", "mapsUrl", "whatsapp", "telegram", "dress", "reqs", "pitch", "at", "hasCover", "hasLogo",
   "kind", "extName", "seller", "minGroup", "collectUntil"];
 const pick = (rec) => Object.fromEntries(PUBLIC.map((k) => [k, rec[k]]));
 
