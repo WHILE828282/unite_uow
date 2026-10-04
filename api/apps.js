@@ -10,7 +10,7 @@
      consent  { version, at } → which Terms / Privacy Policy version the user accepted, and when
    GET ?a=wa&id&k → marks the application "contacted", then opens WhatsApp (link used in emails and Telegram). */
 import crypto from "node:crypto";
-import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook } from "./_lib.js";
+import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook, ownerKey } from "./_lib.js";
 import { A, APP_CLUBS, clubById, isAppId, newAppId, getApp, studentView, getRoles, saveRoles, roleOf, getProfile, saveProfile,
   notifyTeam, setStatus, sweepApps, linkOk, waUrl, botUsername } from "./_apps.js";
 import * as store from "./_store.js";
@@ -120,6 +120,17 @@ export default async function handler(req, res) {
       if (Array.isArray(b.waitlist)) await store.syncWaitlist(me, b.waitlist.map((x) => str(x, 20)).filter(Boolean));
       const memberships = (await store.listMemberships(me)).map((m) => ({ clubId: m.clubId, status: m.status, at: m.joinedAt ? new Date(m.joinedAt).getTime() : null }));
       return res.status(200).json({ ok: true, memberships });
+    }
+
+    // Your hosted-event applications, so every device you sign in on shows the same My Events.
+    if (b.a === "hosted") {
+      const img = (ref, kind) => `/api/events?img=${ref}&kind=${kind}&k=${ownerKey(ref)}`;
+      const events = (await store.listHostedBy(me)).map((r) => {
+        const { account: _a, accountName: _n, verified: _v, no: _no, ...d } = r.data || {};
+        return { ...d, ref: r.ref, key: ownerKey(r.ref), moderated: true, mod: r.status, at: r.createdAt ? new Date(r.createdAt).getTime() : Date.now(),
+          cover: img(r.ref, "cover"), logo: r.hasLogo ? img(r.ref, "logo") : null };
+      });
+      return res.status(200).json({ ok: true, events });
     }
 
     if (b.a === "consent") {

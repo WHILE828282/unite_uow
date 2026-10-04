@@ -582,6 +582,29 @@ export default function App() {
     if (r.ok && w) w.location.href = r.url;
     else { if (w) w.close(); notify(r.error || "Couldn't open Telegram."); }
   };
+  // Your hosted-event applications live on the server too: an event sent from the laptop shows on the phone and back.
+  // Pulled on sign-in and whenever the app comes back to the screen; ones deleted on another device drop off here.
+  useEffect(() => {
+    if (!user || isDemo || !tokenRef.current) return;
+    let stop = false;
+    const pull = async () => {
+      const r = await appsApi({ a: "hosted", s: tokenRef.current });
+      if (stop || !r.ok || !Array.isArray(r.events)) return;
+      setSubmissions((xs) => {
+        const server = new Map(r.events.map((e) => [e.ref, e]));
+        const kept = xs.filter((x) => !x.moderated || server.has(x.ref)); // local-only (demo) ones stay
+        const have = new Set(kept.map((x) => x.ref));
+        const added = r.events.filter((e) => !have.has(e.ref));
+        if (!added.length && kept.length === xs.length) return xs;
+        return [...added, ...kept].sort((a, b) => (b.at || 0) - (a.at || 0));
+      });
+    };
+    pull();
+    const onShow = () => { if (document.visibilityState === "visible") pull(); };
+    document.addEventListener("visibilitychange", onShow);
+    return () => { stop = true; document.removeEventListener("visibilitychange", onShow); };
+    // eslint-disable-next-line
+  }, [user, isDemo]);
   // Signed-in (verified) accounts keep their clubs, waitlist and theme on the server, so they follow them to other devices.
   const pulledMemberships = useRef(false);
   useEffect(() => {

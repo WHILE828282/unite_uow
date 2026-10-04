@@ -186,6 +186,14 @@ export const saveEvent = async (rec, source = "hosted") => {
   await db().insert(S.events).values(row).onConflictDoUpdate({ target: S.events.ref, set });
   if (rec.email) await db().insert(S.eventHosts).values({ eventRef: rec.ref, userEmail: lower(rec.email) }).onConflictDoNothing();
 };
+// Events a student sent in (by the account they were signed in with, or the contact email on the form), newest first.
+export const listHostedBy = async (email) => {
+  const e = lower(email);
+  return db().select({ ref: S.events.ref, status: S.events.status, data: S.events.data, createdAt: S.events.createdAt, hasLogo: sql`${S.events.logo} is not null` })
+    .from(S.events)
+    .where(and(eq(S.events.source, "hosted"), ne(S.events.status, "deleted"), or(eq(S.events.hostEmail, e), sql`lower(${S.events.data}->>'account') = ${e}`)))
+    .orderBy(desc(S.events.createdAt)).limit(50);
+};
 export const saveEventImage = (ref, kind, dataUrl) => db().update(S.events).set(kind === "logo" ? { logo: dataUrl } : { cover: dataUrl }).where(eq(S.events.ref, ref));
 export const getEventImage = async (ref, kind) => {
   const [r] = await db().select({ img: kind === "logo" ? S.events.logo : S.events.cover }).from(S.events).where(eq(S.events.ref, ref)).limit(1);
