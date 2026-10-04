@@ -119,7 +119,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
     const tg = tgHandle(f.telegram), wa = waDigits(f.whatsapp);
     if (tg && !/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(tg)) e.telegram = "Telegram usernames are 5–32 letters, numbers or underscores.";
     if (f.whatsapp.trim() && (wa.length < 8 || wa.length > 15)) e.whatsapp = "Use the full number with country code, e.g. +971 50 123 4567.";
-    if (f.sid.trim() && !/^\d{4,10}$/.test(f.sid.trim())) e.sid = "Student IDs are numbers only, e.g. 7654321.";
+    if (!/^\d{4,10}$/.test(f.sid.trim())) e.sid = f.sid.trim() ? "Student IDs are numbers only, e.g. 7654321." : "Enter your student ID.";
     setErrors(e);
     if (Object.keys(e).length) return;
     onSave({ name, sid: f.sid.trim(), photo: f.photo, telegram: tg, whatsapp: f.whatsapp.trim() });
@@ -152,7 +152,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
           <label className="block text-sm font-medium text-slate-700" htmlFor="p-name">Name</label>
           <input id="p-name" value={f.name} onChange={set("name")} maxLength={60} autoComplete="name" placeholder="e.g. Layla Al Mansoori" className={field(errors.name)} />
           <Err k="name" />
-          <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="p-sid">Student ID <span className="font-normal text-slate-400">(optional)</span></label>
+          <label className="mt-4 block text-sm font-medium text-slate-700" htmlFor="p-sid">Student ID</label>
           <input id="p-sid" value={f.sid} onChange={set("sid")} inputMode="numeric" maxLength={10} placeholder="e.g. 7654321" className={field(errors.sid)} />
           <Err k="sid" />
           <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3.5 py-3">

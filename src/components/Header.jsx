@@ -36,7 +36,8 @@ export function Header({ dark: theme, overHero = false, user, name, photo, onHom
           <span className={`hidden border-l pl-2.5 text-xs font-medium sm:inline ${dark ? "border-white/15 text-slate-400" : "border-slate-200 text-slate-500"}`}>for UOWD students</span>
         </button>
         <div className="flex items-center gap-2">
-        {!isStandalone() && (
+        {/* Phones only: on a computer there's nothing to install from here. */}
+        {!isStandalone() && platform() !== "desktop" && (
           <a href={installPath(platform())} aria-label="Get the app"
             className="u-keep group inline-flex h-10 items-center gap-2 rounded-full bg-black pl-3 pr-3 text-[13px] font-semibold text-white ring-1 ring-white/15 transition-colors duration-200 hover:bg-slate-800 active:scale-95 sm:pr-3.5">
             {/* iPhone: Apple only · Android: Android only · computer: both */}

@@ -19,6 +19,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [pwError, setPwError] = useState("");
+  const [sidError, setSidError] = useState("");
   // First sign-in on this device: accept the Terms and Privacy Policy (never pre-ticked).
   const [needsConsent] = useState(() => !deviceAccepted());
   const [agreed, setAgreed] = useState(false);
@@ -81,12 +82,14 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   const cleanName = () => name.trim().replace(/\s+/g, " ").slice(0, 60);
   const sendCode = async (override) => {
     if (needsConsent && !agreed) return setAttempt((n) => n + 1);
+    if (typeof override !== "string" && signup && !changing && !/^\d{4,10}$/.test(studentId.trim())) setSidError("Enter your student ID (numbers only, e.g. 7654321).");
     if (typeof override !== "string" && signup && !changing && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
     // Live codes: UOWD campus accounts only (the demo account below is open to everyone).
     // (Admin addresses in ADMIN_EMAILS are allowed too: the server decides and answers "domain" for everyone else.)
     setEmail(v); setError("");
+    if (typeof override !== "string" && signup && !changing && !/^\d{4,10}$/.test(studentId.trim())) return setSidError("Enter your student ID (numbers only, e.g. 7654321).");
     if (typeof override !== "string" && !changing) {
       const bad = password.length < 8 ? "Use at least 8 characters for your password." : password.length > 128 ? "Use 128 characters or fewer." : "";
       if (bad) return setPwError(bad);
@@ -226,15 +229,15 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             </>)}
 
             {signup && !changing && (<>
-            <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
+            <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID</label>
             <input
               id="auth-sid" value={studentId} inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="go"
-              onChange={(e) => setStudentId(e.target.value.replace(/\s/g, "").slice(0, 12))}
+              onChange={(e) => { setStudentId(e.target.value.replace(/\s/g, "").slice(0, 10)); setSidError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="e.g., 7654321"
-              className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm shadow-sm focus:border-crimson-400 focus:outline-none focus:ring-2 focus:ring-crimson-100"
+              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-crimson-100 ${sidError ? "border-rose-400" : "border-slate-300 focus:border-crimson-400"}`}
             />
-            <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
+            {sidError ? <p className="mt-1.5 text-sm text-rose-600">{sidError}</p> : <p className="mt-1.5 text-xs text-slate-500">The number on your UOWD student card. It's shown on your tickets.</p>}
             </>)}
 
             {needsConsent && <ConsentRow className="mt-4" checked={agreed} onChange={setAgreed} attempt={attempt} />}

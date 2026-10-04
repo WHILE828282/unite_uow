@@ -156,6 +156,7 @@ export default async function handler(req, res) {
     if (store.dbConfigured()) {
       try {
         if (purpose === "signup") {
+          if (!/^\d{4,10}$/.test(String(b.studentId || "").replace(/\s/g, ""))) return res.status(400).json({ ok: false, field: "studentId", error: "Enter your student ID (numbers only, e.g. 7654321)." });
           const auth = await store.getAuth(email);
           if (auth && auth.hash) return res.status(409).json({ ok: false, code: "exists", error: "You already have an account with this email. Log in instead." });
         }
