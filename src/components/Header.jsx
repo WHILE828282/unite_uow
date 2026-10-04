@@ -22,11 +22,13 @@ export function ThemeToggle({ dark, onToggle, tone = dark }) {
 }
 
 /* Sticky top bar: logo, Get the app, theme toggle and the account menu (or Sign in). */
+/* Dark glass header: it runs up under the status bar as one see-through surface (the white status text reads on it).
+   Light header: a graphite strip behind the status bar keeps the white text readable. */
 /* `overHero`: light theme at the top of Home, where the bar sits on the dark hero and turns dark glass to match it. */
 export function Header({ dark: theme, overHero = false, user, name, photo, onHome, onToggleTheme, onProfile, onSignIn }) {
   const dark = theme || overHero;
   return (
-    <header className={`u-keep u-safe-top sticky top-0 z-30 border-b transition-colors duration-300 ${dark ? "border-white/10" : "border-[rgba(110,90,70,0.14)] bg-[rgba(251,250,248,0.86)]"}`} style={{ backgroundColor: theme ? glassDark.background : overHero ? "#0b0b0e" : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...STATUS_BAR_STRIP }}>
+    <header className={`u-keep u-safe-top sticky top-0 z-30 border-b transition-colors duration-300 ${dark ? "border-white/10" : "border-[rgba(110,90,70,0.14)] bg-[rgba(251,250,248,0.86)]"}`} style={{ backgroundColor: theme ? glassDark.background : overHero ? "#0b0b0e" : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...(dark ? {} : STATUS_BAR_STRIP) }}>
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <button onClick={onHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
           <UniteIcon className="h-10 w-10" />
