@@ -475,7 +475,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
             className="u-keep absolute z-10 flex h-10 w-10 items-center justify-center rounded-full text-slate-300 ring-1 ring-white/10 transition-all hover:bg-white/10 hover:text-white active:scale-95 disabled:opacity-40"><Icon name="close" className="h-4 w-4" /></button>
           <p className="u-short-hide pr-12 text-xs font-semibold uppercase tracking-[0.2em] text-crimson-300"><span className="hidden sm:inline">Unite · Student events · </span>Step {typeStep ? 1 : preview ? 3 : 2} of 3</p>
           <h2 id="host-title" className="mt-3 pr-12 text-3xl font-semibold tracking-tight text-white sm:text-4xl [@media(max-height:500px)]:mt-0 [@media(max-height:500px)]:text-2xl">{preview ? "Preview your event" : typeStep ? "What are you hosting?" : "Host an event"}</h2>
-          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Tap the one that fits. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours."}</p>
+          <p className="u-short-hide mt-2 max-w-md text-[15px] leading-relaxed text-slate-400">{preview ? "Check everything looks right before it goes to the Unite team." : typeStep ? "Tap the one that fits. It decides how tickets work for your guests." : "Pitch your party or event. The admin team reviews every submission for safety, usually within 2 hours. Questions? events@uniteuow.com"}</p>
         </div>
 
         {/* Body */}

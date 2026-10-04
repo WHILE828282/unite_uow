@@ -3,6 +3,12 @@
 export const LEGAL_VERSION = "2026-10-04.2"; // date of the change, plus a counter for same-day revisions
 export const LEGAL_UPDATED = "4 October 2026";
 export const CONTACT = "support@uniteuow.com";
+// Contact addresses shown in the footer and the profile.
+export const EMAILS = [
+  { label: "Need help?", email: "support@uniteuow.com" },
+  { label: "Events & hosting", email: "events@uniteuow.com" },
+  { label: "Partnerships", email: "partners@uniteuow.com" },
+];
 
 // Each section: { id, title, body: [paragraph | { list: [items] }] }
 export const TERMS = {
@@ -61,7 +67,7 @@ export const TERMS = {
     { id: "changes", title: "Changes to these terms", body: [
       "We may update these terms as Unite grows. If the change matters, we'll ask you to accept the new version the next time you use the app. The date at the top always shows the latest version.",
     ] },
-    { id: "contact", title: "Contact", body: [`Questions about these terms? Email ${CONTACT}.`] },
+    { id: "contact", title: "Contact", body: [`Questions about these terms or your account? Email ${CONTACT}. For hosting and event moderation write to events@uniteuow.com, and for partnerships to partners@uniteuow.com.`] },
   ],
 };
 

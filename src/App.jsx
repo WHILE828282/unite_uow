@@ -40,7 +40,7 @@ import { TeamsClubs } from "./pages/TeamsClubs.jsx";
 import { ApplyModal } from "./components/modals/ApplyModal.jsx";
 import { ManageClub } from "./components/modals/ManageClub.jsx";
 import { UpdatedTermsSheet, legalRecord, rememberOnDevice } from "./components/Legal.jsx";
-import { LEGAL_VERSION } from "./data/legal.js";
+import { EMAILS, LEGAL_VERSION } from "./data/legal.js";
 import { DEMO_CLUB_ID, appsApi, loadDemoClub, saveDemoClub, waNumber } from "./lib/apps.js";
 
 // Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
@@ -865,6 +865,14 @@ export default function App() {
             <div>
               <p className="flex items-center gap-2 font-extrabold tracking-tight text-slate-900"><UniteIcon className="h-6 w-6" /> unite</p>
               <p className="mt-1.5 max-w-xs">A student-built platform for UOWD clubs, teams and events.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-8">
+              {EMAILS.map((e) => (
+                <div key={e.email}>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{e.label}</p>
+                  <a href={`mailto:${e.email}`} className="mt-1 inline-flex py-1 font-semibold text-slate-900 underline-offset-4 hover:text-crimson-700 hover:underline">{e.email}</a>
+                </div>
+              ))}
             </div>
           </div>
           <nav aria-label="Legal" className="mt-6 flex gap-5 text-sm font-medium">

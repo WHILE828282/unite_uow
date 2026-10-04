@@ -173,6 +173,10 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
 
         <Section title="About">
           <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            <a href="mailto:support@uniteuow.com" className="flex items-center justify-between gap-3 px-3.5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-50">
+              <span>Help & support<span className="block text-xs font-normal text-slate-500">support@uniteuow.com</span></span>
+              <Icon name="mail" className="h-4 w-4 text-slate-400" />
+            </a>
             {[["/terms", "Terms of Use"], ["/privacy", "Privacy Policy"]].map(([href, label]) => (
               <a key={href} href={href} target="_blank" rel="noopener" className="flex items-center justify-between px-3.5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-50">
                 {label} <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
