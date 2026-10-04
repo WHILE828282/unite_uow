@@ -219,7 +219,7 @@ export function HostManage({ sub, data: d, onRefresh, notify, onClose, startScan
     <Modal onClose={onClose} size="lg">
       <div className="space-y-4 p-5">
         <div className="pr-8">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{trip ? "🚌 Group trip · Attendees" : "Check-in"}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{trip ? "Group trip · Attendees" : "Check-in"}</p>
           <h2 className="mt-1 text-xl font-bold leading-tight text-slate-900">{sub.title}</h2>
           <p className="mt-0.5 text-sm text-slate-500">{fmtDate(sub.date)} · {fmtTime(sub.start)}{trip && sub.extName ? ` · ${sub.extName}` : ""}</p>
         </div>

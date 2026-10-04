@@ -130,7 +130,7 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
       </div>
       <h3 className="mt-4 max-w-xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{p.title}</h3>
       <p className="mt-2 text-sm text-slate-300">{new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · From {p.time}{p.until ? ` ${p.until}` : ""}</p>
-      <p className="mt-0.5 text-sm text-slate-400">📍 {p.where}</p>
+      <p className="mt-0.5 flex items-start gap-1.5 text-sm text-slate-400"><Icon name="pin" className="mt-0.5 h-3.5 w-3.5 shrink-0" />{p.where}</p>
 
       <div className="mt-5 grid max-w-sm grid-cols-4 gap-2" aria-label="Countdown to doors">
         {parts.map(([k, v]) => (

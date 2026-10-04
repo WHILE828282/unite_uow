@@ -70,11 +70,9 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
           </>
         ) : (
           <>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-crimson-100 ring-1 ring-inset ring-white/15 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Live at UOWD · Dubai Knowledge Park
-            </span>
-            <h1 className="mt-4 max-w-2xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-              Where UOWD<br />comes <span className="bg-gradient-to-r from-crimson-300 to-crimson-100 bg-clip-text text-transparent">together.</span>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-crimson-200">UOWD · Dubai Knowledge Park</p>
+            <h1 className="mt-3 max-w-2xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+              Where UOWD<br />comes <span className="text-crimson-200">together.</span>
             </h1>
             <p className="mt-4 max-w-md text-base text-slate-300 sm:text-lg">Clubs, teams, parties and trips. Join in one tap, get your QR ticket in seconds.</p>
             <div className="mt-6 flex flex-wrap gap-2.5">
@@ -121,8 +119,9 @@ const Head = ({ eyebrow, title, onAll }) => (
     {onAll && <button onClick={onAll} className="-my-2 shrink-0 rounded-lg px-2.5 py-2.5 text-sm font-semibold text-crimson-700 hover:bg-crimson-50">See all</button>}
   </div>
 );
-const Rail = ({ children }) => (
-  <div className="u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-1 sm:mx-0 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none]">{children}</div>
+/* Phones and tablets: a row you swipe. Computers: a tidy grid (no card cut in half at the edge). */
+const Rail = ({ children, cols = "lg:grid-cols-4" }) => (
+  <div className={`u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-1 sm:mx-0 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none] lg:grid lg:overflow-visible ${cols}`}>{children}</div>
 );
 /* The one tile style of this page: picture or colour, dark fade, white text at the bottom. */
 const Tile = ({ onClick, bg, img, tint, className = "", children }) => (
@@ -133,11 +132,6 @@ const Tile = ({ onClick, bg, img, tint, className = "", children }) => (
     <span className="relative flex h-full flex-col justify-between p-3.5">{children}</span>
   </button>
 );
-const STEPS = [
-  ["Sign in", "with your UOWD student email"],
-  ["Join or book", "a club in one tap, tickets with Apple Pay"],
-  ["Show your QR", "at the door, it works offline"],
-];
 
 /* Explore photos and the room colour that tints the bottom of each one. */
 const EXPLORE_ART = {
@@ -174,13 +168,13 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
             {events.map((p) => {
               const left = p.spots - p.taken;
               return (
-                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.cover || p.logo} bg={ROOM_BG.Events} className="h-56 w-52 sm:w-56">
+                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.cover || p.logo} bg={ROOM_BG.Events} className="h-56 w-52 sm:w-56 lg:w-auto">
                   <span className="flex items-start justify-between gap-2">
                     <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{fmtDate(p.date)}</span>
                     <span className="u-keep rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
                   </span>
                   <span>
-                    {left > 0 && left <= 10 && <span className="mb-1.5 inline-block rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold">🔥 {left} left</span>}
+                    {left > 0 && left <= 10 && <span className="mb-1.5 inline-block rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold">Only {left} left</span>}
                     {left <= 0 && <span className="mb-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">Waitlist open</span>}
                     <span className="line-clamp-2 block font-bold leading-snug">{p.title}</span>
                     <span className="mt-0.5 block truncate text-xs text-white/75">{p.time} · {p.where.split(",")[0]}</span>
@@ -194,9 +188,9 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
 
       <section>
         <Head eyebrow="Clubs" title="Most popular right now" onAll={() => goRoom()} />
-        <Rail>
+        <Rail cols="lg:grid-cols-4">
           {clubs.map((c) => (
-            <Tile key={c.id} onClick={() => setModal({ type: "club", id: c.id })} bg={ROOM_BG[c.category]} img={c.backgroundImage} className="h-44 w-44">
+            <Tile key={c.id} onClick={() => setModal({ type: "club", id: c.id })} bg={ROOM_BG[c.category]} img={c.backgroundImage} className="h-44 w-44 lg:h-48 lg:w-auto">
               {c.backgroundImage ? <span aria-hidden="true" /> : <span className="text-4xl drop-shadow" aria-hidden="true">{c.emoji}</span>}
               <span>
                 <span className="block text-[15px] font-bold leading-tight [hyphens:auto]" lang="en">{c.name}</span>
@@ -207,22 +201,6 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
         </Rail>
       </section>
 
-      {!user && (
-        <section>
-          <Head eyebrow="How it works" title="From sign-in to the door in a minute" />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {STEPS.map(([t, d], i) => (
-              <div key={t} className="flex items-center gap-3.5 rounded-2xl border border-slate-200/70 bg-white p-4">
-                <span className="u-keep flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-sm font-bold text-white">{i + 1}</span>
-                <span className="min-w-0">
-                  <span className="block font-semibold text-slate-900">{t}</span>
-                  <span className="block text-sm text-slate-500">{d}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
     </div>
   );

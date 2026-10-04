@@ -19,7 +19,7 @@ const apiKey = () => clean(process.env.RESEND_API_KEY);
 const sender = () => "Unite Team <welcome@uniteuow.com>";
 // Live codes go to UOWD campus accounts only (the demo account never reaches this API).
 const isCampus = (v) => /^[^\s@]+@(uowdubai\.ac\.ae|uowmail\.edu\.au|uow\.edu\.au|uniteuow\.com)$/.test(v);
-const RESTRICTED = "🔒 Access Restricted: Unite is an exclusive secure ecosystem for verified UOWD campus members only.";
+const RESTRICTED = "Unite is for UOWD students. Use your @uowmail.edu.au or @uowdubai.ac.ae email.";
 // Signing key: OTP_SECRET if set, otherwise derived from the Resend key (both stay server-side).
 const signingKey = () => crypto.createHash("sha256").update(`unite-otp:${clean(process.env.OTP_SECRET) || apiKey()}`).digest();
 const sign = (email, code, exp) => crypto.createHmac("sha256", signingKey()).update(`${email}|${code}|${exp}`).digest("base64url");

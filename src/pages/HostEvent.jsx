@@ -95,7 +95,7 @@ export function PhotoDrop({ kind, value, onChange, error }) {
         {value ? (
           <>
             <img src={value.src} alt={`${copy.title} preview`} draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-            {value.cropped && <span className="absolute left-2.5 top-2.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">✂ We'll crop it to fit</span>}
+            {value.cropped && <span className="absolute left-2.5 top-2.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm">We'll crop it to fit</span>}
           </>
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-3 text-center">
@@ -503,7 +503,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
           ) : (
           <div key="form" className="u-slide space-y-12">
             <p className="-mb-4 flex flex-wrap items-center gap-x-2 text-sm text-slate-400">
-              <span>{trip ? "🚌" : "🏠"} <span className="font-semibold text-white">{kindLabel(f.kind)}</span></span>
+              <span className="font-semibold text-white">{kindLabel(f.kind)}</span>
               <button type="button" onClick={() => setStep("type")} className="u-keep text-xs font-semibold text-crimson-300 hover:text-crimson-200 hover:underline">Change</button>
             </p>
             <DkSection n={1} title="Photos">
@@ -703,7 +703,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
             onMouseDown={(e) => e.target === e.currentTarget && !submitting && setConfirm(false)}>
             <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
               className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#15161b] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sabx)" }}>
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-xl ring-1 ring-inset ring-crimson-400/30" aria-hidden="true">📨</span>
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-crimson-200 ring-1 ring-inset ring-crimson-400/30" aria-hidden="true"><Icon name="mail" className="h-5 w-5" /></span>
               <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit for review?</h3>
               <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>
               {sendError && <p role="alert" className="mt-3 rounded-xl bg-rose-500/10 px-3 py-2 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}

@@ -122,7 +122,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     const p = profile || {};
     const fromAccount = login || reset;
     const who = fromAccount ? p.name || "" : cleanName(), sid = fromAccount ? p.studentId || "" : studentId.trim();
-    later(() => onSignIn(email, sid, verified, who || (mode === "demo" ? "Demo Student" : ""), session, fromAccount ? { photo: p.photo || "", telegram: p.telegram || "", whatsapp: p.whatsapp || "" } : null), 1300);
+    later(() => onSignIn(email, sid || (mode === "demo" ? "7654321" : ""), verified, who || (mode === "demo" ? "Demo Student" : ""), session, fromAccount ? { photo: p.photo || "", telegram: p.telegram || "", whatsapp: p.whatsapp || "" } : null), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
@@ -190,7 +190,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             {signup && !changing && (<>
             <label htmlFor="auth-name" className="mt-5 block text-sm font-medium text-slate-700">Your name</label>
             <input
-              id="auth-name" value={name} autoFocus autoComplete="name" autoCapitalize="words" enterKeyHint="next"
+              id="auth-name" value={name} autoFocus={!window.matchMedia("(pointer: coarse)").matches} autoComplete="name" autoCapitalize="words" enterKeyHint="next"
               onChange={(e) => { setName(e.target.value.slice(0, 60)); setNameError(""); }}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); document.getElementById("auth-email").focus(); } }}
               placeholder="e.g., Layla Al Mansoori"
@@ -201,7 +201,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
 
             <label htmlFor="auth-email" className="mt-4 block text-sm font-medium text-slate-700">Email address</label>
             <input
-              id="auth-email" type="email" autoFocus={login} inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
+              id="auth-email" type="email" autoFocus={login && !window.matchMedia("(pointer: coarse)").matches} inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="you@uowdubai.ac.ae"

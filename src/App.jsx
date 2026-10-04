@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { applyUpdate } from "../updates.js";
-import { InstallBanner } from "./components/GetApp.jsx";
 import { Header } from "./components/Header.jsx";
 import { Avatar, ProfileModal } from "./components/modals/ProfileModal.jsx";
 import { PullToRefresh } from "./components/PullToRefresh.jsx";
@@ -931,7 +930,6 @@ export default function App() {
           </button>
         )} />
       {user && (!legal || legal.version !== LEGAL_VERSION) && !(modal && modal.type === "auth") && <UpdatedTermsSheet onAccept={agreeLegal} />}
-      <InstallBanner />
       <PullToRefresh />
 
       {/* Modals */}
@@ -957,7 +955,7 @@ export default function App() {
         const c = clubs.find((x) => x.id === modal.id);
         return <ApplyModal club={c} name={name} email={user} whatsapp={extra.whatsapp} onSubmit={(f) => submitApplication(c, f)} onClose={() => setModal({ type: "club", id: c.id })} />;
       })()}
-      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} title={modal.changeEmail ? "Change email" : undefined} defaultName={modal.changeEmail ? name : ""} defaultSid={modal.changeEmail ? studentIdRef.current : ""} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "Access Restricted", body: RESTRICTED_MSG.replace(/^🔒 Access Restricted: /, ""), tone: "lock" }, 5000)} />}
+      {modal && modal.type === "auth" && <AuthModal reason={modal.reason} title={modal.changeEmail ? "Change email" : undefined} defaultName={modal.changeEmail ? name : ""} defaultSid={modal.changeEmail ? studentIdRef.current : ""} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "UOWD students only", body: RESTRICTED_MSG, tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
         <CreateModal email={modal.email} contacts={extra} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
       )}
@@ -1087,7 +1085,7 @@ export default function App() {
         <div className="u-safe-toast pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4">
           <div key={typeof toast === "string" ? toast : toast.title + toast.body} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>
             {toast.tone === "lock"
-              ? <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-crimson-700 text-[11px]" aria-hidden="true">🔒</span>
+              ? <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-crimson-700" aria-hidden="true"><Icon name="lock" className="h-3 w-3" /></span>
               : <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500"><Check className="h-3 w-3" /></span>}
             {typeof toast === "string" ? <span>{toast}</span> : <span><span className="block font-bold">{toast.title}</span><span className="block font-normal text-slate-200">{toast.body}</span></span>}
           </div>

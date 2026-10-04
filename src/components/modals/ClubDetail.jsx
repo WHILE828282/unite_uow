@@ -14,11 +14,11 @@ export function ClubCommunity({ c, verified, onSignIn }) {
   return verified ? (
     <a href={c.whatsapp} target="_blank" rel="noopener noreferrer"
       className="u-keep u-btn flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-800 py-3 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-white/10 hover:bg-crimson-700">
-      💬 Join Verified WhatsApp Community
+      <Icon name="people" className="h-4 w-4" /> Join the club's WhatsApp group
     </a>
   ) : (
     <div className="rounded-xl bg-slate-50 px-3.5 py-3 text-sm text-slate-600 ring-1 ring-inset ring-slate-200">
-      <p className="font-medium">🔒 Available for verified UOWD students only. Please sign in with your student email.</p>
+      <p className="flex items-start gap-2 font-medium"><Icon name="lock" className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />The club's WhatsApp group opens once you sign in with your UOWD email.</p>
       {onSignIn && <button onClick={onSignIn} className="mt-1.5 text-xs font-semibold text-crimson-700 hover:underline">Sign in with student email →</button>}
     </div>
   );
