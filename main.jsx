@@ -118,6 +118,9 @@ document.addEventListener("focusin", (e) => {
     kbExpected = lastKb || Math.round(window.innerHeight * 0.5); // first time: aim high (too low lets iOS shove the screen)
     kbExpectUntil = Date.now() + 1200;
     syncViewport(); // now, before the keyboard starts to slide in
+    // The sheet just got shorter, so a field low in it (password, student ID) can be clipped out of view. iOS would
+    // then shove the screen to show it: scroll it into view inside the sheet first, in the same moment.
+    revealFocused();
     setTimeout(syncViewport, 1250); // no keyboard after all (e.g. a hardware one): put the sheet back
   }
   if (!before) { const box = scrollParent(e.target); if (box) before = { box, top: box.scrollTop }; }
