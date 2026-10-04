@@ -28,6 +28,9 @@ function useCountdown(p) {
 
 function Spotlight({ p, booked, onOpen }) {
   const [d, h, m] = useCountdown(p);
+  const left = p.spots - p.taken;
+  // "In 21 days" far out, "Tomorrow", then a real countdown on the day.
+  const when = d >= 2 ? `In ${d} days` : d === 1 ? `Tomorrow · in ${24 + h}h` : h > 0 ? `Starts in ${h}h ${m}m` : m > 0 ? `Starts in ${m} min` : "Happening now";
   return (
     <button onClick={onOpen}
       className="u-keep u-btn mt-7 flex w-full max-w-2xl items-center gap-3.5 rounded-2xl p-3 pr-3.5 text-left ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-3.5"
@@ -36,7 +39,7 @@ function Spotlight({ p, booked, onOpen }) {
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
         <span className="line-clamp-2 block font-semibold leading-snug text-white">{p.title}</span>
-        <span className="mt-0.5 block truncate text-xs tabular-nums text-slate-300">Doors in {d}d {h}h {m}m · {p.spots - p.taken} left</span>
+        <span className="mt-0.5 block truncate text-xs tabular-nums text-slate-300">{when} · {left > 0 ? `${left} ticket${left === 1 ? "" : "s"} left` : "Sold out"}</span>
       </span>
       <span className={`u-keep shrink-0 rounded-lg px-3 py-2 text-xs font-bold ${booked ? "bg-emerald-500 text-white" : "bg-white text-slate-900"}`}>{booked ? "Your ticket" : `${p.price} AED`}</span>
     </button>
