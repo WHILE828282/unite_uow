@@ -4,11 +4,12 @@
 
 import crypto from "node:crypto";
 import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, ownerKey, ownerOk, isRef, getPitch, savePitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
-import { dbConfigured, eventExists, saveEventImage } from "./_store.js";
+import { dbConfigured, eventExists, saveEventImage, countHosted } from "./_store.js";
 import { db } from "../db/client.js";
 import { sql } from "drizzle-orm";
 
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
+const MAX_CAPTION = 1024; // Telegram photo caption limit (visible characters)
 
 const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -22,6 +23,36 @@ const parseImage = (v) => {
   return { type: m[1], data: Buffer.from(m[2], "base64") };
 };
 
+/* The whole application in one Telegram message: the picture (cover with the logo on it, made by the app), this
+   caption and the moderation buttons. Long descriptions are shortened to fit; the full text is in /admin → Events. */
+const plainLen = (html) => html.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").length;
+function buildCaption(p) {
+  const make = (pitch) => {
+    const price = Number(p.price) > 0 ? `${Number(p.price)} AED` : "Free";
+    const contacts = [p.whatsapp && `WA ${esc(p.whatsapp)}`, p.telegram && `TG @${esc(p.telegram)}`, esc(p.email)].filter(Boolean).join(" · ");
+    return [
+      `🔔 <b>Event application${p.no ? ` #${p.no}` : ""}</b>`,
+      `<b>${esc(p.title)}</b>`,
+      `${p.kind === "trip" ? "Group trip" : "Own event"} · ${esc(p.category)} · ${esc(p.lang)}`,
+      `🗓 ${esc(p.date)} · ${esc(p.start)}–${esc(p.end)}`,
+      `🎟 ${p.spots} spots · ${price}`,
+      `📍 ${esc(p.room ? `${p.venueName} (${p.room})` : p.venueName)}${p.mapsUrl ? ` · <a href="${esc(p.mapsUrl)}">map</a>` : ""}`,
+      p.kind === "trip" ? `🎫 ${esc(p.extName)} via ${esc(p.seller)} · min ${p.minGroup} · pay by ${esc(p.collectUntil)}` : null,
+      `👤 ${p.accountName ? esc(p.accountName) + " · " : ""}${contacts}${p.studentId ? ` · ID ${esc(p.studentId)}` : ""}`,
+      p.dress ? `👔 ${esc(p.dress)}` : null,
+      p.reqs ? `⚠️ ${esc(p.reqs)}` : null,
+      "",
+      esc(pitch),
+      "",
+      `<i>${esc(p.ref)} · ${p.verified ? "email verified" : "demo login, not verified"}</i>`,
+    ].filter((x) => x !== null).join("\n");
+  };
+  let out = make(p.pitch);
+  const over = plainLen(out) - MAX_CAPTION;
+  if (over > 0) out = make(p.pitch.slice(0, Math.max(0, p.pitch.length - over - 30)).trimEnd() + "… (full text in /admin)");
+  return out;
+}
+
 function buildMessage(p) {
   const full = buildParts(p);
   if (full.length <= MAX_MESSAGE) return full;
@@ -34,7 +65,7 @@ function buildParts(p) {
   const link = (label, url) => (url ? `<b>${label}:</b> <a href="${esc(url)}">${esc(url)}</a>` : null);
   const price = Number(p.price) > 0 ? `${Number(p.price)} AED` : "Free";
   const parts = [
-    "🔔 <b>NEW EVENT PITCH FOR UNITE</b>",
+    `🔔 <b>NEW EVENT PITCH FOR UNITE${p.no ? ` · #${p.no}` : ""}</b>`,
     "",
     p.kind === "trip" ? "🚌 <b>GROUP TRIP TO AN EXTERNAL EVENT</b>" : "🏠 <b>OUR OWN EVENT</b>",
     line("Event Name", p.title),
@@ -61,7 +92,6 @@ function buildParts(p) {
     line("Email", p.email),
     line("Student ID", p.studentId),
     "",
-    "🖼 <b>Artwork:</b> cover photo and logo attached below",
     p.dress || p.reqs ? "" : null,
     line("Dress Code", p.dress),
     line("Requirements", p.reqs),
@@ -69,8 +99,6 @@ function buildParts(p) {
     "📝 <b>Detailed Description:</b>",
     esc(p.pitch),
     "",
-    p.moderated ? "👇 <b>Decide with the buttons under the photo below.</b>" : null,
-    p.moderated ? "" : null,
     `<i>Ref ${esc(p.ref)} · submitted by ${p.accountName ? esc(p.accountName) + " · " : ""}${esc(p.account || p.email)}${p.verified ? " (✅ email verified)" : " (demo login, email not verified)"}</i>`,
   ].filter((x) => x !== null);
   return parts.join("\n");
@@ -195,32 +223,50 @@ export default async function handler(req, res) {
   let moderated = dbConfigured();
   if (moderated) {
     p.ref = newRef();
-    try { for (let i = 0; i < 4 && (await eventExists(p.ref)); i++) p.ref = newRef(); }
+    try { for (let i = 0; i < 4 && (await eventExists(p.ref)); i++) p.ref = newRef(); p.no = (await countHosted()) + 1; }
     catch (e) { console.error("Database unavailable, moderation buttons skipped:", e.message); moderated = false; }
   }
   p.moderated = moderated;
 
-  // Fail-safe delivery: the student's submission always completes. Every Telegram rejection is logged with
-  // Telegram's exact JSON so size/format problems can be diagnosed in the Vercel logs.
+  // One message: the picture (cover with the logo, made by the app; the plain cover otherwise), the caption and the
+  // buttons. If Telegram won't take the photo, the full text goes as a plain message with the buttons instead.
+  // Every rejection is logged with Telegram's exact JSON.
+  const keyboard = moderated ? JSON.stringify(moderationKeyboard(p.ref)) : null;
+  const card = parseImage(b.card) || cover;
   const text = buildMessage(p);
   const plain = text.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-  let delivered = false;
+  let delivered = false, kbMsg = null;
   try {
-    let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text, parse_mode: "HTML", disable_web_page_preview: true });
-    if (!sent.ok) {
-      console.error("Telegram sendMessage (HTML) rejected:", JSON.stringify(sent.data));
-      sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true });
-      if (!sent.ok) console.error("Telegram sendMessage (plain) rejected:", JSON.stringify(sent.data), "|", explain(sent.data, token));
-    }
-    delivered = sent.ok;
-  } catch (e) { console.error("Telegram sendMessage error:", e && e.message); }
+    const form = new FormData();
+    form.append("chat_id", CHAT_ID);
+    form.append("caption", buildCaption(p));
+    form.append("parse_mode", "HTML");
+    if (keyboard) form.append("reply_markup", keyboard);
+    form.append("photo", new Blob([card.data], { type: card.type }), `event.${card.type.split("/")[1].replace("jpeg", "jpg")}`);
+    const pr = await tg(token, "sendPhoto", form);
+    if (pr.ok) { delivered = true; kbMsg = pr.data.result && pr.data.result.message_id; }
+    else console.error(`Telegram sendPhoto (${card.type}, ${card.data.length} bytes) rejected:`, JSON.stringify(pr.data));
+  } catch (e) { console.error("Telegram sendPhoto error:", e && e.message); }
+  if (!delivered) {
+    try {
+      const markup = keyboard ? { reply_markup: JSON.parse(keyboard) } : {};
+      let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text, parse_mode: "HTML", disable_web_page_preview: true, ...markup });
+      if (!sent.ok) {
+        console.error("Telegram sendMessage (HTML) rejected:", JSON.stringify(sent.data));
+        sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true, ...markup });
+        if (!sent.ok) console.error("Telegram sendMessage (plain) rejected:", JSON.stringify(sent.data), "|", explain(sent.data, token));
+      }
+      delivered = sent.ok;
+      if (sent.ok) kbMsg = sent.data.result && sent.data.result.message_id;
+    } catch (e) { console.error("Telegram sendMessage error:", e && e.message); }
+  }
   if (!delivered) console.error(`Pitch NOT delivered to chat ${CHAT_ID}; full text follows so it isn't lost:\n${plain}`);
 
   // Save the application (status "pending") and make sure button clicks are routed back to this site.
   if (delivered && moderated) {
     try {
       const { moderated: _m, ...rec } = p;
-      await savePitch({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now() });
+      await savePitch({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), ...(kbMsg ? { kbMsg } : {}) });
       for (const [kind, raw] of [["cover", b.cover], ["logo", b.logo]]) {
         if (!raw || raw.length > MAX_STORED_IMAGE) continue;
         try { await saveEventImage(p.ref, kind, raw); }
@@ -229,40 +275,6 @@ export default async function handler(req, res) {
       const hook = await ensureWebhook(token, req);
       if (!hook.ok) console.error("Moderation webhook not registered:", hook.error);
     } catch (e) { console.error("Database save failed, moderation buttons skipped:", e.message); moderated = false; }
-  }
-  const keyboard = moderated ? JSON.stringify(moderationKeyboard(p.ref)) : null;
-
-  // Artwork: each photo is optional. If Telegram rejects one, the text pitch above still stands, plus a note.
-  // The moderation buttons go under the last photo; if no photo got through they follow as their own message.
-  let buttonsPlaced = false, kbMsg = null;
-  if (delivered) {
-    const failed = [];
-    const photos = [[cover, "Cover"], [logo, "Logo"]].filter(([img]) => img);
-    for (const [i, [img, label]] of photos.entries()) {
-      const last = i === photos.length - 1;
-      try {
-        const form = new FormData();
-        form.append("chat_id", CHAT_ID);
-        form.append("caption", `🖼 ${label} · ${p.title} (${p.ref})`);
-        if (keyboard && last) form.append("reply_markup", keyboard);
-        form.append("photo", new Blob([img.data], { type: img.type }), `${label.toLowerCase()}.${img.type.split("/")[1].replace("jpeg", "jpg")}`);
-        const pr = await tg(token, "sendPhoto", form);
-        if (pr.ok) { if (keyboard && last) { buttonsPlaced = true; kbMsg = pr.data.result && pr.data.result.message_id; } }
-        else { failed.push(label); console.error(`Telegram sendPhoto (${label}, ${img.type}, ${img.data.length} bytes) rejected:`, JSON.stringify(pr.data)); }
-      } catch (e) { failed.push(label); console.error(`Telegram sendPhoto (${label}) error:`, e && e.message); }
-    }
-    if (failed.length || (keyboard && !buttonsPlaced)) {
-      const note = failed.length ? `⚠️ ${failed.join(" and ")} for "${p.title}" (${p.ref}) couldn't be attached. Ask the organizer at ${p.email}.` : `Decision for "${p.title}" (${p.ref}):`;
-      try {
-        const r = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: note, ...(keyboard && !buttonsPlaced ? { reply_markup: JSON.parse(keyboard) } : {}) });
-        if (!r.ok) console.error("Telegram note rejected:", JSON.stringify(r.data));
-        else if (keyboard && !buttonsPlaced) kbMsg = r.data.result && r.data.result.message_id;
-      } catch (e) { console.error("Telegram artwork note error:", e && e.message); }
-    }
-  }
-  // Remember which Telegram message carries the buttons, so a later "deleted by the host" can replace them.
-  if (kbMsg && moderated) {
-    try { const rec = await getPitch(p.ref); if (rec) await savePitch({ ...rec, kbMsg }); } catch (e) { /* not critical */ }
   }
   return res.status(200).json({ ok: true, delivered, moderated: delivered && moderated, ...(delivered && moderated ? { ref: p.ref, key: ownerKey(p.ref) } : {}) });
 }

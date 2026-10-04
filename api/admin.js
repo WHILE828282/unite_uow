@@ -34,7 +34,8 @@ const TABLES = {
   events: async (q, limit) => (await db().select({
     ref: S.events.ref, source: S.events.source, status: S.events.status, kind: S.events.kind, title: S.events.title, category: S.events.category, date: S.events.date,
     start: S.events.startTime, price: S.events.price, spots: S.events.spots, venue: S.events.venueName, host: S.events.hostEmail,
-    sold: sql`(select count(*)::int from tickets t where t.event_ref = "events"."ref" and t.status = 'valid')`, createdAt: S.events.createdAt,
+    sold: sql`(select count(*)::int from tickets t where t.event_ref = "events"."ref" and t.status = 'valid')`, number: sql`("events"."data"->>'no')`,
+    description: sql`("events"."data"->>'pitch')`, createdAt: S.events.createdAt,
   }).from(S.events).where(q ? or(ilike(S.events.title, like(q)), ilike(S.events.ref, like(q)), ilike(S.events.hostEmail, like(q)), ilike(S.events.status, like(q)), ilike(S.events.venueName, like(q))) : undefined)
     .orderBy(desc(S.events.createdAt)).limit(limit)),
   tickets: async (q, limit) => (await db().select({

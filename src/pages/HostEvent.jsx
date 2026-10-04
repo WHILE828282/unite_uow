@@ -33,6 +33,26 @@ export const loadImage = (src) => new Promise((resolve, reject) => {
   img.src = src;
 });
 
+/* The admin's Telegram message carries one picture: the cover with the logo set into its corner (Telegram can't
+   put moderation buttons under an album of two photos). */
+export const composeCard = async (coverSrc, logoSrc) => {
+  if (!coverSrc) return "";
+  const cover = await loadImage(coverSrc);
+  const W = 1280, H = 720, c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+  g.drawImage(cover, 0, 0, W, H);
+  if (logoSrc) {
+    const logo = await loadImage(logoSrc);
+    const s = 210, x = 36, y = H - s - 36, r = 40;
+    const box = (pad) => { g.beginPath(); if (g.roundRect) g.roundRect(x - pad, y - pad, s + 2 * pad, s + 2 * pad, r + pad); else g.rect(x - pad, y - pad, s + 2 * pad, s + 2 * pad); };
+    g.save(); g.shadowColor = "rgba(0,0,0,.45)"; g.shadowBlur = 28; g.shadowOffsetY = 8; g.fillStyle = "#fff"; box(6); g.fill(); g.restore();
+    g.save(); box(0); g.clip(); g.drawImage(logo, x, y, s, s); g.restore();
+  }
+  return c.toDataURL("image/jpeg", 0.88);
+};
+
 export const encodeCrop = (img, spec) => {
   const target = spec.w / spec.h, ratio = img.naturalWidth / img.naturalHeight;
   const sw = ratio > target ? img.naturalHeight * target : img.naturalWidth;

@@ -29,7 +29,7 @@ import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.
 import { CSS, glassDark } from "./lib/styles.js";
 import { versionLabel } from "./lib/version.js";
 import { Events } from "./pages/Events.jsx";
-import { CreateModal } from "./pages/HostEvent.jsx";
+import { CreateModal, composeCard } from "./pages/HostEvent.jsx";
 import { HomeHero, HomeSections } from "./pages/Home.jsx";
 import { MyEvents } from "./pages/MyEvents.jsx";
 import { MySchedulePage } from "./pages/MySchedule.jsx";
@@ -455,10 +455,11 @@ export default function App() {
     const timer = setTimeout(() => ctrl.abort(), 20000);
     let saved = sub;
     try {
+      const card = await composeCard(sub.cover, sub.logo).catch(() => "");
       const res = await fetch("/api/pitch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...sub, account: user, accountName: name, studentId: studentIdRef.current, verified: verifiedRef.current, website }),
+        body: JSON.stringify({ ...sub, card, account: user, accountName: name, studentId: studentIdRef.current, verified: verifiedRef.current, website }),
         signal: ctrl.signal,
       });
       const data = await res.json().catch(() => ({}));

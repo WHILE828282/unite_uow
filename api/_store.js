@@ -168,6 +168,8 @@ const evOf = (r) => r && {
 const evCols = { ref: S.events.ref, status: S.events.status, kind: S.events.kind, title: S.events.title, data: S.events.data, createdAt: S.events.createdAt, updatedAt: S.events.updatedAt,
   tgMessageId: S.events.tgMessageId, deletedAt: S.events.deletedAt, hasCover: sql`${S.events.cover} is not null`.as("has_cover"), hasLogo: sql`${S.events.logo} is not null`.as("has_logo") };
 export const getEvent = async (ref) => { const [r] = await db().select(evCols).from(S.events).where(eq(S.events.ref, ref)).limit(1); return evOf(r); };
+// How many events students have sent in so far (numbers the applications in the admin chat: #1, #2, …).
+export const countHosted = async () => Number((await db().select({ n: sql`count(*)` }).from(S.events).where(eq(S.events.source, "hosted")))[0].n) || 0;
 export const eventExists = async (ref) => !!(await db().select({ ref: S.events.ref }).from(S.events).where(eq(S.events.ref, ref)).limit(1))[0];
 // Insert or update the whole record (images are saved separately with saveEventImage).
 export const saveEvent = async (rec, source = "hosted") => {
