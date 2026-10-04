@@ -49,7 +49,7 @@ const passwordOk = (pw, stored) => {
 };
 const passwordProblem = (pw) => (typeof pw !== "string" || pw.length < 8 ? "Use at least 8 characters for your password." : pw.length > 128 ? "Use 128 characters or fewer." : "");
 const MAX_TRIES = 5, LOCK_MS = 15 * 60 * 1000; // 5 wrong passwords in a row pause log in for 15 minutes
-const profileOf = (a) => ({ name: (a && a.name) || "", studentId: (a && a.studentId) || "" });
+const profileOf = (a) => ({ name: (a && a.name) || "", studentId: (a && a.studentId) || "", photo: (a && a.photo) || "", telegram: (a && a.telegram) || "", whatsapp: (a && a.whatsapp) || "" });
 
 // Plain-English reason for a Resend rejection (no secrets included).
 const explainResend = (status, d) => {

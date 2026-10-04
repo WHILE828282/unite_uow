@@ -108,7 +108,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
           <ul className="mx-auto mt-7 max-w-xs space-y-3 text-left text-sm">
             {stages.map((t, i) => (
               <li key={t} className={`flex items-center gap-3 ${i <= stage ? "text-slate-800" : "text-slate-400"}`}>
-                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${i < stage ? "bg-emerald-500" : i === stage ? "bg-indigo-500" : "bg-slate-200"}`}>
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${i < stage ? "bg-emerald-500" : i === stage ? "bg-crimson-600" : "bg-slate-200"}`}>
                   {i < stage ? <Check className="h-3 w-3" /> : i === stage ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
                 </span>
                 {t}{i === stage && "…"}
@@ -120,7 +120,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
       </Modal>
     );
 
-  const inp = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`;
+  const inp = (k) => `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-crimson-100 ${errors[k] ? "border-rose-400" : "border-slate-300 focus:border-crimson-400"}`;
   const Err = ({ k }) => (errors[k] ? <p className="mt-1 text-xs text-rose-600">{errors[k]}</p> : null);
 
   return (

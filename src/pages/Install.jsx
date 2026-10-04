@@ -79,7 +79,7 @@ export default function InstallPage() {
   const closeHint = () => { setHint(false); try { sessionStorage.setItem("unite-ios-hint", "closed"); } catch (e) { /* ignore */ } };
 
   return (
-    <div className="u-keep min-h-screen bg-[#0a192f] text-white" style={{ minHeight: "var(--vvh)", colorScheme: "dark", paddingTop: "var(--sat)", paddingLeft: "var(--sal)", paddingRight: "var(--sar)" }}>
+    <div className="u-keep min-h-screen bg-[#0e0f13] text-white" style={{ minHeight: "var(--vvh)", colorScheme: "dark", paddingTop: "var(--sat)", paddingLeft: "var(--sal)", paddingRight: "var(--sar)" }}>
       <div className="pointer-events-none fixed inset-x-0 top-0 h-[420px]" style={{ background: "radial-gradient(60% 70% at 50% 0%, rgba(168,52,70,0.28), transparent 70%)" }} aria-hidden="true" />
       <header className="relative mx-auto flex max-w-2xl items-center justify-between px-5 py-4">
         <a href="/" className="inline-flex items-center gap-2 rounded-lg py-1 text-sm font-semibold text-slate-300 hover:text-white">
@@ -122,7 +122,7 @@ export default function InstallPage() {
           </div>
           <ol key={tab} className="mt-6 grid gap-4 sm:grid-cols-2">
             {STEPS[tab].map((step, i) => (
-              <li key={step.title} className="u-inst-rise overflow-hidden rounded-3xl bg-gradient-to-b from-[#112240] to-[#0d1c36] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.7)] ring-1 ring-white/[0.08]" style={{ animationDelay: `${i * 80}ms` }}>
+              <li key={step.title} className="u-inst-rise overflow-hidden rounded-3xl bg-gradient-to-b from-[#1b1c22] to-[#0d1c36] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.7)] ring-1 ring-white/[0.08]" style={{ animationDelay: `${i * 80}ms` }}>
                 <StepImage step={step} eager={i === 0} />
                 <div className="flex gap-4 p-5">
                   <span className="text-4xl font-extrabold leading-none tabular-nums text-crimson-400">{i + 1}</span>
@@ -153,7 +153,7 @@ export default function InstallPage() {
       {/* iPhone: floating hint pointing at Safari's toolbar */}
       {hint && tab === "ios" && (
         <div className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-40 flex flex-col items-end px-4" style={{ bottom: "calc(0.5rem + var(--sabx))" }}>
-          <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0a192f] shadow-2xl">
+          <div className="pointer-events-auto relative flex w-full max-w-sm items-center gap-3 self-center rounded-2xl bg-white py-3 pl-4 pr-2 text-[#0e0f13] shadow-2xl">
             <p className="min-w-0 flex-1 text-sm font-medium leading-snug">Tap <b>•••</b> → <b>Share</b> → <b>Add to Home Screen</b></p>
             <button onClick={closeHint} aria-label="Close hint" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><Icon name="close" className="h-4 w-4" /></button>
           </div>

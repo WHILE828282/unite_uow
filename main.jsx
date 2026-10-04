@@ -135,7 +135,7 @@ const adminPage = /^\/admin\/?$/.test(window.location.pathname);
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {onInstallPage ? (
-      <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0a192f" }} />}><InstallPage /></Suspense>
+      <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0e0f13" }} />}><InstallPage /></Suspense>
     ) : adminPage ? (
       <Suspense fallback={null}><AdminPage /></Suspense>
     ) : legalPage ? (

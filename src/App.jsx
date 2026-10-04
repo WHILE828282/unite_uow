@@ -374,7 +374,7 @@ export default function App() {
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
 
-  const signIn = (email, sid, verified, fullName, session) => {
+  const signIn = (email, sid, verified, fullName, session, fromAccount) => {
     const action = modal && modal.action;
     tokenRef.current = (verified && session) || "";
     agreeLegal(); // the sign-in form required accepting the current Terms (or this device already had)
@@ -391,6 +391,8 @@ export default function App() {
     }
     setName(fullName || "");
     studentIdRef.current = sid || "";
+    // Log in on a new device: photo and contacts come back from the account.
+    setExtra(fromAccount || { photo: "", telegram: "", whatsapp: "" });
     verifiedRef.current = !!verified;
     try {
       const saved = JSON.parse(localStorage.getItem(`unite-events:${email}`) || "[]");

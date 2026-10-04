@@ -94,19 +94,19 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 /*  Anything marked .u-keep (hero, header, ticket stub, map) is left   */
 /*  as designed. :where() keeps specificity low so hover states win.   */
 /* ------------------------------------------------------------------ */
-.u-dark { color-scheme: dark; background-color: #0a192f; color: #e6f1ff; }
+.u-dark { color-scheme: dark; background-color: #0e0f13; color: #f5f5f7; }
 /* Strip behind the sticky section tabs: exactly the page background in both themes. */
 .u-tabbar { background-color: #f8fafc; }
-.u-dark .u-tabbar { background-color: #0a192f; }
-.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #0d1f3a; color: #e6f1ff; }
+.u-dark .u-tabbar { background-color: #0e0f13; }
+.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #15161b; color: #f5f5f7; }
 .u-dark :where(input)::placeholder { color: #64748b; }
 
 /* Surfaces */
-.u-dark :where(.bg-white:not(.u-keep)) { background-color: #112240; }
-.u-dark :where(.bg-slate-50:not(.u-keep)) { background-color: #0d1f3a; }
-.u-dark :where(.bg-slate-100:not(.u-keep)) { background-color: #1a2f52; }
-.u-dark :where(.bg-slate-200:not(.u-keep)) { background-color: #233554; }
-.u-dark :where(.bg-slate-900:not(.u-keep)) { background-color: #e6f1ff; color: #0a192f; }
+.u-dark :where(.bg-white:not(.u-keep)) { background-color: #1b1c22; }
+.u-dark :where(.bg-slate-50:not(.u-keep)) { background-color: #15161b; }
+.u-dark :where(.bg-slate-100:not(.u-keep)) { background-color: #24252c; }
+.u-dark :where(.bg-slate-200:not(.u-keep)) { background-color: #2e2f37; }
+.u-dark :where(.bg-slate-900:not(.u-keep)) { background-color: #f5f5f7; color: #0e0f13; }
 .u-dark :where(.bg-indigo-50:not(.u-keep)) { background-color: rgba(196, 90, 104, 0.16); }
 .u-dark :where(.bg-emerald-50:not(.u-keep)) { background-color: rgba(16, 185, 129, 0.12); }
 .u-dark :where(.bg-emerald-100:not(.u-keep)) { background-color: rgba(16, 185, 129, 0.2); }
@@ -124,7 +124,7 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 .u-dark :where(.border-slate-100:not(.u-keep)) { border-color: rgba(255, 255, 255, 0.06); }
 .u-dark :where(.border-slate-200:not(.u-keep)),
 .u-dark :where(.border-slate-200\/80:not(.u-keep)),
-.u-dark :where(.border-slate-200\/50:not(.u-keep)) { border-color: rgba(35, 53, 84, 0.6); }
+.u-dark :where(.border-slate-200\/50:not(.u-keep)) { border-color: rgba(255, 255, 255, 0.07); }
 .u-dark :where(.ring-slate-200\/80:not(.u-keep)),
 .u-dark :where(.ring-slate-200\/70:not(.u-keep)) { --tw-ring-color: rgba(255, 255, 255, 0.1); }
 .u-dark :where(.shadow-sm:not(.u-keep)) { --tw-shadow-color: rgba(0, 0, 0, 0.5); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
@@ -137,11 +137,11 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 .u-dark :where(.ring-amber-200:not(.u-keep)) { --tw-ring-color: rgba(196, 90, 104, 0.4); }
 
 /* Text */
-.u-dark :where(.text-slate-900:not(.u-keep)) { color: #e6f1ff; }
-.u-dark :where(.text-slate-800:not(.u-keep)) { color: #ccd6f6; }
-.u-dark :where(.text-slate-700:not(.u-keep)) { color: #bcc8e6; }
-.u-dark :where(.text-slate-600:not(.u-keep)) { color: #a3b1d2; }
-.u-dark :where(.text-slate-500:not(.u-keep)) { color: #8892b0; }
+.u-dark :where(.text-slate-900:not(.u-keep)) { color: #f5f5f7; }
+.u-dark :where(.text-slate-800:not(.u-keep)) { color: #e2e2e8; }
+.u-dark :where(.text-slate-700:not(.u-keep)) { color: #c9c9d1; }
+.u-dark :where(.text-slate-600:not(.u-keep)) { color: #a8a8b3; }
+.u-dark :where(.text-slate-500:not(.u-keep)) { color: #8e8e99; }
 .u-dark :where(.text-indigo-600:not(.u-keep)),
 .u-dark :where(.text-indigo-700:not(.u-keep)) { color: #e7a3ad; }
 .u-dark :where(.text-indigo-800:not(.u-keep)) { color: #f1c4ca; }
@@ -179,7 +179,7 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 .u-dark :where(.ring-crimson-100:not(.u-keep)) { --tw-ring-color: rgba(196, 90, 104, 0.4); }
 
 /* Segmented control: the selected option sits above the track */
-.u-dark .u-seg-on { background-color: #233554; }
+.u-dark .u-seg-on { background-color: #2e2f37; }
 
 /* Cards */
 
@@ -187,9 +187,9 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 @media (hover: hover) and (pointer: fine) {
   .u-dark.u-dark :where(.hover\:bg-indigo-700:not(.u-keep)):hover { background-color: #3463b3; }
   .u-dark.u-dark :where(.hover\:bg-white:not(.u-keep)):hover,
-  .u-dark.u-dark :where(.hover\:bg-slate-50:not(.u-keep)):hover { background-color: #18233b; }
-  .u-dark.u-dark :where(.hover\:bg-slate-100:not(.u-keep)):hover { background-color: #22304f; }
-  .u-dark.u-dark :where(.hover\:bg-slate-200:not(.u-keep)):hover { background-color: #2c3a5c; }
+  .u-dark.u-dark :where(.hover\:bg-slate-50:not(.u-keep)):hover { background-color: #202128; }
+  .u-dark.u-dark :where(.hover\:bg-slate-100:not(.u-keep)):hover { background-color: #2a2b33; }
+  .u-dark.u-dark :where(.hover\:bg-slate-200:not(.u-keep)):hover { background-color: #34353e; }
   .u-dark.u-dark :where(.hover\:bg-slate-800:not(.u-keep)):hover { background-color: #ffffff; }
   .u-dark.u-dark :where(.hover\:bg-indigo-50:not(.u-keep)):hover { background-color: rgba(196, 90, 104, 0.22); }
   .u-dark.u-dark :where(.hover\:bg-emerald-100:not(.u-keep)):hover { background-color: rgba(16, 185, 129, 0.22); }
@@ -222,11 +222,11 @@ html.u-kb { --sabx: 0px; } /* keyboard covers the home bar */
 @media (max-width: 639px) { :root { --nav: 5.2rem; } }
 html.u-typing { --nav: 0px; }
 .u-bottomnav { background: rgba(255, 255, 255, 0.92); border-color: rgba(15, 23, 42, 0.08); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-.u-dark .u-bottomnav { background: rgba(10, 25, 47, 0.92); border-color: rgba(255, 255, 255, 0.08); }
+.u-dark .u-bottomnav { background: rgba(14,15,19, 0.92); border-color: rgba(255, 255, 255, 0.08); }
 .u-nav-off { color: #64748b; }
 .u-nav-on { color: #741629; }
 .u-nav-pill { background: rgba(116, 22, 41, 0.1); }
-.u-dark .u-nav-off { color: #8892b0; }
+.u-dark .u-nav-off { color: #8e8e99; }
 .u-dark .u-nav-on { color: #f5dde0; }
 .u-dark .u-nav-pill { background: rgba(196, 90, 104, 0.25); }
 
@@ -243,12 +243,12 @@ html.u-typing { --nav: 0px; }
 /* Floating glass nav: frosted white in light mode, dark glass in dark mode. Icon colours come from --nav-on/--nav-off. */
 .u-glass-bar, .u-glass-round { --nav-on: #0f172a; --nav-off: rgba(15, 23, 42, 0.36); color: #0f172a; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07), 0 12px 30px -12px rgba(15, 23, 42, 0.28), 0 2px 6px -2px rgba(15, 23, 42, 0.08); }
 .u-glass-on { background: rgba(15, 23, 42, 0.07); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04); }
-.u-dark .u-glass-bar, .u-dark .u-glass-round { --nav-on: #ffffff; --nav-off: rgba(255, 255, 255, 0.28); color: #ffffff; background: linear-gradient(180deg, rgba(30, 34, 48, 0.98), rgba(17, 19, 28, 0.98)); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
+.u-dark .u-glass-bar, .u-dark .u-glass-round { --nav-on: #ffffff; --nav-off: rgba(255, 255, 255, 0.28); color: #ffffff; background: linear-gradient(180deg, rgba(34, 35, 42, 0.96), rgba(20, 21, 26, 0.96)); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
 .u-dark .u-glass-round { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
 .u-dark .u-glass-on { background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.11)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 /* Install banner: same glass as the nav. */
 .u-banner { color: #0f172a; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07), 0 16px 36px -14px rgba(15, 23, 42, 0.3); }
-.u-dark .u-banner { color: #fff; background: rgba(10, 25, 47, 0.95); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+.u-dark .u-banner { color: #fff; background: rgba(14,15,19, 0.95); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
 
 /* Host form in light mode. The form is built dark (u-keep); in light mode .u-host-light flips its colours here.
    The phone preview (.u-host-keep) already shows the light event page and is left alone. */
@@ -260,7 +260,7 @@ html.u-typing { --nav: 0px; }
 .u-host-light :is(.text-rose-200, .text-rose-300):not(.u-host-keep *) { color: #e11d48; }
 .u-host-light .text-emerald-400:not(.u-host-keep *) { color: #059669; }
 .u-host-light [class*="bg-white/"]:not(.u-host-keep *) { background-color: rgba(15, 23, 42, 0.04); }
-.u-host-light :is(.bg-\[\#0a192f\], .bg-\[\#0d1f3a\], .bg-\[\#112240\]):not(.u-host-keep, .u-host-keep *) { background-color: #fbfaf8; }
+.u-host-light :is(.bg-\[\#0e0f13\], .bg-\[\#15161b\], .bg-\[\#1b1c22\]):not(.u-host-keep, .u-host-keep *) { background-color: #fbfaf8; }
 .u-host-light [class*="ring-white/"]:not(.u-host-keep, .u-host-keep *) { --tw-ring-color: rgba(15, 23, 42, 0.1); }
 .u-host-light :is([class*="border-white/"], [class*="divide-white/"] > *):not(.u-host-keep *) { border-color: rgba(15, 23, 42, 0.1); }
 .u-host-light :is(input, textarea, select):not(.u-host-keep *) { background-color: #fbfaf8; color: #1d2230; }

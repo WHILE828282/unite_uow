@@ -6,8 +6,8 @@ export const GRADIENTS = new Proxy({}, { get: () => INK });
    the status bar keeps it readable over the light header. Zero height everywhere else. */
 export const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(#0f172a 0 var(--sat), transparent var(--sat))" };
 
-export const glassDark = { background: "rgba(10,25,47,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" };
-export const overlayStyle = { background: "rgba(6,16,31,0.6)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
+export const glassDark = { background: "rgba(14,15,19,0.82)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" };
+export const overlayStyle = { background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
 export const glassChip = { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" };
 
 export const CSS = `

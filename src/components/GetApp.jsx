@@ -57,7 +57,7 @@ export function InAppCard({ compact = false }) {
   const app = inAppBrowser();
   const doCopy = async () => { if (await copy(INSTALL_URL)) { setCopied(true); setTimeout(() => setCopied(false), 2500); } };
   return (
-    <div className="u-keep rounded-2xl bg-gradient-to-br from-crimson-700/30 to-[#112240] p-4 text-left text-white ring-1 ring-crimson-400/40" role="note">
+    <div className="u-keep rounded-2xl bg-gradient-to-br from-crimson-700/30 to-[#1b1c22] p-4 text-left text-white ring-1 ring-crimson-400/40" role="note">
       <p className="text-[15px] font-semibold">Open this page in {browser} to install</p>
       <p className="mt-1 text-sm leading-relaxed text-slate-300">
         {app && app !== "an app" ? `${app}'s` : "This app's"} built-in browser can't add apps to your home screen. Tap <b className="text-white">{ios ? "•••" : "⋮"}</b> and choose <b className="text-white">“Open in {ios ? "Safari" : "browser"}”</b>, or copy the link and paste it into {browser}.
@@ -75,7 +75,7 @@ export function InAppCard({ compact = false }) {
         </div>
       )}
       <button type="button" onClick={doCopy}
-        className="u-keep mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-[#0a192f] transition-all active:scale-[0.98]">
+        className="u-keep mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-[#0e0f13] transition-all active:scale-[0.98]">
         {copied ? "✓ Link copied" : "Copy link"}
       </button>
     </div>
@@ -101,7 +101,7 @@ export function InstalledToast({ show, onDone }) {
   if (!show) return null;
   return (
     <div role="status" className="u-keep u-inst-rise pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4" style={{ bottom: "calc(1.25rem + var(--sabx) + var(--nav))" }}>
-      <span className="rounded-2xl bg-[#0a192f] px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-white/10">Unite is installed. Open it from your home screen.</span>
+      <span className="rounded-2xl bg-[#0e0f13] px-4 py-3 text-sm font-semibold text-white shadow-2xl ring-1 ring-white/10">Unite is installed. Open it from your home screen.</span>
     </div>
   );
 }

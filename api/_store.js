@@ -41,7 +41,8 @@ export const saveProfile = async (email, p) => {
 };
 // Passwords (only /api/otp reads these; the hash never leaves the server).
 export const getAuth = async (email) => {
-  const [u] = await db().select({ hash: S.users.passwordHash, failed: S.users.failedLogins, lockedUntil: S.users.lockedUntil, name: S.users.name, studentId: S.users.studentId })
+  const [u] = await db().select({ hash: S.users.passwordHash, failed: S.users.failedLogins, lockedUntil: S.users.lockedUntil, name: S.users.name, studentId: S.users.studentId,
+    photo: S.users.avatarUrl, telegram: S.users.telegram, whatsapp: S.users.whatsapp })
     .from(S.users).where(eq(S.users.email, lower(email))).limit(1);
   return u ? { ...u, lockedUntil: ms(u.lockedUntil) } : null;
 };

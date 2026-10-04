@@ -45,7 +45,7 @@ function Spotlight({ p, booked, onOpen }) {
 
 export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBooked, onSpotlight, onEvents, onClubs }) {
   return (
-    <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#070d1a] text-white shadow-[0_20px_40px_-24px_rgba(7,13,26,.6)] sm:rounded-b-[44px]">
+    <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#0b0b0e] text-white shadow-[0_20px_40px_-24px_rgba(0,0,0,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-60 sm:-inset-x-10 sm:grid-cols-6">
           {COLLAGE.map((src, i) => (
@@ -54,7 +54,7 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
             </div>
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070d1a]/45 via-[#070d1a]/75 to-[#070d1a]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0e]/45 via-[#0b0b0e]/75 to-[#0b0b0e]" />
         <div className="u-hero-glow absolute -right-24 -top-24 h-80 w-80 rounded-full" />
         <div className="u-hero-glow absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-60" />
       </div>

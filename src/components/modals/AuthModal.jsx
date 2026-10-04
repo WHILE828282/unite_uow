@@ -116,7 +116,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     const p = profile || {};
     const fromAccount = login || reset;
     const who = fromAccount ? p.name || "" : cleanName(), sid = fromAccount ? p.studentId || "" : studentId.trim();
-    later(() => onSignIn(email, sid, verified, who || (mode === "demo" ? "Demo Student" : ""), session), 1300);
+    later(() => onSignIn(email, sid, verified, who || (mode === "demo" ? "Demo Student" : ""), session, fromAccount ? { photo: p.photo || "", telegram: p.telegram || "", whatsapp: p.whatsapp || "" } : null), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
@@ -215,7 +215,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
               onChange={(e) => { setName(e.target.value.slice(0, 60)); setNameError(""); }}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); document.getElementById("auth-email").focus(); } }}
               placeholder="e.g., Layla Al Mansoori"
-              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${nameError ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-crimson-100 ${nameError ? "border-rose-400" : "border-slate-300 focus:border-crimson-400"}`}
             />
             {nameError && <p className="mt-1.5 text-sm text-rose-600">{nameError}</p>}
             </>)}
@@ -226,7 +226,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="you@uowdubai.ac.ae"
-              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${error ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+              className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-crimson-100 ${error ? "border-rose-400" : "border-slate-300 focus:border-crimson-400"}`}
             />
             {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOW student email (@uowmail.edu.au or @uowdubai.ac.ae).</p>}
 
@@ -242,7 +242,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
                   onChange={(e) => { setPassword(e.target.value.slice(0, 128)); setPwError(""); }}
                   onKeyDown={(e) => e.key === "Enter" && sendCode()}
                   placeholder={login ? "Your password" : "At least 8 characters"}
-                  className={`mt-1.5 w-full rounded-xl border bg-white py-3 pl-3.5 pr-16 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${pwError ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+                  className={`mt-1.5 w-full rounded-xl border bg-white py-3 pl-3.5 pr-16 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-crimson-100 ${pwError ? "border-rose-400" : "border-slate-300 focus:border-crimson-400"}`}
                 />
                 <button type="button" onClick={() => setShowPw((x) => !x)} aria-label={showPw ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 mt-[3px] -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100">{showPw ? "Hide" : "Show"}</button>
               </div>
@@ -256,7 +256,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
               onChange={(e) => setStudentId(e.target.value.replace(/\s/g, "").slice(0, 12))}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="e.g., 7654321"
-              className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm shadow-sm focus:border-crimson-400 focus:outline-none focus:ring-2 focus:ring-crimson-100"
             />
             <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
             </>)}
@@ -306,14 +306,14 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
                   onChange={(e) => setDigit(i, e.target.value)}
                   onKeyDown={(e) => onKey(i, e)}
                   onFocus={(e) => e.target.select()}
-                  className={`${mode === "live" ? "h-14 w-full min-w-0" : "h-16 w-14"} rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-100 ${d ? "border-indigo-500 bg-indigo-50" : "border-slate-200/50 bg-white shadow-sm focus:border-indigo-500"}`}
+                  className={`${mode === "live" ? "h-14 w-full min-w-0" : "h-16 w-14"} rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-crimson-100 ${d ? "border-crimson-500 bg-crimson-50" : "border-slate-200/50 bg-white shadow-sm focus:border-crimson-400"}`}
                 />
               ))}
             </div>
 
             <div className="mt-4 flex h-6 items-center justify-center text-sm">
               {verifying ? (
-                <span className="inline-flex items-center gap-2 text-slate-500"><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent" /> Verifying…</span>
+                <span className="inline-flex items-center gap-2 text-slate-500"><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-crimson-500 border-t-transparent" /> Verifying…</span>
               ) : otpError ? (
                 <span role="alert" className="font-medium text-rose-600">{otpError}</span>
               ) : resent ? (
@@ -343,7 +343,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
         {step === "success" && (
           <div className="py-8 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center"><AnimatedCheck /></div>
-            <h2 className="mt-4 text-xl font-bold text-slate-900">You're verified</h2>
+            <h2 className="mt-4 text-xl font-bold text-slate-900">{login && mode === "live" ? "Welcome back" : reset ? "Password updated" : "You're verified"}</h2>
             <p className="mt-1 text-sm text-slate-500">Signing you in as {email}…</p>
           </div>
         )}

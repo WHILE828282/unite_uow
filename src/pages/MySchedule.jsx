@@ -63,7 +63,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
       </div>
     );
 
-  const selectCls = "u-btn appearance-none rounded-xl border border-slate-200/50 bg-white py-2 pl-3 pr-8 text-sm font-semibold text-slate-900 shadow-sm hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+  const selectCls = "u-btn appearance-none rounded-xl border border-slate-200/50 bg-white py-2 pl-3 pr-8 text-sm font-semibold text-slate-900 shadow-sm hover:border-slate-300 focus:border-crimson-400 focus:outline-none focus:ring-2 focus:ring-crimson-100";
   const Chevron = () => <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>;
 
   return (
