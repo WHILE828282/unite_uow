@@ -8,9 +8,9 @@ import { CLUB_ROOMS } from "../data/clubs.js";
 // Sports teams first, then the club rooms from fewest clubs to most (sorted below).
 const SECTIONS = [
   ...CLUB_ROOMS.map((r) => ({ ...r, ...{
-    Tech: { icon: "laptop", blurb: "Code, compete and create: tech, e-sports, cars and content." },
-    Business: { icon: "chart", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
-    Arts: { icon: "palette", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
+    Tech: { icon: "laptop", blurb: "Build projects, play competitive e-sports and meet fellow car enthusiasts." },
+    Business: { icon: "chart", blurb: "Startups, finance, marketing, leadership and careers." },
+    Arts: { icon: "palette", blurb: "Music, dance, art, photography, content creation, writing, anime and the cultures of campus." },
   }[r.k] })),
   { k: "Sports", label: "Sports Teams", icon: "ball", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
 ];

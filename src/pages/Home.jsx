@@ -142,9 +142,9 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
   const explore = [
     ["Events", "Parties & events", `${upcomingCount} upcoming`, goEvents],
     ["Sports", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
-    ["Tech", "Tech & E\u2011sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
-    ["Business", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
-    ["Arts", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
+    ["Tech", "Tech & Gaming", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
+    ["Business", "Business & Careers", `${roomCounts.Business} clubs`, () => goRoom("Business")],
+    ["Arts", "Arts & Culture", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
     ["Host", "Host an event", "Sell tickets with QR", hostEvent],
   ];
   return (

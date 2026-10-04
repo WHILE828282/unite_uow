@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { DateBlock, DayTag, EventLogo, Icon, ShareBtn, Spots, VenueChip } from "./ui.jsx";
 import { clubDays, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
+import { roomLabel } from "../data/clubs.js";
 
 /* An event card as shown in Events (also used in the host's preview). */
 export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false }) {
@@ -73,7 +74,7 @@ export function ClubCard({ c, i, open, members, button }) {
         {/* Clubs: clear space on top so faces show, dark only behind the text. Teams keep the ball in the middle. */}
         <span className={`absolute inset-0 -z-10 bg-gradient-to-t transition-opacity duration-300 group-hover:opacity-90 ${team ? "from-slate-950 via-slate-950/75 to-slate-950/20" : "from-slate-950 from-35% via-slate-950/70 via-60% to-transparent"}`} aria-hidden="true" />
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">{c.category === "Sports" ? "Team" : `${c.category} club`}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">{roomLabel(c)}</p>
           <h3 className="mt-1 text-xl font-semibold tracking-tight text-white">{c.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-slate-200">{c.desc}</p>
         </div>

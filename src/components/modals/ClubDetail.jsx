@@ -1,3 +1,4 @@
+import { roomLabel } from "../../data/clubs.js";
 import { Modal } from "./Modal.jsx";
 import { Badge, InfoIcon, Icon } from "../ui.jsx";
 import { HERO_PHOTOS, heroBackground } from "../../data/clubs.js";
@@ -44,7 +45,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare, verified
         )}
         {!(art && art.photo) && <span className="relative text-5xl">{c.emoji}</span>}
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
+          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{roomLabel(c)}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
           {status === "pending" && <span className="u-keep rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">Pending approval</span>}
         </div>
