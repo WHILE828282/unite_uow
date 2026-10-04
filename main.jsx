@@ -17,8 +17,6 @@ probe.style.cssText = "position:fixed;top:0;bottom:0;left:0;width:0;visibility:h
 document.documentElement.appendChild(probe);
 const FIELD = "input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, select";
 const isField = (el) => !!(el && el.matches && el.matches(FIELD));
-// A sheet or full-screen form is open (the page behind is pinned) and you're typing in it.
-const pinnedTyping = () => document.body.style.position === "fixed" && isField(document.activeElement);
 // iPhone decides to shove the screen when the keyboard would cover the field. So when you tap a field in a sheet, the
 // sheet moves up by the keyboard's height straight away (the last measured one, or a typical one the first time):
 // the field is already above the keyboard when it arrives, and the screen stays put. Real sizes take over once known.
@@ -26,20 +24,17 @@ const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform 
 let lastKb = 0, kbExpected = 0, kbExpectUntil = 0;
 const syncViewport = () => {
   const vv = window.visualViewport;
-  // iPhone shoves the whole screen up to show the field above the keyboard, so everything slides off. While a sheet is
-  // open, undo that shove at once: the screen stays put, and the sheet itself sits right above the keyboard instead
-  // (.u-vv bottom = --kb below), with the field scrolled into view inside it (revealFocused).
-  if (pinnedTyping() && (window.scrollY > 0 || (vv && vv.offsetTop > 0))) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   const root = document.documentElement.style;
   const H = probe.getBoundingClientRect().height || window.innerHeight; // what position:fixed inset-0 covers
   const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
   const gap = Math.max(0, H - top - h);
   const field = isField(document.activeElement);
   let typing = field && gap > 120; // on-screen keyboard is up
-  let kbtop = top, kb = gap;
+  let kbtop = top, kb = gap, vh = h;
   if (typing) { lastKb = Math.round(H - h); kbExpectUntil = 0; }
-  else if (field && kbExpected && Date.now() < kbExpectUntil) { typing = true; kbtop = 0; kb = kbExpected; } // keyboard on its way
-  const next = { "--vvh": `${Math.round(h)}px`, "--kbtop": `${typing ? Math.round(kbtop) : 0}px`, "--kb": `${typing ? Math.round(kb) : 0}px`, "--tb": `${typing ? 0 : Math.round(Math.min(gap, 140))}px` };
+  // Keyboard on its way: the sheet already gets the space left above it (so its top doesn't end up off screen).
+  else if (field && kbExpected && Date.now() < kbExpectUntil) { typing = true; kbtop = 0; kb = kbExpected; vh = H - kbExpected; }
+  const next = { "--vvh": `${Math.round(vh)}px`, "--kbtop": `${typing ? Math.round(kbtop) : 0}px`, "--kb": `${typing ? Math.round(kb) : 0}px`, "--tb": `${typing ? 0 : Math.round(Math.min(gap, 140))}px` };
   // Writing these restyles the whole page, and visualViewport fires on every scroll frame: only write real changes.
   const key = JSON.stringify(next) + typing;
   if (key === lastViewport) return;
@@ -59,7 +54,6 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener("scroll", syncNextFrame);
 }
 window.addEventListener("resize", syncNextFrame);
-window.addEventListener("scroll", () => { if (pinnedTyping()) syncNextFrame(); }, { passive: true });
 window.addEventListener("orientationchange", syncSoon);
 
 // Keyboard handling.

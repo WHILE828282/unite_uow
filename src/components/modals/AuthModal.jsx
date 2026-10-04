@@ -38,7 +38,10 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   const [attempts, setAttempts] = useState(0);
   const [seconds, setSeconds] = useState(45);
   const [resent, setResent] = useState(false);
-  const refs = useRef([]);
+  // One real input behind the code boxes: focus never jumps from box to box (on iPhone each jump re-scrolled the
+  // screen, so it shook with every digit), and code autofill fills it in one go.
+  const otpRef = useRef(null);
+  const [otpFocus, setOtpFocus] = useState(false);
   const timers = useRef([]);
   const later = (fn, ms) => { timers.current.push(setTimeout(fn, ms)); };
 
@@ -48,7 +51,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [step, seconds]);
-  useEffect(() => { if (step === "otp" && refs.current[0]) refs.current[0].focus(); }, [step]);
+  useEffect(() => { if (step === "otp" && otpRef.current) otpRef.current.focus({ preventScroll: true }); }, [step]);
 
   const blank = (n) => Array(n).fill("");
   const otpApi = async (body) => {
@@ -130,45 +133,18 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     setVerifying(false); setAttempts(n);
     setOtpError(n >= 5 ? "Too many tries. Tap Resend code for a new one." : r.error);
     setDigits(blank(6));
-    if (n < 5 && refs.current[0]) setTimeout(() => refs.current[0] && refs.current[0].focus(), 0);
+    if (n < 5 && otpRef.current) setTimeout(() => otpRef.current && otpRef.current.focus({ preventScroll: true }), 0);
   };
 
   const N = digits.length;
   const locked = verifying || (mode === "live" && attempts >= 5);
-  const setDigit = (i, raw) => {
-    // iPhone/Android code autofill (and some keyboards) put the whole code into one box: spread it across the boxes.
-    const all = raw.replace(/\D/g, "");
-    if (all.length >= 3 && !locked) { // 2 digits = typing over a filled box: keep the newest, below
-      const full = all.length >= N, from = full ? 0 : i, next = full ? blank(N) : [...digits];
-      (full ? all.slice(0, N) : all).split("").forEach((ch, k) => { if (from + k < N) next[from + k] = ch; });
-      setDigits(next); setOtpError("");
-      const at = next.findIndex((x) => !x);
-      if (refs.current[at < 0 ? N - 1 : at]) refs.current[at < 0 ? N - 1 : at].focus();
-      if (next.every(Boolean)) verify(next.join(""));
-      return;
-    }
-    const d = all.slice(-1);
-    const next = [...digits]; next[i] = d;
-    setDigits(next); setOtpError("");
-    if (d && i < N - 1 && refs.current[i + 1]) refs.current[i + 1].focus();
-    if (next.every(Boolean)) verify(next.join(""));
-  };
-  const onKey = (i, e) => {
-    if (e.key === "Backspace" && !digits[i] && i > 0) {
-      const next = [...digits]; next[i - 1] = ""; setDigits(next); refs.current[i - 1].focus();
-    }
-    if (e.key === "ArrowLeft" && i > 0) refs.current[i - 1].focus();
-    if (e.key === "ArrowRight" && i < N - 1) refs.current[i + 1].focus();
-  };
-  const onPaste = (e) => {
-    const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, N);
-    if (!t || locked) return;
-    e.preventDefault();
+  const onCode = (raw) => {
+    if (locked) return;
+    const v = String(raw || "").replace(/\D/g, "").slice(0, N);
     const next = blank(N);
-    t.split("").forEach((ch, i) => { next[i] = ch; });
+    v.split("").forEach((ch, i) => { next[i] = ch; });
     setDigits(next); setOtpError("");
-    refs.current[Math.min(t.length, N - 1)].focus();
-    if (t.length === N) verify(t);
+    if (v.length === N) verify(v);
   };
   const resend = async () => {
     if (mode === "live") {
@@ -178,7 +154,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     } else { setSeconds(45); setDigits(["", "", "", ""]); }
     setResent(true);
     later(() => setResent(false), 3000);
-    if (refs.current[0]) refs.current[0].focus();
+    if (otpRef.current) otpRef.current.focus({ preventScroll: true });
   };
 
   return (
@@ -291,24 +267,24 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             <p className="mt-1 text-center text-sm text-slate-500">We sent a {N}-digit code to <span className="font-semibold text-slate-800">{maskEmail(email)}</span></p>
             {studentId.trim() && <p className="mt-2 text-center"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">Student ID {studentId.trim()}</span></p>}
 
-            <div className={mode === "live" ? "mx-auto mt-6 grid max-w-[22rem] grid-cols-6 gap-2" : "mt-6 flex justify-center gap-3"} onPaste={onPaste}>
-              {digits.map((d, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { refs.current[i] = el; }}
-                  value={d}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  enterKeyHint="done"
-                  autoComplete={i === 0 ? "one-time-code" : "off"}
-                  aria-label={`Digit ${i + 1}`}
-                  readOnly={locked}
-                  onChange={(e) => setDigit(i, e.target.value)}
-                  onKeyDown={(e) => onKey(i, e)}
-                  onFocus={(e) => e.target.select()}
-                  className={`${mode === "live" ? "h-14 w-full min-w-0" : "h-16 w-14"} rounded-xl border-2 text-center text-2xl font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-crimson-100 ${d ? "border-crimson-500 bg-crimson-50" : "border-slate-200/50 bg-white shadow-sm focus:border-crimson-400"}`}
-                />
-              ))}
+            <div className={`relative ${mode === "live" ? "mx-auto mt-6 grid max-w-[22rem] grid-cols-6 gap-2" : "mt-6 flex justify-center gap-3"}`}>
+              {digits.map((d, i) => {
+                const at = otpFocus && !locked && i === Math.min(digits.join("").length, N - 1);
+                return (
+                  <div key={i} aria-hidden="true"
+                    className={`${mode === "live" ? "h-14 w-full min-w-0" : "h-16 w-14"} flex items-center justify-center rounded-xl border-2 text-2xl font-bold text-slate-900 transition-colors ${at ? "border-crimson-400 ring-4 ring-crimson-100" : ""} ${d ? "border-crimson-500 bg-crimson-50" : at ? "bg-white" : "border-slate-200/50 bg-white shadow-sm"}`}>
+                    {d}
+                  </div>
+                );
+              })}
+              <input
+                ref={otpRef} value={digits.join("")} onChange={(e) => onCode(e.target.value)}
+                onFocus={() => setOtpFocus(true)} onBlur={() => setOtpFocus(false)}
+                inputMode="numeric" pattern="[0-9]*" autoComplete="one-time-code" enterKeyHint="done" maxLength={N}
+                aria-label={`${N}-digit code`} readOnly={locked} autoCorrect="off" spellCheck="false"
+                className="u-keep absolute inset-0 h-full w-full cursor-text appearance-none border-0 bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent"
+                style={{ fontSize: 16, opacity: 0.011, letterSpacing: "2em" }}
+              />
             </div>
 
             <div className="mt-4 flex h-6 items-center justify-center text-sm">
