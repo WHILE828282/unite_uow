@@ -70,7 +70,7 @@ export function ClubCard({ c, i, open, members, button }) {
   if (photo)
     return (
       <article {...open} className="u-keep u-card u-rise group relative isolate flex min-h-[15rem] cursor-pointer flex-col justify-end overflow-hidden rounded-2xl bg-slate-950 p-5 text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
-        style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        style={{ animationDelay: `${i * 60}ms`, backgroundImage: `url("${c.backgroundImage}")`, backgroundSize: "cover", backgroundPosition: c.focus || (c.category === "Sports" ? "center" : "center 22%") }}>
         <span className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/20 transition-opacity duration-300 group-hover:opacity-90" aria-hidden="true" />
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">{c.category === "Sports" ? "Team" : `${c.category} club`}</p>

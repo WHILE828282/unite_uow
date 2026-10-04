@@ -5,7 +5,7 @@ import { CLUB_ROOMS } from "../data/clubs.js";
 
 /* Clubs tab: one switcher on top (Teams + the three club rooms), so every section is one tap away
    instead of the clubs sitting below all the team cards. The choice is remembered for the visit. */
-// Clubs first, teams last.
+// Sports teams first, then the club rooms from fewest clubs to most (sorted below).
 const SECTIONS = [
   ...CLUB_ROOMS.map((r) => ({ ...r, ...{
     Tech: { icon: "laptop", blurb: "Code, compete and create: tech, e-sports, cars and content." },
@@ -16,9 +16,10 @@ const SECTIONS = [
 ];
 
 export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clubBtn }) {
-  const [sec, setSec] = useState(() => { try { return sessionStorage.getItem("unite-section") || "Tech"; } catch (e) { return "Tech"; } });
+  const [sec, setSec] = useState(() => { try { return sessionStorage.getItem("unite-section") || "Sports"; } catch (e) { return "Sports"; } });
   const pick = (k) => { setSec(k); try { sessionStorage.setItem("unite-section", k); } catch (e) { /* ignore */ } };
-  const sections = SECTIONS.map((s) => ({ ...s, clubs: filteredClubs.filter((c) => c.category === s.k) })).filter((s) => s.clubs.length);
+  const sections = SECTIONS.map((s) => ({ ...s, clubs: filteredClubs.filter((c) => c.category === s.k) })).filter((s) => s.clubs.length)
+    .sort((a, b) => (b.k === "Sports") - (a.k === "Sports") || a.clubs.length - b.clubs.length);
   const active = sections.find((s) => s.k === sec) || sections[0];
   if (!active) return null;
   return (
