@@ -307,3 +307,6 @@ html.u-typing { --nav: 0px; }
 }
 .u-light .u-glass-bar, .u-light .u-glass-round { background: rgba(251, 250, 248, 0.9); }
 .u-light .u-banner { background: rgba(251, 250, 248, 0.94); }
+
+/* Overlays rendered outside the app (portals) carry the theme class for their contents; keep the dimmed backdrop. */
+.u-portal.u-dark, .u-portal.u-light { background-color: rgba(2, 6, 23, 0.5); }

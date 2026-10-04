@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Modal } from "./Modal.jsx";
 import { waNumber } from "../../lib/apps.js";
 import { ConsentRow } from "../Legal.jsx";
@@ -7,6 +8,7 @@ import { ConsentRow } from "../Legal.jsx";
    saved (UAE code by default). The club's owner and helpers are notified straight away. */
 export function ApplyModal({ club: c, name: defaultName, email, whatsapp: savedWa, onSubmit, onClose }) {
   const [attempt, setAttempt] = useState(0);
+  const [confirming, setConfirming] = useState(false);
   const [f, setF] = useState({ name: defaultName || "", whatsapp: savedWa || "+971 ", year: "", message: "", consent: false });
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
@@ -22,9 +24,13 @@ export function ApplyModal({ club: c, name: defaultName, email, whatsapp: savedW
     setErrors(er);
     if (!f.consent) setAttempt((n) => n + 1);
     if (Object.keys(er).length || !f.consent) return;
+    setConfirming(true); // last "are you sure" before it goes to the club
+  };
+  const send = async () => {
+    if (sending) return;
     setSending(true);
     const err = await onSubmit({ name: f.name.trim().replace(/\s+/g, " "), whatsapp: f.whatsapp.trim(), year: f.year.trim(), message: f.message.trim(), consent: true });
-    if (err) { setError(err); setSending(false); }
+    if (err) { setError(err); setSending(false); setConfirming(false); }
   };
 
   const field = (bad) => `mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 ${bad ? "border-rose-400 focus:ring-rose-200" : "border-slate-200 focus:border-crimson-400 focus:ring-crimson-100"}`;
@@ -64,6 +70,21 @@ export function ApplyModal({ club: c, name: defaultName, email, whatsapp: savedW
           {sending && <span className="u-spin h-4 w-4 rounded-full border-2 border-white border-t-transparent" />}
           {sending ? "Sending…" : "Send application"}
         </button>
+        {confirming && createPortal(
+          <div className={`u-portal u-fade fixed inset-0 z-[60] ${document.querySelector(".u-dark") ? "u-dark" : "u-light"} flex items-end justify-center bg-black/40 p-4 sm:items-center`} onMouseDown={(e) => { if (e.target === e.currentTarget && !sending) setConfirming(false); }}>
+            <div role="alertdialog" aria-modal="true" aria-labelledby="ap-confirm" className="u-up w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl" style={{ marginBottom: "var(--sabx)" }}>
+              <h3 id="ap-confirm" className="text-lg font-bold text-slate-900">Send your application to {c.name}?</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">The committee will see your name, email and WhatsApp number and will contact you about joining.</p>
+              <div className="mt-6 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setConfirming(false)} disabled={sending} className="u-btn rounded-xl py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Back</button>
+                <button type="button" onClick={send} disabled={sending} className="u-btn flex items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                  {sending && <span className="u-spin h-4 w-4 rounded-full border-2 border-white border-t-transparent" />}{sending ? "Sending…" : "Yes, send"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
       </form>
     </Modal>
   );

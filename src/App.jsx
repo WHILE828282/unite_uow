@@ -483,14 +483,7 @@ export default function App() {
       body: `Next you'll fill in the official UOWD form. ${scheduleLabel(c)} will be added to My Schedule.`,
       confirmLabel: "Continue",
       onConfirm: () => setModal({ type: "tryout", id: c.id }),
-    } : {
-      // A second "are you sure" before the application form.
-      type: "confirm",
-      title: `Join ${c.name}?`,
-      body: `You'll fill in a short application. ${c.name}'s committee reviews it and gets back to you on WhatsApp or email.`,
-      confirmLabel: "Yes, apply",
-      onConfirm: () => setModal({ type: "apply", id: c.id }),
-    }));
+    } : { type: "apply", id: c.id }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
