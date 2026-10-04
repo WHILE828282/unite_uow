@@ -1,10 +1,11 @@
 /* Vercel serverless function: live email verification codes for Unite, sent with Resend.
    POST { action: "send", email }                      -> emails a 6-digit code, returns a signed challenge
-   POST { action: "verify", email, code, challenge }   -> { ok: true } when the code matches
+   POST { action: "verify", email, code, challenge, name?, studentId? } -> { ok: true, session, profile } when the code matches
    Stateless: the challenge carries the email and expiry, signed with HMAC so it can't be forged or reused
    for another address. Needs RESEND_API_KEY. Sender: Unite Team <welcome@uniteuow.com>. Only UOW addresses (@uowdubai.ac.ae, @uowmail.edu.au, @uow.edu.au), @uniteuow.com and the admins in ADMIN_EMAILS. */
 import crypto from "node:crypto";
 import { sessionToken, isAdminEmail } from "./_lib.js";
+import * as store from "./_store.js";
 
 const TTL_MS = 10 * 60 * 1000; // codes expire after 10 minutes
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -91,7 +92,17 @@ export default async function handler(req, res) {
     if (Date.now() > exp) return res.status(400).json({ ok: false, code: "expired", error: "This code has expired. Tap Resend code for a new one." });
     const want = Buffer.from(sign(email, code, exp)), got = Buffer.from(mac);
     if (want.length !== got.length || !crypto.timingSafeEqual(want, got)) return res.status(400).json({ ok: false, code: "wrong", error: "That code isn't right. Check the email and try again." });
-    return res.status(200).json({ ok: true, session: sessionToken(email) });
+    // Sign up saves the name and student ID; log in gets them back from the account.
+    let profile = null;
+    if (store.dbConfigured()) {
+      try {
+        const name = String(b.name || "").trim().replace(/\s+/g, " ").slice(0, 60), studentId = String(b.studentId || "").replace(/\s/g, "").slice(0, 12);
+        await store.ensureUser(email, name.length >= 2 ? { name, studentId: studentId || undefined } : {});
+        const p = await store.getProfile(email);
+        profile = { name: p.name || "", studentId: p.studentId || "" };
+      } catch (e) { console.error("Profile on sign-in failed:", e && e.message); }
+    }
+    return res.status(200).json({ ok: true, session: sessionToken(email), profile });
   }
 
   return res.status(400).json({ ok: false, error: "Unknown action." });

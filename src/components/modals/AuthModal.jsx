@@ -10,6 +10,9 @@ import { ConsentRow, deviceAccepted } from "../Legal.jsx";
 
 export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName = "", defaultSid = "", title = "Campus Login" }) {
   const [step, setStep] = useState("email"); // email | otp | success
+  // New here: name + email (+ optional student ID). Returning: just the email; the name comes back from the account.
+  const [flow, setFlow] = useState(() => { try { return !defaultName && localStorage.getItem("unite-returning") ? "login" : "signup"; } catch (e) { return "signup"; } });
+  const login = flow === "login" && !defaultName;
   // First sign-in on this device: accept the Terms and Privacy Policy (never pre-ticked).
   const [needsConsent] = useState(() => !deviceAccepted());
   const [agreed, setAgreed] = useState(false);
@@ -66,7 +69,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   const cleanName = () => name.trim().replace(/\s+/g, " ").slice(0, 60);
   const sendCode = async (override) => {
     if (needsConsent && !agreed) return setAttempt((n) => n + 1);
-    if (typeof override !== "string" && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
+    if (typeof override !== "string" && !login && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
     // Live codes: UOWD campus accounts only (the demo account below is open to everyone).
@@ -83,17 +86,20 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     later(() => { setSending(false); setDigits(["", "", "", ""]); setSeconds(45); setStep("otp"); }, 800);
   };
 
-  const finish = (verified, session) => {
+  const finish = (verified, session, profile) => {
     setVerifying(false);
     setStep("success");
-    later(() => onSignIn(email, studentId.trim(), verified, cleanName() || (mode === "demo" ? "Demo Student" : ""), session), 1300);
+    try { localStorage.setItem("unite-returning", "1"); } catch (e) { /* ignore */ }
+    const p = profile || {};
+    const who = login ? p.name || "" : cleanName(), sid = login ? p.studentId || "" : studentId.trim();
+    later(() => onSignIn(email, sid, verified, who || (mode === "demo" ? "Demo Student" : ""), session), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
     // Demo mode: any complete 4-digit code verifies.
     if (mode === "demo") return later(() => finish(false), 700);
-    const r = await otpApi({ action: "verify", email, code, challenge });
-    if (r.ok) return finish(true, r.session);
+    const r = await otpApi({ action: "verify", email, code, challenge, ...(login ? {} : { name: cleanName(), studentId: studentId.trim() }) });
+    if (r.ok) return finish(true, r.session, r.profile);
     const n = attempts + 1;
     setVerifying(false); setAttempts(n);
     setOtpError(n >= 5 ? "Too many tries. Tap Resend code for a new one." : r.error);
@@ -161,6 +167,16 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">{title}</h2>
             <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
+            {!defaultName && (
+              <div role="tablist" aria-label="Account" className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+                {[["signup", "Sign up"], ["login", "Log in"]].map(([k, l]) => (
+                  <button key={k} role="tab" aria-selected={flow === k} onClick={() => { setFlow(k); setError(""); setNameError(""); }}
+                    className={`u-btn rounded-lg py-2 text-sm font-semibold ${flow === k ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{l}</button>
+                ))}
+              </div>
+            )}
+
+            {!login && (<>
             <label htmlFor="auth-name" className="mt-5 block text-sm font-medium text-slate-700">Your name</label>
             <input
               id="auth-name" value={name} autoFocus autoComplete="name" autoCapitalize="words" enterKeyHint="next"
@@ -170,10 +186,11 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
               className={`mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${nameError ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
             />
             {nameError && <p className="mt-1.5 text-sm text-rose-600">{nameError}</p>}
+            </>)}
 
             <label htmlFor="auth-email" className="mt-4 block text-sm font-medium text-slate-700">Email address</label>
             <input
-              id="auth-email" type="email" inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
+              id="auth-email" type="email" autoFocus={login} inputMode="email" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck="false" enterKeyHint="go"
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               placeholder="you@uowdubai.ac.ae"
@@ -181,6 +198,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             />
             {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOW student email (@uowmail.edu.au or @uowdubai.ac.ae).</p>}
 
+            {!login && (<>
             <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
             <input
               id="auth-sid" value={studentId} inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="go"
@@ -190,10 +208,11 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
               className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
             <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
+            </>)}
 
             {needsConsent && <ConsentRow className="mt-4" checked={agreed} onChange={setAgreed} attempt={attempt} />}
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
-              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Email me a code"}
+              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : login ? "Email me a login code" : "Email me a code"}
             </button>
             <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-crimson-700 hover:bg-slate-100">
               Continue with a demo account
