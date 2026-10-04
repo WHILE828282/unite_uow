@@ -17,8 +17,14 @@ probe.style.cssText = "position:fixed;top:0;bottom:0;left:0;width:0;visibility:h
 document.documentElement.appendChild(probe);
 const FIELD = "input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, select";
 const isField = (el) => !!(el && el.matches && el.matches(FIELD));
+// A sheet or full-screen form is open (the page behind is pinned) and you're typing in it.
+const pinnedTyping = () => document.body.style.position === "fixed" && isField(document.activeElement);
 const syncViewport = () => {
   const vv = window.visualViewport;
+  // iPhone shoves the whole screen up to show the field above the keyboard, so everything slides off. While a sheet is
+  // open, undo that shove at once: the screen stays put, and the sheet itself sits right above the keyboard instead
+  // (.u-vv bottom = --kb below), with the field scrolled into view inside it (revealFocused).
+  if (pinnedTyping() && (window.scrollY > 0 || (vv && vv.offsetTop > 0))) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   const root = document.documentElement.style;
   const H = probe.getBoundingClientRect().height || window.innerHeight; // what position:fixed inset-0 covers
   const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
@@ -44,6 +50,7 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener("scroll", syncNextFrame);
 }
 window.addEventListener("resize", syncNextFrame);
+window.addEventListener("scroll", () => { if (pinnedTyping()) syncNextFrame(); }, { passive: true });
 window.addEventListener("orientationchange", syncSoon);
 
 // Keyboard handling.
