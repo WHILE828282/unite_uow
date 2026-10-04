@@ -113,7 +113,7 @@ export default async function handler(req, res) {
 
     if (b.a === "consent") {
       const version = str(b.version, 20), at = Number(b.at) || Date.now();
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(version)) return res.status(400).json({ ok: false, error: "Unknown version." });
+      if (!/^\d{4}-\d{2}-\d{2}(\.\d{1,3})?$/.test(version)) return res.status(400).json({ ok: false, error: "Unknown version." });
       await saveProfile(me, { ...(await getProfile(me)), legal: { version, at } });
       return res.status(200).json({ ok: true });
     }

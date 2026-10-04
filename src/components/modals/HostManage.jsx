@@ -163,7 +163,7 @@ function AttendeeRow({ a, sub, d, onCheckIn, onDelivered, notify }) {
                 enterKeyHint="send" onKeyDown={(e) => { if (e.key === "Enter" && !busy) { e.preventDefault(); e.currentTarget.blur(); send({ mode: "external", note }); } }}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
               <div className="flex gap-2">
-                <button disabled={busy} onClick={() => send({ mode: "external", note })} className="u-btn flex-1 rounded-lg bg-emerald-600 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-60">{busy ? "Saving…" : "Mark as delivered"}</button>
+                <button disabled={busy} onClick={() => send({ mode: "external", note })} className="u-btn flex-1 rounded-lg bg-emerald-600 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">{busy ? "Saving…" : "Mark as delivered"}</button>
                 <button disabled={busy} onClick={() => setMode(null)} className="u-btn rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">Cancel</button>
               </div>
             </div>

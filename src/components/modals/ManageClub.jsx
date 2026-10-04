@@ -37,7 +37,7 @@ export function ManageClub({ club, onStatus, onHelper, onClose }) {
         <div role="tablist" aria-label="Application status" className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1">
           {APP_STATES.map((s) => (
             <button key={s} role="tab" aria-selected={filter === s} onClick={() => setFilter(s)}
-              className={`u-keep rounded-lg px-1 py-2 text-xs font-semibold transition-colors ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              className={`rounded-lg px-1 py-2.5 text-xs font-semibold transition-colors ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
               {STATE_LABEL[s]} <span className="tabular-nums text-slate-400">{count(s)}</span>
             </button>
           ))}
@@ -58,7 +58,7 @@ export function ManageClub({ club, onStatus, onHelper, onClose }) {
               <p className="mt-2 break-all text-xs text-slate-500">{a.email} · +{a.whatsapp} · {ago(a.at)}</p>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <a href={waLink(a)} target="_blank" rel="noopener noreferrer" onClick={() => a.status === "new" && onStatus(a, "contacted", true)}
-                  className="u-keep u-btn flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">WhatsApp</a>
+                  className="u-keep u-btn flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">WhatsApp</a>
                 <a href={mailLink(a)} className="u-btn flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"><Icon name="mail" className="h-4 w-4" /> Email</a>
                 <button onClick={() => act(a, "accepted")} disabled={!!busy || a.status === "accepted"}
                   className="u-btn rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-40">{busy === a.id + "accepted" ? "…" : "Accept"}</button>

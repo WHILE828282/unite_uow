@@ -30,7 +30,7 @@ function TripStatus({ b, onOpenFile }) {
       {b.state === "ready" && b.delivery ? (
         <div className="mt-4 rounded-2xl bg-emerald-50 p-4 text-sm ring-1 ring-inset ring-emerald-200">
           {b.delivery.hasFile && (
-            <button onClick={() => onOpenFile(b)} className="u-btn flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-500">
+            <button onClick={() => onOpenFile(b)} className="u-btn flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700">
               <Icon name="ticket" className="h-4 w-4" /> Open concert ticket
             </button>
           )}

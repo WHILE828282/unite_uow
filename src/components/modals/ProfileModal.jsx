@@ -179,7 +179,7 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
               </a>
             ))}
           </div>
-          {legal && <p className="mt-1.5 text-xs text-slate-400">You accepted the version of {new Date(legal.version + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} on {new Date(legal.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.</p>}
+          {legal && <p className="mt-1.5 text-xs text-slate-400">You accepted the version of {new Date(legal.version.slice(0, 10) + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} on {new Date(legal.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.</p>}
         </Section>
 
         <div className="mt-6 border-t border-slate-100 pt-4">

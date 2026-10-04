@@ -114,12 +114,19 @@ export function LegalSheet({ kind, onClose }) {
 export function ConsentRow({ checked, onChange, attempt = 0, extra, dark = false, className = "" }) {
   const [doc, setDoc] = useState(null);
   const show = attempt > 0 && !checked;
+  const rowRef = useRef(null);
+  // Bring the row into view when someone tries to continue without ticking it, so the shake is seen.
+  useEffect(() => { if (attempt > 0 && !checked && rowRef.current) rowRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); }, [attempt]); // eslint-disable-line
   const open = (k) => (e) => { e.preventDefault(); e.stopPropagation(); setDoc(k); };
   const link = `font-semibold underline underline-offset-2 ${dark ? "u-keep text-white decoration-white/40" : "text-slate-900 decoration-slate-400"}`;
   return (
-    <div className={className}>
-      <label key={show ? attempt : "ok"} className={`flex cursor-pointer items-start gap-3 rounded-xl p-3.5 ring-1 transition-colors ${show ? "u-shake" : ""} ${dark ? `u-keep ${show ? "ring-rose-400/70 bg-rose-500/[0.06]" : "ring-white/10 hover:bg-white/[0.03]"}` : show ? "bg-rose-50/60 ring-rose-300" : "bg-white ring-slate-200 hover:bg-slate-50"}`}>
-        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-crimson-700" />
+    <div ref={rowRef} className={className}>
+      <label key={show ? attempt : "ok"} className={`flex cursor-pointer select-none items-start gap-3 rounded-2xl p-4 ring-1 transition-[background-color,box-shadow,transform] duration-150 active:scale-[0.99] ${show ? "u-shake" : ""} ${dark ? `u-keep ${show ? "ring-rose-400/70 bg-rose-500/[0.06]" : "ring-white/10 hover:bg-white/[0.03]"}` : show ? "bg-rose-50 ring-rose-300" : checked ? "bg-white ring-crimson-200" : "bg-white ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"}`}>
+        <span className="relative mt-px flex h-[22px] w-[22px] shrink-0">
+          <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)}
+            className="peer h-[22px] w-[22px] cursor-pointer appearance-none rounded-[7px] border-2 border-slate-300 bg-white transition-colors checked:border-crimson-700 checked:bg-crimson-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-crimson-400" />
+          <svg viewBox="0 0 24 24" className="pointer-events-none absolute inset-0 m-auto h-3.5 w-3.5 scale-50 text-white opacity-0 transition-all duration-150 peer-checked:scale-100 peer-checked:opacity-100" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+        </span>
         <span className={`text-sm leading-relaxed ${dark ? "u-keep text-slate-300" : "text-slate-700"}`}>
           I agree to the <button type="button" onClick={open("terms")} className={link}>Terms of Use</button> and <button type="button" onClick={open("privacy")} className={link}>Privacy Policy</button>
           {extra && <span className={`mt-1 block text-xs ${dark ? "u-keep text-slate-400" : "text-slate-500"}`}>{extra}</span>}

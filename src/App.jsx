@@ -685,7 +685,7 @@ export default function App() {
   const clubBtn = (c, extra = "shrink-0 px-4 py-2", onPhoto = false) => {
     const st = statusOf(c);
     const tone = onPhoto
-      ? `u-keep ${st === "pending" || st === "applied" ? "bg-amber-700 text-white hover:bg-amber-600" : st === "joined" ? "bg-emerald-600 text-white hover:bg-emerald-500" : "bg-white text-slate-900 hover:bg-slate-100"}`
+      ? `u-keep ${st === "pending" || st === "applied" ? "bg-amber-700 text-white hover:bg-amber-600" : st === "joined" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-white text-slate-900 hover:bg-slate-100"}`
       : st === "pending" || st === "applied" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : st === "joined" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-slate-900 text-white hover:bg-slate-800";
     return (
       <button onClick={() => openJoin(c)} className={`u-btn ${extra} rounded-xl text-sm font-semibold ${tone}`}>

@@ -1,6 +1,6 @@
 /* Terms of Use and Privacy Policy. Bump LEGAL_VERSION whenever either text changes in substance:
    signed-in users are then asked once to accept the new version. */
-export const LEGAL_VERSION = "2026-10-04";
+export const LEGAL_VERSION = "2026-10-04.2"; // date of the change, plus a counter for same-day revisions
 export const LEGAL_UPDATED = "4 October 2026";
 export const CONTACT = "support@uniteuow.com";
 
@@ -32,9 +32,10 @@ export const TERMS = {
       "Payments on Unite are in demo mode for now: no real money is charged, and the card shown is a test card.",
       "Each ticket has a signed QR code. Showing someone else's ticket, copying a QR code or reselling tickets for more than you paid is not allowed.",
     ] },
-    { id: "refunds", title: "Refunds and cancelled events", body: [
-      "If an event is cancelled, or a group trip doesn't reach its minimum number of people by its deadline, everyone who paid is refunded in full automatically.",
-      "Otherwise, refunds are up to the host. Contact them first; if you can't reach them, contact us.",
+    { id: "refunds", title: "No refunds after payment", body: [
+      "All ticket sales are final. Once you've paid for a ticket, it can't be refunded, exchanged or cancelled, including if you change your mind or can't attend.",
+      "The only exception: if an event is cancelled, or a group trip doesn't reach its minimum number of people by its deadline, everyone who paid is refunded in full automatically.",
+      "Please check the date, time, place and price before you pay.",
     ] },
     { id: "behaviour", title: "Acceptable behaviour", body: [
       "Be respectful. Don't use Unite to:",

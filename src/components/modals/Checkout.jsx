@@ -199,7 +199,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
       </div>
       {/* Always in view: the pay button stays at the bottom of the sheet while you scroll. */}
       <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white px-5 pt-3">
-        <ConsentRow className="mb-3" checked={agreed} onChange={setAgreed} attempt={attempt} />
+        <ConsentRow className="mb-3" checked={agreed} onChange={setAgreed} attempt={attempt} extra="Tickets are non-refundable once paid, unless the event is cancelled." />
         <button onClick={confirm} className={`u-btn flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-slate-900 hover:bg-slate-800"}`}>
           <Icon name="lock" className="h-4 w-4" /> Pay {amount} AED
         </button>
