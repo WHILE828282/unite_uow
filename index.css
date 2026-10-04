@@ -266,3 +266,8 @@ html.u-typing { --nav: 0px; }
 
 /* Keyboard focus: one brand-coloured ring everywhere instead of the browser's default. */
 :focus-visible { outline: 2px solid #c45a68; outline-offset: 2px; }
+
+/* Consent row: nudge when someone tries to continue without ticking it. */
+@keyframes uShake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+.u-shake { animation: uShake .45s cubic-bezier(.36,.07,.19,.97) both; }
+@media (prefers-reduced-motion: reduce) { .u-shake { animation: none; } }

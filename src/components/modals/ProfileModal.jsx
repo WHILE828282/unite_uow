@@ -38,7 +38,7 @@ const Section = ({ title, children }) => (
 const ErrLine = ({ msg }) => (msg ? <p className="mt-1.5 text-xs text-rose-600">{msg}</p> : null);
 
 /* Profile & settings: the only place to edit your details, change email and sign out. */
-export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram }) {
+export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram, legal }) {
   const [f, setF] = useState({ name: profile.name || "", sid: profile.sid || "", photo: profile.photo || "", telegram: profile.telegram || "", whatsapp: profile.whatsapp || "" });
   const [errors, setErrors] = useState({});
   const fileRef = useRef(null);
@@ -170,6 +170,17 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
         )}
 
         <button type="button" onClick={save} disabled={!dirty} className="u-btn mt-7 w-full rounded-xl bg-slate-900 py-3.5 text-[15px] font-semibold text-white disabled:opacity-40">{dirty ? "Save changes" : "Saved"}</button>
+
+        <Section title="About">
+          <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            {[["/terms", "Terms of Use"], ["/privacy", "Privacy Policy"]].map(([href, label]) => (
+              <a key={href} href={href} target="_blank" rel="noopener" className="flex items-center justify-between px-3.5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-50">
+                {label} <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+              </a>
+            ))}
+          </div>
+          {legal && <p className="mt-1.5 text-xs text-slate-400">You accepted the version of {new Date(legal.version + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} on {new Date(legal.at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.</p>}
+        </Section>
 
         <div className="mt-6 border-t border-slate-100 pt-4">
           <button type="button" onClick={onSignOut} className="u-btn flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-rose-600 hover:bg-rose-50">

@@ -4,6 +4,7 @@ import { Modal } from "./Modal.jsx";
 import { Check, EventLogo, Icon } from "../ui.jsx";
 import { fmtDate } from "../../lib/format.js";
 import { GRADIENTS } from "../../lib/styles.js";
+import { ConsentRow } from "../Legal.jsx";
 
 export const cardBrand = (digits) => (/^4/.test(digits) ? "VISA" : /^(5[1-5]|2[2-7])/.test(digits) ? "Mastercard" : /^3[47]/.test(digits) ? "AMEX" : "");
 
@@ -35,6 +36,8 @@ export function PayCard({ number = "", name, exp, wallet }) {
 export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b) => b, onOpenFile }) {
   const [step, setStep] = useState("review");
   const [method, setMethod] = useState("Apple Pay");
+  const [agreed, setAgreed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [stage, setStage] = useState(0);
   const [booking, setBooking] = useState(null);
   const [card, setCard] = useState({ number: "", exp: "", cvc: "", name: "" });
@@ -66,6 +69,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
       setErrors(e);
       if (Object.keys(e).length) return;
     }
+    if (!agreed) return setAttempt((n) => n + 1);
     setStage(0); setStep("processing");
   };
 
@@ -195,6 +199,7 @@ export function Checkout({ party, email, onPaid, onDownload, onClose, live = (b)
       </div>
       {/* Always in view: the pay button stays at the bottom of the sheet while you scroll. */}
       <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white px-5 pt-3">
+        <ConsentRow className="mb-3" checked={agreed} onChange={setAgreed} attempt={attempt} />
         <button onClick={confirm} className={`u-btn flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-semibold text-white shadow-sm ${method === "Apple Pay" ? "u-keep bg-black hover:bg-slate-800" : "bg-slate-900 hover:bg-slate-800"}`}>
           <Icon name="lock" className="h-4 w-4" /> Pay {amount} AED
         </button>

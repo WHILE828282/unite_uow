@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PartyCard } from "../components/cards.jsx";
+import { ConsentRow } from "../components/Legal.jsx";
 import { EventDetailBody } from "../components/modals/EventDetail.jsx";
 import { Icon } from "../components/ui.jsx";
 import { DRESS_CODES, EVENT_TYPES, LANGUAGES } from "../data/options.js";
@@ -312,6 +313,8 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
     spots: 30, price: 0, dress: "", reqs: "", whatsapp: contacts.whatsapp || "", telegram: contacts.telegram || "", email: defaultEmail, logo: null, cover: null, website: "",
     kind: "", extName: "", seller: "", minGroup: 10, collectUntil: "",
   });
+  const [agreed, setAgreed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState("type"); // type | form | preview
   const [confirm, setConfirm] = useState(false);
@@ -679,12 +682,15 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
             <button onClick={() => { setStep("form"); }} disabled={!f.kind}
               className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-40">{f.kind ? "Continue →" : "Choose a type to continue"}</button>
           ) : preview ? (
+            <>
+            <ConsentRow className="mb-3" checked={agreed} onChange={setAgreed} attempt={attempt} />
             <div className="flex flex-col-reverse gap-3 sm:flex-row">
               <button onClick={() => setStep("form")} disabled={submitting}
                 className="u-keep rounded-xl px-6 py-3.5 text-[15px] font-semibold text-white ring-1 ring-white/15 transition-all hover:bg-white/10 active:scale-[0.98] disabled:opacity-50 sm:w-auto">← Keep editing</button>
-              <button onClick={() => setConfirm(true)} disabled={submitting}
+              <button onClick={() => (agreed ? setConfirm(true) : setAttempt((n) => n + 1))} disabled={submitting}
                 className="u-keep flex flex-1 items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98] disabled:opacity-80">Submit for review</button>
             </div>
+            </>
           ) : (
             <button onClick={review}
               className="u-keep flex w-full items-center justify-center gap-2 rounded-xl bg-crimson-700 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:bg-crimson-600 active:scale-[0.98]">Preview event →</button>

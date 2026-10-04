@@ -7,6 +7,7 @@
      helper   { clubId, op: add|remove, who: email or @telegram } → owner only
      profile  { name, telegram, whatsapp } → saved for notifications and @username lookup
      tglink   → t.me link that connects your Telegram to Unite notifications
+     consent  { version, at } → which Terms / Privacy Policy version the user accepted, and when
    GET ?a=wa&id&k → marks the application "contacted", then opens WhatsApp (link used in emails and Telegram). */
 import crypto from "node:crypto";
 import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook } from "./_lib.js";
@@ -108,6 +109,13 @@ export default async function handler(req, res) {
       if (/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegram)) await kv("SET", A.tgUser(telegram), me);
       await saveProfile(me, { ...prev, name: str(b.name, 60) || prev.name, telegram, whatsapp: waNumber(b.whatsapp) || prev.whatsapp });
       return res.status(200).json({ ok: true, tgLinked: !!prev.tgChat });
+    }
+
+    if (b.a === "consent") {
+      const version = str(b.version, 20), at = Number(b.at) || Date.now();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(version)) return res.status(400).json({ ok: false, error: "Unknown version." });
+      await saveProfile(me, { ...(await getProfile(me)), legal: { version, at } });
+      return res.status(200).json({ ok: true });
     }
 
     if (b.a === "tglink") {

@@ -39,6 +39,8 @@ import { UniteIcon } from "./components/UniteIcon.jsx";
 import { TeamsClubs } from "./pages/TeamsClubs.jsx";
 import { ApplyModal } from "./components/modals/ApplyModal.jsx";
 import { ManageClub } from "./components/modals/ManageClub.jsx";
+import { UpdatedTermsSheet, legalRecord, rememberOnDevice } from "./components/Legal.jsx";
+import { LEGAL_VERSION } from "./data/legal.js";
 import { DEMO_CLUB_ID, appsApi, loadDemoClub, saveDemoClub, waNumber } from "./lib/apps.js";
 
 // Signed-in session kept in this browser, so a reload (e.g. tapping the logo) keeps you signed in with your
@@ -97,14 +99,17 @@ export default function App() {
   // Club applications: the student's own (status only) and, for owners/helpers, the clubs they manage.
   const [myApps, setMyApps] = useState(() => (saved && Array.isArray(saved.apps) ? saved.apps : []));
   const [managed, setManaged] = useState([]);
+  // Which version of the Terms / Privacy Policy this account accepted, and when ({ version, at }).
+  const [legal, setLegal] = useState(() => (saved && saved.legal) || null);
+  const agreeLegal = () => { const r = legalRecord(); setLegal(r); rememberOnDevice(r); if (tokenRef.current) appsApi({ a: "consent", s: tokenRef.current, version: r.version, at: r.at }); };
   const [demoClub, setDemoClub] = useState(loadDemoClub);
 
   useEffect(() => {
     try {
       if (!user) localStorage.removeItem(SESSION_KEY);
-      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, tok: tokenRef.current, ...extra, apps: myApps, joinedClubs, bookings, waitlist }));
+      else localStorage.setItem(SESSION_KEY, JSON.stringify({ user, name, sid: studentIdRef.current, verified: verifiedRef.current, tok: tokenRef.current, legal, ...extra, apps: myApps, joinedClubs, bookings, waitlist }));
     } catch (e) { /* storage full or blocked */ }
-  }, [user, name, extra, myApps, joinedClubs, bookings, waitlist]);
+  }, [user, name, extra, legal, myApps, joinedClubs, bookings, waitlist]);
 
   // One-off cleanup: test events created before launch, removed from this browser's saved applications.
   useEffect(() => {
@@ -371,6 +376,7 @@ export default function App() {
   const signIn = (email, sid, verified, fullName, session) => {
     const action = modal && modal.action;
     tokenRef.current = (verified && session) || "";
+    agreeLegal(); // the sign-in form required accepting the current Terms (or this device already had)
     // Changing email from Profile: same account, new address. Everything stays; saved events move to the new key.
     if (modal && modal.changeEmail) {
       verifiedRef.current = !!verified;
@@ -458,6 +464,7 @@ export default function App() {
       console.warn("Pitch forwarding failed", e);
     } finally { clearTimeout(timer); }
     setSubmissions((x) => [saved, ...x]);
+    agreeLegal();
     setModal(null);
     notify({ title: "Sent for review!", body: "Our admin team will verify your event safety and approve it within 2 hours." }, 6500);
   };
@@ -499,6 +506,7 @@ export default function App() {
       app = r.app;
     }
     setMyApps((x) => [app, ...x.filter((y) => y.clubId !== c.id)]);
+    agreeLegal();
     if (!extra.whatsapp) setExtra((x) => ({ ...x, whatsapp: f.whatsapp }));
     if (isDemo && c.id === DEMO_CLUB_ID) updateDemo((d) => ({ ...d, apps: [{ ...app, name: f.name, email: user, whatsapp: waNumber(f.whatsapp), year: f.year, message: f.message }, ...d.apps] }));
     setModal({ type: "club", id: c.id });
@@ -585,6 +593,7 @@ export default function App() {
     const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
       ...(p.ref ? { ref: p.ref, kind: p.kind || "own", state: p.kind === "trip" ? "waiting" : "valid", ...(p.kind === "trip" ? { extName: p.extName, collectUntil: p.collectUntil } : {}) } : {}) };
     setBookings((bs) => [b, ...bs]);
+    agreeLegal();
     setParties((ps) => ps.map((x) => (x.id === p.id ? { ...x, taken: x.taken + 1 } : x)));
     if (p.ref) {
       (async () => {
@@ -733,7 +742,7 @@ export default function App() {
   const signOut = () => setModal({
     type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
     confirmLabel: "Sign out", danger: true,
-    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); tokenRef.current = ""; setMyApps([]); setManaged([]); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
+    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); tokenRef.current = ""; setLegal(null); setMyApps([]); setManaged([]); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
   });
 
   // Light theme, top of Home: the header sits on the dark hero, so it turns dark glass until the hero scrolls away.
@@ -858,7 +867,11 @@ export default function App() {
               <p className="mt-1.5 max-w-xs">A student-built platform for UOWD clubs, teams and events.</p>
             </div>
           </div>
-          <p className="mt-8 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
+          <nav aria-label="Legal" className="mt-6 flex gap-5 text-sm font-medium">
+            <a href="/terms" className="hover:text-slate-900">Terms of Use</a>
+            <a href="/privacy" className="hover:text-slate-900">Privacy Policy</a>
+          </nav>
+          <p className="mt-4 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
         </footer>
       </main>
       </div>
@@ -875,6 +888,7 @@ export default function App() {
             <Icon name="person" className="h-6 w-6" />
           </button>
         )} />
+      {user && (!legal || legal.version !== LEGAL_VERSION) && !(modal && modal.type === "auth") && <UpdatedTermsSheet onAccept={agreeLegal} />}
       <InstallBanner />
       <PullToRefresh />
 
@@ -888,7 +902,7 @@ export default function App() {
           onChangeEmail={() => setModal({ type: "auth", changeEmail: true, reason: "Enter your new email. We'll send a code to confirm it's yours." })}
           onMyEvents={showMyEvents ? () => { setModal(null); jumpTo("events"); } : undefined}
           myClubs={manageList.map((c) => ({ clubId: c.clubId, club: c.club, role: c.role, total: c.apps.length, fresh: c.apps.filter((a) => a.status === "new").length }))}
-          myApps={myApps} onOpenClub={(id) => setModal({ type: "manage", id })}
+          myApps={myApps} onOpenClub={(id) => setModal({ type: "manage", id })} legal={legal}
           onConnectTelegram={!isDemo && tokenRef.current ? connectTelegram : undefined}
           onSignOut={signOut} onClose={closeModal} />
       )}

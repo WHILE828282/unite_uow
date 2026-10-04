@@ -125,11 +125,16 @@ if (window.visualViewport) {
 // /install is a standalone guide page (shareable link); everything else is the app.
 const InstallPage = lazy(() => import("./src/pages/Install.jsx"));
 const onInstallPage = /^\/install\/?$/.test(window.location.pathname);
+// /terms and /privacy: the full Terms of Use and Privacy Policy pages.
+const LegalPage = lazy(() => import("./src/components/Legal.jsx").then((m) => ({ default: m.LegalPage })));
+const legalPage = (/^\/(terms|privacy)\/?$/.exec(window.location.pathname) || [])[1];
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {onInstallPage ? (
       <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0a192f" }} />}><InstallPage /></Suspense>
+    ) : legalPage ? (
+      <Suspense fallback={null}><LegalPage kind={legalPage} /></Suspense>
     ) : (
       <App />
     )}

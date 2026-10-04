@@ -6,9 +6,14 @@ import { Modal } from "./Modal.jsx";
 import { AnimatedCheck, Check } from "../ui.jsx";
 import { maskEmail, validEmail } from "../../lib/format.js";
 import { RESTRICTED_MSG, isCampusEmail } from "../../lib/auth.js";
+import { ConsentRow, deviceAccepted } from "../Legal.jsx";
 
 export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName = "", defaultSid = "", title = "Campus Login" }) {
   const [step, setStep] = useState("email"); // email | otp | success
+  // First sign-in on this device: accept the Terms and Privacy Policy (never pre-ticked).
+  const [needsConsent] = useState(() => !deviceAccepted());
+  const [agreed, setAgreed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [name, setName] = useState(defaultName);
   const [nameError, setNameError] = useState("");
   const [email, setEmail] = useState("");
@@ -60,6 +65,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   };
   const cleanName = () => name.trim().replace(/\s+/g, " ").slice(0, 60);
   const sendCode = async (override) => {
+    if (needsConsent && !agreed) return setAttempt((n) => n + 1);
     if (typeof override !== "string" && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
@@ -180,6 +186,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             />
             <p className="mt-1.5 text-xs text-slate-500">Up to you. Add it to show your ID on tickets, or leave it blank.</p>
 
+            {needsConsent && <ConsentRow className="mt-4" checked={agreed} onChange={setAgreed} attempt={attempt} />}
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
               {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : "Email me a code"}
             </button>
