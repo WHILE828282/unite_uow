@@ -19,6 +19,11 @@ const FIELD = "input:not([type=file]):not([type=checkbox]):not([type=radio]):not
 const isField = (el) => !!(el && el.matches && el.matches(FIELD));
 // A sheet or full-screen form is open (the page behind is pinned) and you're typing in it.
 const pinnedTyping = () => document.body.style.position === "fixed" && isField(document.activeElement);
+// iPhone decides to shove the screen when the keyboard would cover the field. So when you tap a field in a sheet, the
+// sheet moves up by the keyboard's height straight away (the last measured one, or a typical one the first time):
+// the field is already above the keyboard when it arrives, and the screen stays put. Real sizes take over once known.
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let lastKb = 0, kbExpected = 0, kbExpectUntil = 0;
 const syncViewport = () => {
   const vv = window.visualViewport;
   // iPhone shoves the whole screen up to show the field above the keyboard, so everything slides off. While a sheet is
@@ -29,8 +34,12 @@ const syncViewport = () => {
   const H = probe.getBoundingClientRect().height || window.innerHeight; // what position:fixed inset-0 covers
   const h = vv ? vv.height : window.innerHeight, top = vv ? Math.max(0, vv.offsetTop) : 0;
   const gap = Math.max(0, H - top - h);
-  const typing = isField(document.activeElement) && gap > 120; // on-screen keyboard is up
-  const next = { "--vvh": `${Math.round(h)}px`, "--kbtop": `${typing ? Math.round(top) : 0}px`, "--kb": `${typing ? Math.round(gap) : 0}px`, "--tb": `${typing ? 0 : Math.round(Math.min(gap, 140))}px` };
+  const field = isField(document.activeElement);
+  let typing = field && gap > 120; // on-screen keyboard is up
+  let kbtop = top, kb = gap;
+  if (typing) { lastKb = Math.round(H - h); kbExpectUntil = 0; }
+  else if (field && kbExpected && Date.now() < kbExpectUntil) { typing = true; kbtop = 0; kb = kbExpected; } // keyboard on its way
+  const next = { "--vvh": `${Math.round(h)}px`, "--kbtop": `${typing ? Math.round(kbtop) : 0}px`, "--kb": `${typing ? Math.round(kb) : 0}px`, "--tb": `${typing ? 0 : Math.round(Math.min(gap, 140))}px` };
   // Writing these restyles the whole page, and visualViewport fires on every scroll frame: only write real changes.
   const key = JSON.stringify(next) + typing;
   if (key === lastViewport) return;
@@ -105,6 +114,12 @@ const settleAfterKeyboard = () => {
 };
 document.addEventListener("focusin", (e) => {
   if (!isField(e.target)) return;
+  if (IOS && !document.documentElement.classList.contains("u-kb") && e.target.closest(".u-vv") && !e.target.matches("select, [type=date], [type=time], [type=datetime-local], [type=month]")) {
+    kbExpected = lastKb || Math.round(window.innerHeight * 0.45);
+    kbExpectUntil = Date.now() + 1200;
+    syncViewport(); // now, before the keyboard starts to slide in
+    setTimeout(syncViewport, 1250); // no keyboard after all (e.g. a hardware one): put the sheet back
+  }
   if (!before) { const box = scrollParent(e.target); if (box) before = { box, top: box.scrollTop }; }
   if (before) before.field = e.target;
   syncSoon();

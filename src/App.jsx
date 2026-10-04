@@ -139,7 +139,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
     document.documentElement.classList.toggle("u-boot-dark", dark);
-    document.documentElement.style.backgroundColor = dark ? "#070c18" : "#eeebe6";
+    document.documentElement.style.backgroundColor = dark ? "#0e0f13" : "#eeebe6";
+    // Safari tints its bars (and the strip around the keyboard) with theme-color: match the page, not navy.
+    const tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute("content", dark ? "#0e0f13" : "#eeebe6");
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   }, [dark]);
 
