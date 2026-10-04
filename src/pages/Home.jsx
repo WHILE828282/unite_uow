@@ -32,7 +32,7 @@ function Spotlight({ p, booked, onOpen }) {
     <button onClick={onOpen}
       className="u-keep u-btn mt-7 flex w-full max-w-2xl items-center gap-3.5 rounded-2xl p-3 pr-3.5 text-left ring-1 ring-inset ring-white/15 backdrop-blur-md sm:p-3.5"
       style={{ background: "linear-gradient(110deg, rgba(116,22,41,.75), rgba(15,23,42,.55))" }}>
-      <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl min-[390px]:flex" aria-hidden="true">{p.emoji}</span>
+      {p.logo ? <img src={p.logo} alt="" className="hidden h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-white/15 min-[390px]:block" /> : <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-2xl min-[390px]:flex" aria-hidden="true">{p.emoji}</span>}
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-crimson-200">Grand launch · {new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
         <span className="line-clamp-2 block font-semibold leading-snug text-white">{p.title}</span>

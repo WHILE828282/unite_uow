@@ -263,3 +263,6 @@ html.u-typing { --nav: 0px; }
   .u-host-light :is([class*="hover:text-white"], [class*="hover:text-crimson-200"], [class*="hover:text-crimson-300"]):not(.u-host-keep *):hover { color: #0f172a; }
   .u-host-light [class*="hover:border-white/"]:not(.u-host-keep *):hover { border-color: rgba(15, 23, 42, 0.25); }
 }
+
+/* Keyboard focus: one brand-coloured ring everywhere instead of the browser's default. */
+:focus-visible { outline: 2px solid #c45a68; outline-offset: 2px; }

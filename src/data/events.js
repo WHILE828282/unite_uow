@@ -3,7 +3,7 @@ export const UOWD_MAPS = "University of Wollongong in Dubai";
 
 export const PARTIES = [
   // Pinned launch party: always first in the feed.
-  { id: 13, pinned: true, lang: "English", title: "Unite Grand Launch: The Basement Sessions", emoji: "🎧", category: "Music", date: "2026-10-25", time: "9:00 PM", until: "till late",
+  { id: 13, pinned: true, logo: "/events/grand-launch-small.webp", cover: "/events/grand-launch-large.webp", lang: "English", title: "Unite Grand Launch: The Basement Sessions", emoji: "🎧", category: "Music", date: "2026-10-25", time: "9:00 PM", until: "till late",
     where: "Q Underground (Basement Level), Holiday Inn, Barsha Heights", address: "Holiday Inn Dubai – Barsha Heights, Dubai, UAE", maps: "Q Underground, Holiday Inn Barsha Heights, Dubai",
     price: 50, spots: 150, taken: 37, wait: 0, vibe: null, host: "Unite Team",
     contact: { name: "Unite Team", role: "Organizer", email: "welcome@uniteuow.com" },
