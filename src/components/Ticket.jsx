@@ -142,7 +142,7 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
         </button>}
         <button onClick={() => downloadCalendar([], [b], `${b.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`)}
           className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-white">
-          <Icon name="calendar" className="h-4 w-4" /> Add to calendar
+          <Icon name="download" className="h-4 w-4" /> Add to calendar
         </button>
         <button onClick={onClose} className="u-btn mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-slate-600 hover:bg-white">Done</button>
         <p className="mt-1 text-center text-xs text-slate-400">{trip ? "Your official ticket appears here once the host delivers it." : b.ref ? "Show the QR code at the entrance. Each code works once." : "Show the QR code at the entrance. Screenshots work too."}</p>

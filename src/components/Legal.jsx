@@ -49,7 +49,7 @@ export function LegalPage({ kind }) {
       <header className="u-safe-top sticky top-0 z-10 border-b border-slate-200/60 bg-white">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
           <button onClick={back} className="u-btn inline-flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
-            <Icon name="chevron" className="h-4 w-4 rotate-90" /> Back
+            <Icon name="arrow-left" className="h-4 w-4" /> Back
           </button>
           <span className="truncate text-sm font-semibold text-slate-500">Unite · {doc.title}</span>
         </div>

@@ -131,7 +131,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
               </button>
             </div>
             <button onClick={onExport} className="u-btn inline-flex items-center gap-2 whitespace-nowrap rounded-xl border border-slate-200/50 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
-              <Icon name="calendar" className="h-4 w-4" /> Add to my calendar
+              <Icon name="download" className="h-4 w-4" /> Add to my calendar
             </button>
           </div>
         </div>

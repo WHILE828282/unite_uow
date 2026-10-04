@@ -12,7 +12,7 @@ const SECTIONS = [
     Business: { icon: "chart", blurb: "Startups, markets, marketing, leadership and HR. Applications go straight to the committee." },
     Arts: { icon: "palette", blurb: "Music, dance, photography, art, anime, culture, writing and the student magazine." },
   }[r.k] })),
-  { k: "Sports", label: "Sports Teams", icon: "trophy", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
+  { k: "Sports", label: "Sports Teams", icon: "ball", blurb: "Official UOWD squads: tryouts, weekly training and inter-university fixtures." },
 ];
 
 export function TeamsClubs({ filteredClubs, memberCount, cardOpen, setModal, clubBtn }) {

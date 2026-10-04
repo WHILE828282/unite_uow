@@ -137,7 +137,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
         <div className="mt-5 flex items-center gap-4">
           <button type="button" onClick={() => fileRef.current && fileRef.current.click()} aria-label="Change profile photo" className="u-btn relative shrink-0 rounded-full">
             <Avatar name={f.name} email={email} photo={f.photo} className="h-20 w-20 text-2xl" />
-            <span className="u-keep absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white ring-2 ring-white"><Icon name="image" className="h-3.5 w-3.5" /></span>
+            <span className="u-keep absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white ring-2 ring-white"><Icon name="camera" className="h-3.5 w-3.5" /></span>
           </button>
           <div className="min-w-0">
             <p className="truncate text-base font-semibold text-slate-900">{f.name || "Your name"}</p>
@@ -177,7 +177,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
                     <span className="block text-xs text-slate-500">{c.role === "owner" ? "Owner" : "Helper"} · {c.total} application{c.total === 1 ? "" : "s"}</span>
                   </span>
                   {c.fresh > 0 && <span className="u-keep rounded-full bg-crimson-700 px-2 py-0.5 text-xs font-bold text-white">{c.fresh} new</span>}
-                  <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+                  <Icon name="chevron-right" className="h-4 w-4 text-slate-400" />
                 </button>
               ))}
             </div>
@@ -213,7 +213,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
           <p className="mt-1.5 text-xs text-slate-400">Filled in for you when you host an event or apply to a club.</p>
           {onConnectTelegram && (
             <button type="button" onClick={onConnectTelegram} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-sky-700 ring-1 ring-slate-200 hover:bg-sky-50">
-              <Icon name="bell" className="h-4 w-4" /> Get notifications in Telegram
+              <Icon name="send" className="h-4 w-4" /> Get notifications in Telegram
             </button>
           )}
         </Section>
@@ -223,7 +223,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
             <button type="button" onClick={onMyEvents} className="u-btn flex w-full items-center gap-3 rounded-xl border border-slate-200 px-3.5 py-3 text-left hover:bg-slate-50">
               <Icon name="party" className="h-5 w-5 text-slate-700" />
               <span className="flex-1 text-sm font-medium text-slate-900">My hosted events</span>
-              <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+              <Icon name="chevron-right" className="h-4 w-4 text-slate-400" />
             </button>
           </Section>
         )}
@@ -240,7 +240,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
             </a>
             {[["/terms", "Terms of Use"], ["/privacy", "Privacy Policy"]].map(([href, label]) => (
               <a key={href} href={href} target="_blank" rel="noopener" className="flex items-center justify-between px-3.5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-50">
-                {label} <Icon name="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+                {label} <Icon name="chevron-right" className="h-4 w-4 text-slate-400" />
               </a>
             ))}
           </div>
@@ -249,7 +249,7 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
 
         <div className="mt-6 border-t border-slate-100 pt-4">
           <button type="button" onClick={onSignOut} className="u-btn flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-rose-600 hover:bg-rose-50">
-            <Icon name="lock" className="h-4 w-4" /> Sign out
+            <Icon name="logout" className="h-4 w-4" /> Sign out
           </button>
         </div>
       </div>
