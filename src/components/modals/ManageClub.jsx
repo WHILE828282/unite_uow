@@ -37,8 +37,9 @@ export function ManageClub({ club, onStatus, onHelper, onClose }) {
         <div role="tablist" aria-label="Application status" className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1">
           {APP_STATES.map((s) => (
             <button key={s} role="tab" aria-selected={filter === s} onClick={() => setFilter(s)}
-              className={`rounded-lg px-1 py-2.5 text-xs font-semibold transition-colors ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
-              {STATE_LABEL[s]} <span className="tabular-nums text-slate-400">{count(s)}</span>
+              className={`flex min-w-0 flex-col items-center rounded-lg px-1 py-2 text-xs font-semibold leading-tight transition-colors ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}>
+              <span className="max-w-full truncate">{STATE_LABEL[s]}</span>
+              <span className="mt-0.5 tabular-nums text-[13px] text-slate-400">{count(s)}</span>
             </button>
           ))}
         </div>

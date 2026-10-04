@@ -228,7 +228,9 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
           </Section>
         )}
 
-        <button type="button" onClick={save} disabled={!dirty} className="u-btn mt-7 w-full rounded-xl bg-slate-900 py-3.5 text-[15px] font-semibold text-white disabled:opacity-40">{dirty ? "Save changes" : "Saved"}</button>
+        {dirty
+          ? <button type="button" onClick={save} className="u-btn mt-7 w-full rounded-xl bg-slate-900 py-3.5 text-[15px] font-semibold text-white">Save changes</button>
+          : <p className="mt-7 flex items-center justify-center gap-1.5 py-3.5 text-sm font-medium text-slate-400"><Icon name="check" className="h-4 w-4" /> All changes saved</p>}
 
         <Section title="About">
           <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">

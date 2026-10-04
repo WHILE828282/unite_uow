@@ -130,8 +130,8 @@ export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "
 
 /* The two kinds of event a student can host. */
 export const EVENT_KINDS = [
-  { k: "own", emoji: "🏠", title: "Our own event", body: "You run it yourself: party, yacht, tournament, dinner, workshop." },
-  { k: "trip", emoji: "🚌", title: "Group trip to an external event", body: "You buy tickets from an official seller (concert, match, theme park) and bring a group." },
+  { k: "own", icon: "party", emoji: "🏠", title: "Our own event", body: "You run it yourself: party, yacht, tournament, dinner, workshop." },
+  { k: "trip", icon: "ticket", emoji: "🚌", title: "Group trip to an external event", body: "You buy tickets from an official seller (concert, match, theme park) and bring a group." },
 ];
 export const kindLabel = (k) => (k === "trip" ? "Group trip to an external event" : "Our own event");
 
@@ -487,7 +487,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
                 return (
                   <button key={x.k} type="button" role="radio" aria-checked={on} onClick={() => { setF((y) => ({ ...y, kind: x.k })); setTimeout(() => setStep("form"), 180); }}
                     className={`u-keep flex w-full items-start gap-4 rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.99] sm:p-6 ${on ? "border-crimson-500 bg-crimson-700/15 shadow-[0_0_0_3px_rgba(196,90,104,0.18)]" : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"}`}>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-2xl ring-1 ring-white/10" aria-hidden="true">{x.emoji}</span>
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-white ring-1 ring-white/10" aria-hidden="true"><Icon name={x.icon} className="h-6 w-6" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-lg font-semibold text-white">{x.title}</span>
                       <span className="mt-1 block text-sm leading-relaxed text-slate-400">{x.body}</span>
