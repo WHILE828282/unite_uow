@@ -197,8 +197,8 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
         <Head eyebrow="Clubs" title="Most popular right now" onAll={() => goRoom()} />
         <Rail>
           {clubs.map((c) => (
-            <Tile key={c.id} onClick={() => setModal({ type: "club", id: c.id })} bg={ROOM_BG[c.category]} className="h-44 w-44">
-              <span className="text-4xl drop-shadow" aria-hidden="true">{c.emoji}</span>
+            <Tile key={c.id} onClick={() => setModal({ type: "club", id: c.id })} bg={ROOM_BG[c.category]} img={c.backgroundImage} className="h-44 w-44">
+              {c.backgroundImage ? <span aria-hidden="true" /> : <span className="text-4xl drop-shadow" aria-hidden="true">{c.emoji}</span>}
               <span>
                 <span className="block text-[15px] font-bold leading-tight [hyphens:auto]" lang="en">{c.name}</span>
                 <span className="mt-0.5 block text-xs text-white/75">{memberCount(c)} members</span>

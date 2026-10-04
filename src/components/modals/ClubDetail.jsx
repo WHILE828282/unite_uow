@@ -42,7 +42,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare, verified
             Share
           </button>
         )}
-        <span className="relative text-5xl">{c.emoji}</span>
+        {!(art && art.photo) && <span className="relative text-5xl">{c.emoji}</span>}
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{c.category}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}
