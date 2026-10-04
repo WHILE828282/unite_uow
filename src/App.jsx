@@ -38,6 +38,7 @@ import { MyTickets } from "./pages/MyTickets.jsx";
 import { UniteIcon } from "./components/UniteIcon.jsx";
 import { TeamsClubs } from "./pages/TeamsClubs.jsx";
 import { ApplyModal } from "./components/modals/ApplyModal.jsx";
+import { CodeConfirm } from "./components/modals/CodeConfirm.jsx";
 import { ManageClub } from "./components/modals/ManageClub.jsx";
 import { UpdatedTermsSheet, legalRecord, rememberOnDevice } from "./components/Legal.jsx";
 import { EMAILS, LEGAL_VERSION } from "./data/legal.js";
@@ -209,7 +210,7 @@ export default function App() {
       const club = modal && modal.type === "club" && CLUBS.find((x) => x.id === modal.id);
       const path = window.location.pathname;
       if (club && path !== clubPath(club)) window.history.replaceState(window.history.state, "", clubPath(club));
-      else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
+      else if (!club && clubFromPath(path) && !(modal && ["tryout", "leave", "leave-code", "apply"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
       else if (/^\/events\/\d+/.test(path) && !(modal && ["detail", "checkout", "confirm", "auth", "ticket", "waitlist"].includes(modal.type))) window.history.replaceState(window.history.state, "", "/");
     } catch (e) { /* ignore */ }
   }, [modal]);
@@ -482,7 +483,14 @@ export default function App() {
       body: `Next you'll fill in the official UOWD form. ${scheduleLabel(c)} will be added to My Schedule.`,
       confirmLabel: "Continue",
       onConfirm: () => setModal({ type: "tryout", id: c.id }),
-    } : { type: "apply", id: c.id }));
+    } : {
+      // A second "are you sure" before the application form.
+      type: "confirm",
+      title: `Join ${c.name}?`,
+      body: `You'll fill in a short application. ${c.name}'s committee reviews it and gets back to you on WhatsApp or email.`,
+      confirmLabel: "Yes, apply",
+      onConfirm: () => setModal({ type: "apply", id: c.id }),
+    }));
   };
   const leaveClub = (c) => {
     const wasPending = statusOf(c) === "pending";
@@ -768,7 +776,7 @@ export default function App() {
   const gone = !!modal && (
     (modal.type === "detail" && campusLoaded && !parties.some((x) => x.id === modal.id) && !campus.some((e) => e.at === modal.id) && !ownLive.some((x) => x.at === modal.id))
     || (["review", "host"].includes(modal.type) && !submissions.some((x) => x.ref === modal.ref))
-    || (["club", "leave", "tryout"].includes(modal.type) && !clubs.some((x) => x.id === modal.id)));
+    || (["club", "leave", "leave-code", "tryout", "apply"].includes(modal.type) && !clubs.some((x) => x.id === modal.id)));
   useEffect(() => {
     if (!gone) return;
     const wasEvent = modal.type === "detail";
@@ -986,11 +994,20 @@ export default function App() {
             onConfirm: () => { setSubmissions((x) => x.filter((y) => y !== sub)); setModal(null); notify(`“${sub.title}” deleted`); },
           })} />;
       })()}
+      {/* Leaving or cancelling a sign-up needs the code we email to the account. */}
+      {modal && modal.type === "leave-code" && user && clubs.find((x) => x.id === modal.id) && (() => {
+        const c = clubs.find((x) => x.id === modal.id), pending = statusOf(c) === "pending", kind = isSports(c) ? "team" : "club";
+        return <CodeConfirm email={user} live={isVerified}
+          title={pending ? "Confirm cancelling your sign-up" : `Confirm leaving ${c.name}`}
+          body={pending ? `To cancel your sign-up for ${c.name}, enter the code we sent to your email.` : `To leave this ${kind}, enter the code we sent to your email. This keeps anyone else from removing you.`}
+          actionLabel={pending ? "Cancel sign-up" : `Leave ${kind}`}
+          onVerified={() => leaveClub(c)} onCancel={() => setModal({ type: "club", id: c.id })} />;
+      })()}
       {modal && modal.type === "leave" && clubs.find((x) => x.id === modal.id) && (
         <LeaveConfirm
           club={clubs.find((x) => x.id === modal.id)}
           pending={statusOf(clubs.find((x) => x.id === modal.id)) === "pending"}
-          onConfirm={() => leaveClub(clubs.find((x) => x.id === modal.id))}
+          onConfirm={() => setModal({ type: "leave-code", id: modal.id })}
           onCancel={() => setModal({ type: "club", id: modal.id })}
         />
       )}
