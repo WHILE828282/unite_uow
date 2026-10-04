@@ -51,7 +51,8 @@ export default defineConfig({
       },
       workbox: {
         // App shell + static assets (JS, CSS, icons, team/party photos) are precached so the app opens fast.
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
+        // The page itself (HTML) is not precached: see the "pages" rule below.
+        globPatterns: ["**/*.{js,css,ico,png,svg,webp,jpg,jpeg,woff2}"],
         // Install dialog screenshots and PNG fallbacks; club photos and large event covers are cached on first view
         // instead (runtime "photos" cache below), so installing the app stays light.
         globIgnores: ["screenshots/**", "install/*.png", "clubs/**", "events/*-large.webp"],
@@ -59,11 +60,16 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
-        // Deep links (/events/7, /sports/basketball) open from the home screen via the cached index.html.
-        // /api/* is never served from the shell: OTP, pitches, moderation and events always hit the network.
-        navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//],
+        // Opening the app loads the page fresh from the network (the old cached page showed the previous version for a
+        // second, then reloaded into the new one). The last page is kept for offline use only. Deep links
+        // (/events/7, /sports/basketball) get the same app page.
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            urlPattern: ({ request, url }) => request.mode === "navigate" && !url.pathname.startsWith("/api/"),
+            handler: "NetworkFirst",
+            options: { cacheName: "pages", networkTimeoutSeconds: 4, expiration: { maxEntries: 8 } },
+          },
           { urlPattern: ({ url }) => url.pathname.startsWith("/api/"), handler: "NetworkOnly" },
           {
             urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events)\/.+\.webp$/.test(url.pathname),
