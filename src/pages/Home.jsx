@@ -6,11 +6,8 @@ import { fmtDate } from "../lib/format.js";
    places to explore, two swipeable rails of visual tiles (events, clubs), a three-step explainer and a host banner.
    Every tile on this page shares one style: full-bleed picture or colour, white text at the bottom. */
 
-const COLLAGE = [
-  "/events/rooftop-sunset-mixer-small.webp", "/teams/football-card.webp", "/events/halloween-party-small.webp", "/events/ps5-tournament-small.webp",
-  "/teams/basketball-card.webp", "/events/open-mic-chai-small.webp", "/events/yacht-party-small.webp", "/teams/volleyball-card.webp",
-  "/events/anime-matcha-night-small.webp", "/events/futsal-tournament-small.webp", "/teams/padel-tennis-card.webp", "/events/arabic-coffee-small.webp",
-];
+// Hero backdrop: 18 small square crops (public/collage) of club, team and event photos, faces kept in frame.
+const COLLAGE = Array.from({ length: 18 }, (_, i) => `/collage/${String(i + 1).padStart(2, "0")}.webp`);
 const greeting = () => { const h = new Date().getHours(); return h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
 export const ROOM_BG = {
   Tech: "linear-gradient(140deg, #0ea5e9 0%, #1e3a8a 100%)",
@@ -50,14 +47,14 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
   return (
     <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#070d1a] text-white shadow-[0_20px_40px_-24px_rgba(7,13,26,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-40 sm:-inset-x-10 sm:grid-cols-6">
-          {[...COLLAGE, ...COLLAGE].slice(0, 18).map((src, i) => (
+        <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-60 sm:-inset-x-10 sm:grid-cols-6">
+          {COLLAGE.map((src, i) => (
             <div key={i} className={`aspect-square overflow-hidden rounded-2xl bg-white/5 ${i % 2 ? "translate-y-6" : ""}`}>
               <img src={src} alt="" loading={i < 8 ? "eager" : "lazy"} decoding="async" className="h-full w-full object-cover" />
             </div>
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070d1a]/70 via-[#070d1a]/85 to-[#070d1a]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#070d1a]/45 via-[#070d1a]/75 to-[#070d1a]" />
         <div className="u-hero-glow absolute -right-24 -top-24 h-80 w-80 rounded-full" />
         <div className="u-hero-glow absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-60" />
       </div>
