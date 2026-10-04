@@ -256,7 +256,10 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             {mode === "demo" ? (
               <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Demo mode: any 4-digit code works, for example <span className="font-mono font-bold text-slate-700">1234</span>.</p>
             ) : (
-              <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Check your inbox for an email from Unite. Not there? Look in spam or promotions. The code expires in 10 minutes.</p>
+              <p className="mt-5 rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">Check your inbox for an email from Unite. Not there? Look in spam or promotions. The code expires in 10 minutes.
+                {/* UOW student mail is filtered by Mimecast, which can hold the code outside Outlook. */}
+                {/@(uowmail\.edu\.au|uow\.edu\.au)$/.test(email) && <> Using UOW email? It may be held by Mimecast: open <a href="https://login-au.mimecast.com/u/login" target="_blank" rel="noopener noreferrer" className="font-semibold text-crimson-700 underline">Mimecast On Hold</a>, release it and tap Permit Sender.</>}
+              </p>
             )}
           </>
         )}

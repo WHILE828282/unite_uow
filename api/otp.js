@@ -19,15 +19,15 @@ const RESTRICTED = "🔒 Access Restricted: Unite is an exclusive secure ecosyst
 const signingKey = () => crypto.createHash("sha256").update(`unite-otp:${clean(process.env.OTP_SECRET) || apiKey()}`).digest();
 const sign = (email, code, exp) => crypto.createHmac("sha256", signingKey()).update(`${email}|${code}|${exp}`).digest("base64url");
 
-const emailHtml = (code) => `<!doctype html><html><body style="margin:0;background:#06101f;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#06101f;padding:32px 16px"><tr><td align="center">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;background:#0a192f;border:1px solid #233554;border-radius:16px;padding:32px">
-<tr><td style="color:#e6f1ff;font-size:20px;font-weight:700">Unite · UOWD</td></tr>
-<tr><td style="color:#8892b0;font-size:14px;padding-top:8px">Your verification code is</td></tr>
-<tr><td style="padding:20px 0"><div style="background:#112240;border:1px solid #233554;border-radius:12px;text-align:center;color:#ffffff;font-size:34px;font-weight:700;letter-spacing:10px;padding:16px 0;font-family:Menlo,Consolas,monospace">${code}</div></td></tr>
-<tr><td style="color:#8892b0;font-size:13px;line-height:1.5">It expires in 10 minutes. If you didn't try to sign in to Unite, you can ignore this email.</td></tr>
-<tr><td style="padding-top:24px"><div style="height:3px;width:48px;background:#b3123a;border-radius:2px"></div></td></tr>
-</table></td></tr></table></body></html>`;
+// Plain, light, mostly-text email: dark heavy templates with the code in the subject trip spam signatures (e.g. UOW's Mimecast).
+const emailHtml = (code) => `<!doctype html><html><body style="margin:0;padding:24px 16px;background:#ffffff;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#0f172a">
+<div style="max-width:440px;margin:0 auto">
+<p style="font-size:15px;line-height:1.5;margin:0 0 12px">Hi,</p>
+<p style="font-size:15px;line-height:1.5;margin:0 0 12px">Here is your code to sign in to Unite, the student app for UOWD clubs and events:</p>
+<p style="font-size:28px;font-weight:700;letter-spacing:6px;margin:0 0 12px;font-family:Menlo,Consolas,monospace">${code}</p>
+<p style="font-size:14px;line-height:1.5;color:#475569;margin:0 0 12px">It expires in 10 minutes. If you didn't try to sign in, you can ignore this email.</p>
+<p style="font-size:14px;line-height:1.5;color:#475569;margin:0">Unite Team<br>uniteuow.com · support@uniteuow.com</p>
+</div></body></html>`;
 
 // Plain-English reason for a Resend rejection (no secrets included).
 const explainResend = (status, d) => {
@@ -64,9 +64,10 @@ export default async function handler(req, res) {
         headers: { Authorization: `Bearer ${apiKey()}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from: sender(), to: [email],
-          subject: `${code} is your Unite verification code`,
+          reply_to: "support@uniteuow.com",
+          subject: "Your Unite sign-in code",
           html: emailHtml(code),
-          text: `Your Unite verification code is ${code}. It expires in 10 minutes. If you didn't try to sign in, ignore this email.`,
+          text: `Hi,\n\nHere is your code to sign in to Unite, the student app for UOWD clubs and events:\n\n${code}\n\nIt expires in 10 minutes. If you didn't try to sign in, you can ignore this email.\n\nUnite Team\nuniteuow.com · support@uniteuow.com`,
         }),
       });
       const data = await r.json().catch(() => ({}));
