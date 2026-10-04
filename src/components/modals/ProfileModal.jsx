@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal } from "./Modal.jsx";
 import { Icon } from "../ui.jsx";
 import { initials, nameInitials } from "../../lib/format.js";
@@ -37,8 +37,66 @@ const Section = ({ title, children }) => (
 );
 const ErrLine = ({ msg }) => (msg ? <p className="mt-1.5 text-xs text-rose-600">{msg}</p> : null);
 
+/* Password: set one (accounts made with email codes only) or change it. Forgot it? Log out and use "Forgot password?". */
+const passwordApi = async (body) => {
+  try {
+    const r = await fetch("/api/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    return r.ok && d.ok ? d : { ok: false, field: d.field, error: d.error || "Something went wrong. Please try again." };
+  } catch (e) { return { ok: false, error: "Couldn't reach Unite. Check your connection." }; }
+};
+function PasswordRow({ session, field }) {
+  const [has, setHas] = useState(null); // null while loading
+  const [open, setOpen] = useState(false);
+  const [cur, setCur] = useState("");
+  const [next, setNext] = useState("");
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  useEffect(() => { let on = true; passwordApi({ action: "password-status", s: session }).then((r) => { if (on) setHas(r.ok ? r.hasPassword : null); }); return () => { on = false; }; }, [session]);
+  const submit = async () => {
+    if (next.length < 8) return setErr({ next: "Use at least 8 characters for your password." });
+    if (has && !cur) return setErr({ current: "Enter your current password." });
+    setBusy(true);
+    const r = await passwordApi({ action: "change-password", s: session, current: cur, next });
+    setBusy(false);
+    if (!r.ok) return setErr(r.field ? { [r.field]: r.error } : { next: r.error });
+    setHas(true); setOpen(false); setCur(""); setNext(""); setErr({}); setDone(true);
+  };
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 px-3.5 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-slate-700">Password</p>
+          <p className="text-sm text-slate-500">{done ? "Password saved ✓" : has === null ? "…" : has ? "••••••••" : "Not set yet"}</p>
+        </div>
+        {!open && has !== null && <button type="button" onClick={() => { setOpen(true); setDone(false); }} className="u-btn shrink-0 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-crimson-700 ring-1 ring-slate-200 hover:bg-slate-50">{has ? "Change" : "Set"}</button>}
+      </div>
+      {open && (
+        <div className="mt-3">
+          {has && (<>
+            <label className="block text-sm font-medium text-slate-700" htmlFor="p-pw-cur">Current password</label>
+            <input id="p-pw-cur" type={show ? "text" : "password"} value={cur} onChange={(e) => { setCur(e.target.value.slice(0, 128)); setErr({}); }} autoComplete="current-password" className={field(err.current)} />
+            <ErrLine msg={err.current} />
+          </>)}
+          <label className={`${has ? "mt-3 " : ""}block text-sm font-medium text-slate-700`} htmlFor="p-pw-new">New password</label>
+          <input id="p-pw-new" type={show ? "text" : "password"} value={next} onChange={(e) => { setNext(e.target.value.slice(0, 128)); setErr({}); }} autoComplete="new-password" placeholder="At least 8 characters" onKeyDown={(e) => e.key === "Enter" && submit()} className={field(err.next)} />
+          <ErrLine msg={err.next} />
+          <label className="mt-2 flex items-center gap-2 text-xs text-slate-500"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Show passwords</label>
+          {has && <p className="mt-2 text-xs text-slate-400">Forgot it? Sign out, then tap “Forgot password?” on the log in screen.</p>}
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={() => { setOpen(false); setCur(""); setNext(""); setErr({}); }} className="u-btn flex-1 rounded-xl py-2.5 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={submit} disabled={busy} className="u-btn flex-1 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{busy ? "Saving…" : "Save password"}</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Profile & settings: the only place to edit your details, change email and sign out. */
-export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram, legal }) {
+export function ProfileModal({ email, profile, session, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram, legal }) {
   const [f, setF] = useState({ name: profile.name || "", sid: profile.sid || "", photo: profile.photo || "", telegram: profile.telegram || "", whatsapp: profile.whatsapp || "" });
   const [errors, setErrors] = useState({});
   const fileRef = useRef(null);
@@ -105,6 +163,7 @@ export function ProfileModal({ email, profile, onSave, onChangeEmail, onSignOut,
             <button type="button" onClick={onChangeEmail} className="u-btn shrink-0 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-crimson-700 ring-1 ring-slate-200 hover:bg-slate-50">Change</button>
           </div>
           <p className="mt-1.5 text-xs text-slate-400">We'll email a code to the new address. Your tickets, clubs and events move with you.</p>
+          {session && <PasswordRow session={session} field={field} />}
         </Section>
 
         {myClubs.length > 0 && (

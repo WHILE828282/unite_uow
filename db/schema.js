@@ -22,6 +22,10 @@ export const users = pgTable("users", {
   theme: text("theme"), // light | dark
   legalVersion: text("legal_version"), // Terms / Privacy version accepted
   legalAcceptedAt: ts("legal_accepted_at"),
+  passwordHash: text("password_hash"), // scrypt$N$r$p$salt$hash (never the password itself)
+  passwordChangedAt: ts("password_changed_at"),
+  failedLogins: integer("failed_logins").notNull().default(0), // wrong passwords in a row
+  lockedUntil: ts("locked_until"), // too many wrong passwords: log in is paused until then
   createdAt: created(),
   updatedAt: updated(),
 }, (t) => [

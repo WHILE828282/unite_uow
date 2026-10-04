@@ -39,6 +39,20 @@ export const saveProfile = async (email, p) => {
   const e = lower(email);
   await db().insert(S.users).values({ email: e, ...set }).onConflictDoUpdate({ target: S.users.email, set: { ...set, updatedAt: new Date() } });
 };
+// Passwords (only /api/otp reads these; the hash never leaves the server).
+export const getAuth = async (email) => {
+  const [u] = await db().select({ hash: S.users.passwordHash, failed: S.users.failedLogins, lockedUntil: S.users.lockedUntil, name: S.users.name, studentId: S.users.studentId })
+    .from(S.users).where(eq(S.users.email, lower(email))).limit(1);
+  return u ? { ...u, lockedUntil: ms(u.lockedUntil) } : null;
+};
+export const setPassword = async (email, hash) => {
+  const set = { passwordHash: hash, passwordChangedAt: new Date(), failedLogins: 0, lockedUntil: null, updatedAt: new Date() };
+  await db().insert(S.users).values({ email: lower(email), ...set }).onConflictDoUpdate({ target: S.users.email, set });
+};
+export const recordLogin = async (email, ok, lockUntil = null) => {
+  await db().update(S.users).set(ok ? { failedLogins: 0, lockedUntil: null } : { failedLogins: sql`${S.users.failedLogins} + 1`, lockedUntil: lockUntil ? new Date(lockUntil) : null })
+    .where(eq(S.users.email, lower(email)));
+};
 export const emailByTelegramChat = async (chatId) => {
   const [u] = await db().select({ email: S.users.email }).from(S.users).where(eq(S.users.telegramChatId, String(chatId))).limit(1);
   return u ? u.email : null;

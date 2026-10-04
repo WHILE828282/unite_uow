@@ -10,9 +10,15 @@ import { ConsentRow, deviceAccepted } from "../Legal.jsx";
 
 export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName = "", defaultSid = "", title = "Campus Login" }) {
   const [step, setStep] = useState("email"); // email | otp | success
-  // New here: name + email (+ optional student ID). Returning: just the email; the name comes back from the account.
+  // signup: name, email, password (+ optional student ID), confirmed once with an email code.
+  // login: email + password. reset ("Forgot password?"): email + new password, confirmed with an email code.
+  // Change email (from Profile, defaultName set): just the new email and a code.
   const [flow, setFlow] = useState(() => { try { return !defaultName && localStorage.getItem("unite-returning") ? "login" : "signup"; } catch (e) { return "signup"; } });
-  const login = flow === "login" && !defaultName;
+  const changing = !!defaultName;
+  const login = flow === "login" && !changing, reset = flow === "reset" && !changing, signup = !login && !reset;
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [pwError, setPwError] = useState("");
   // First sign-in on this device: accept the Terms and Privacy Policy (never pre-ticked).
   const [needsConsent] = useState(() => !deviceAccepted());
   const [agreed, setAgreed] = useState(false);
@@ -51,16 +57,19 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     try {
       const r = await fetch("/api/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
       const data = await r.json().catch(() => ({}));
-      return r.ok && data.ok ? data : { ok: false, code: data.code, error: data.error || "We couldn't send the code. Try again, or use the demo account." };
+      return r.ok && data.ok ? data : { ok: false, code: data.code, field: data.field, error: data.error || "We couldn't send the code. Try again, or use the demo account." };
     } catch (e) {
       return { ok: false, error: "Couldn't reach the server. Check your connection, or use the demo account." };
     } finally { clearTimeout(t); }
   };
   // Live: email a real 6-digit code through Resend.
+  const purpose = changing ? undefined : reset ? "reset" : "signup";
   const sendLive = async (v) => {
     setSending(true);
-    const r = await otpApi({ action: "send", email: v });
+    const r = await otpApi({ action: "send", email: v, ...(purpose ? { purpose, password } : {}) });
     setSending(false);
+    if (!r.ok && r.code === "exists") { setFlow("login"); setPassword(""); return r.error; }
+    if (!r.ok && r.field === "password") { setPwError(r.error); return ""; }
     if (!r.ok) return r.code === "domain" ? RESTRICTED_MSG : r.error;
     setChallenge(r.challenge); setMode("live"); setAttempts(0); setOtpError("");
     setDigits(blank(6)); setSeconds(45); setStep("otp");
@@ -69,12 +78,26 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
   const cleanName = () => name.trim().replace(/\s+/g, " ").slice(0, 60);
   const sendCode = async (override) => {
     if (needsConsent && !agreed) return setAttempt((n) => n + 1);
-    if (typeof override !== "string" && !login && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
+    if (typeof override !== "string" && signup && !changing && cleanName().length < 2) return setNameError("Enter your name, so organisers know who's coming.");
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
     // Live codes: UOWD campus accounts only (the demo account below is open to everyone).
     // (Admin addresses in ADMIN_EMAILS are allowed too: the server decides and answers "domain" for everyone else.)
     setEmail(v); setError("");
+    if (typeof override !== "string" && !changing) {
+      const bad = password.length < 8 ? "Use at least 8 characters for your password." : password.length > 128 ? "Use 128 characters or fewer." : "";
+      if (bad) return setPwError(bad);
+    }
+    if (typeof override !== "string" && login) {
+      setSending(true);
+      const r = await otpApi({ action: "login", email: v, password });
+      setSending(false);
+      if (r.ok) { setMode("live"); return finish(true, r.session, r.profile); }
+      if (r.code === "domain") { setError(RESTRICTED_MSG); if (onRestricted) onRestricted(); return; }
+      if (r.code === "nopassword") { setFlow("reset"); setPassword(""); return setError(r.error); }
+      if (r.code === "wrong" || r.code === "locked") return setPwError(r.error);
+      return setError(r.error);
+    }
     if (typeof override !== "string") {
       const err = await sendLive(v);
       if (err === RESTRICTED_MSG) { setError(RESTRICTED_MSG); if (onRestricted) onRestricted(); return; }
@@ -91,15 +114,18 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     setStep("success");
     try { localStorage.setItem("unite-returning", "1"); } catch (e) { /* ignore */ }
     const p = profile || {};
-    const who = login ? p.name || "" : cleanName(), sid = login ? p.studentId || "" : studentId.trim();
+    const fromAccount = login || reset;
+    const who = fromAccount ? p.name || "" : cleanName(), sid = fromAccount ? p.studentId || "" : studentId.trim();
     later(() => onSignIn(email, sid, verified, who || (mode === "demo" ? "Demo Student" : ""), session), 1300);
   };
   const verify = async (code) => {
     setVerifying(true); setOtpError("");
     // Demo mode: any complete 4-digit code verifies.
     if (mode === "demo") return later(() => finish(false), 700);
-    const r = await otpApi({ action: "verify", email, code, challenge, ...(login ? {} : { name: cleanName(), studentId: studentId.trim() }) });
+    const r = await otpApi({ action: "verify", email, code, challenge,
+      ...(purpose ? { purpose, password } : {}), ...(signup && !changing ? { name: cleanName(), studentId: studentId.trim() } : {}) });
     if (r.ok) return finish(true, r.session, r.profile);
+    if (r.code === "exists") { setStep("email"); setFlow("login"); setPassword(""); setVerifying(false); return setError(r.error); }
     const n = attempts + 1;
     setVerifying(false); setAttempts(n);
     setOtpError(n >= 5 ? "Too many tries. Tap Resend code for a new one." : r.error);
@@ -167,16 +193,22 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             <h2 className="mt-3 text-center text-xl font-bold text-slate-900">{title}</h2>
             <p className="mt-1 text-center text-sm text-slate-500">{reason || "Sign in with your email to join clubs and get tickets."}</p>
 
-            {!defaultName && (
+            {!changing && !reset && (
               <div role="tablist" aria-label="Account" className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
                 {[["signup", "Sign up"], ["login", "Log in"]].map(([k, l]) => (
-                  <button key={k} role="tab" aria-selected={flow === k} onClick={() => { setFlow(k); setError(""); setNameError(""); }}
+                  <button key={k} role="tab" aria-selected={flow === k} onClick={() => { setFlow(k); setError(""); setNameError(""); setPwError(""); }}
                     className={`u-btn rounded-lg py-2 text-sm font-semibold ${flow === k ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>{l}</button>
                 ))}
               </div>
             )}
+            {reset && (
+              <div className="mt-5 rounded-xl bg-slate-50 p-3">
+                <p className="text-sm font-semibold text-slate-900">Reset your password</p>
+                <p className="mt-0.5 text-xs text-slate-500">Enter your email and a new password. We'll email you a code to confirm it's you.</p>
+              </div>
+            )}
 
-            {!login && (<>
+            {signup && !changing && (<>
             <label htmlFor="auth-name" className="mt-5 block text-sm font-medium text-slate-700">Your name</label>
             <input
               id="auth-name" value={name} autoFocus autoComplete="name" autoCapitalize="words" enterKeyHint="next"
@@ -198,7 +230,26 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
             />
             {error ? <p className="mt-1.5 text-sm text-rose-600">{error}</p> : <p className="mt-1.5 text-xs text-slate-500">Use your UOW student email (@uowmail.edu.au or @uowdubai.ac.ae).</p>}
 
-            {!login && (<>
+            {!changing && (<>
+              <div className="mt-4 flex items-center justify-between">
+                <label htmlFor="auth-password" className="block text-sm font-medium text-slate-700">{reset ? "New password" : "Password"}</label>
+                {login && <button type="button" onClick={() => { setFlow("reset"); setPassword(""); setPwError(""); setError(""); }} className="text-sm font-semibold text-crimson-700 hover:underline">Forgot password?</button>}
+              </div>
+              <div className="relative">
+                <input
+                  id="auth-password" type={showPw ? "text" : "password"} value={password} enterKeyHint="go"
+                  autoComplete={login ? "current-password" : "new-password"} autoCapitalize="none" autoCorrect="off" spellCheck="false"
+                  onChange={(e) => { setPassword(e.target.value.slice(0, 128)); setPwError(""); }}
+                  onKeyDown={(e) => e.key === "Enter" && sendCode()}
+                  placeholder={login ? "Your password" : "At least 8 characters"}
+                  className={`mt-1.5 w-full rounded-xl border bg-white py-3 pl-3.5 pr-16 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 ${pwError ? "border-rose-400" : "border-slate-300 focus:border-indigo-500"}`}
+                />
+                <button type="button" onClick={() => setShowPw((x) => !x)} aria-label={showPw ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 mt-[3px] -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100">{showPw ? "Hide" : "Show"}</button>
+              </div>
+              {pwError && <p className="mt-1.5 text-sm text-rose-600">{pwError}</p>}
+            </>)}
+
+            {signup && !changing && (<>
             <label htmlFor="auth-sid" className="mt-4 block text-sm font-medium text-slate-700">Student ID <span className="font-normal text-slate-400">(Optional)</span></label>
             <input
               id="auth-sid" value={studentId} inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="go"
@@ -212,11 +263,17 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
 
             {needsConsent && <ConsentRow className="mt-4" checked={agreed} onChange={setAgreed} attempt={attempt} />}
             <button onClick={() => sendCode()} disabled={sending} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-80">
-              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> Sending code…</>) : login ? "Email me a login code" : "Email me a code"}
+              {sending ? (<><span className="u-spin inline-block h-4 w-4 rounded-full border-2 border-white border-t-transparent" /> {login ? "Logging in…" : "Sending code…"}</>) : changing ? "Email me a code" : login ? "Log in" : reset ? "Email me a code" : "Create account"}
             </button>
-            <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-crimson-700 hover:bg-slate-100">
-              Continue with a demo account
-            </button>
+            {reset ? (
+              <button onClick={() => { setFlow("login"); setPassword(""); setPwError(""); setError(""); }} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100">
+                ← Back to log in
+              </button>
+            ) : (
+              <button onClick={() => sendCode("demo@uniteuow.com")} disabled={sending} className="mt-2 w-full rounded-xl py-2.5 text-sm font-medium text-crimson-700 hover:bg-slate-100">
+                Continue with a demo account
+              </button>
+            )}
 
             <ul className="mt-4 space-y-1.5 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
               {["Join clubs in one tap", "Reserve and buy tickets securely", "Host your own student events"].map((t) => (

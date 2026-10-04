@@ -931,7 +931,7 @@ export default function App() {
 
       {/* Modals */}
       {modal && modal.type === "profile" && user && (
-        <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }}
+        <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }} session={!isDemo ? tokenRef.current : ""}
           onSave={(p) => {
             setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved");
             if (!isDemo && tokenRef.current) appsApi({ a: "profile", s: tokenRef.current, name: p.name, studentId: p.sid, photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp });
