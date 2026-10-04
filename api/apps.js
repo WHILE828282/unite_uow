@@ -11,8 +11,10 @@
    GET ?a=wa&id&k → marks the application "contacted", then opens WhatsApp (link used in emails and Telegram). */
 import crypto from "node:crypto";
 import { kv, storeConfigured, sessionEmail, readToken, ensureWebhook } from "./_lib.js";
-import { A, APP_CLUBS, clubById, isAppId, newAppId, getApp, putApp, listApps, studentView, getRoles, saveRoles, roleOf, getProfile, saveProfile,
+import { A, APP_CLUBS, clubById, isAppId, newAppId, getApp, studentView, getRoles, saveRoles, roleOf, getProfile, saveProfile,
   notifyTeam, setStatus, sweepApps, linkOk, waUrl, botUsername } from "./_apps.js";
+import * as store from "./_store.js";
+import { CLUBS } from "../src/data/clubs.js";
 
 const str = (v, max) => String(v == null ? "" : v).trim().replace(/\s+/g, " ").slice(0, max);
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -28,7 +30,7 @@ export const waNumber = (v) => {
 export default async function handler(req, res) {
   if (req.method === "GET") {
     const { a, id, k } = req.query || {};
-    if (a !== "wa" || !isAppId(id) || !linkOk(id, k) || !storeConfigured()) return res.status(400).send("This link isn't valid.");
+    if (a !== "wa" || !isAppId(id) || !linkOk(id, k) || !store.dbConfigured()) return res.status(400).send("This link isn't valid.");
     const app = await getApp(id).catch(() => null);
     if (!app) return res.status(404).send("This application is no longer available.");
     await setStatus(id, "contacted", "link").catch(() => {});
@@ -41,7 +43,7 @@ export default async function handler(req, res) {
   b = b || {};
   const me = sessionEmail(b.s);
   if (!me) return res.status(401).json({ ok: false, code: "session", error: "Sign in with your UOWD email to use club applications." });
-  if (!storeConfigured()) return res.status(503).json({ ok: false, code: "store", error: "Applications aren't available right now. Try again later." });
+  if (!store.dbConfigured()) return res.status(503).json({ ok: false, code: "store", error: "Applications aren't available right now. Try again later." });
   sweepApps().catch(() => {});
   // Telegram must deliver button taps and /start links here (registered once, remembered in the database).
   if (readToken() && (b.a === "tglink" || b.a === "apply")) await ensureWebhook(readToken(), req).catch(() => {});
@@ -54,29 +56,23 @@ export default async function handler(req, res) {
       if (name.length < 2) return res.status(400).json({ ok: false, field: "name", error: "Enter your name." });
       if (!whatsapp) return res.status(400).json({ ok: false, field: "whatsapp", error: "Enter a WhatsApp number with country code, e.g. +971 50 123 4567." });
       if (b.consent !== true) return res.status(400).json({ ok: false, field: "consent", error: "Tick the box to share your contact details with the club." });
-      const id = newAppId();
-      if ((await kv("SET", A.dup(c.id, me), id, "NX")) !== "OK") {
-        const prev = await getApp(await kv("GET", A.dup(c.id, me))).catch(() => null);
-        if (prev) return res.status(409).json({ ok: false, code: "duplicate", error: `You've already applied to ${c.name}.`, app: studentView(prev) });
-        await kv("SET", A.dup(c.id, me), id); // stale lock from an expired record
-      }
-      const app = { id, clubId: c.id, club: c.name, name, email: me, whatsapp, year, message, consent: true, status: "new", at: Date.now() };
-      await putApp(app);
-      await kv("SADD", A.club(c.id), id);
-      await kv("SADD", A.user(me), id);
-      await kv("ZADD", A.fresh, String(app.at), id);
-      await saveProfile(me, { ...(await getProfile(me)), name, whatsapp });
+      // One open application per student per club (enforced by a unique index too).
+      const r = await store.insertApp({ id: newAppId(), clubId: c.id, name, email: me, whatsapp, year, message, consent: true, consentAt: Date.now(),
+        consentVersion: str(b.legalVersion, 20) || null, status: "new", at: Date.now() });
+      if (r.duplicate) return res.status(409).json({ ok: false, code: "duplicate", error: `You've already applied to ${c.name}.`, app: studentView(r.duplicate) });
+      const app = r;
+      await saveProfile(me, { name, whatsapp });
       await notifyTeam(app).catch((e) => console.error("Application notify failed:", e && e.message));
       return res.status(200).json({ ok: true, app: studentView(app) });
     }
 
-    if (b.a === "mine") return res.status(200).json({ ok: true, apps: (await listApps(A.user(me))).map(studentView) });
+    if (b.a === "mine") return res.status(200).json({ ok: true, apps: (await store.listUserApps(me)).map(studentView) });
 
     if (b.a === "manage") {
       const out = [];
       for (const c of APP_CLUBS) {
         const roles = await getRoles(c.id), role = roleOf(roles, me);
-        if (role) out.push({ clubId: c.id, club: c.name, role, owner: roles.owner, helpers: roles.helpers, apps: await listApps(A.club(c.id)) });
+        if (role) out.push({ clubId: c.id, club: c.name, role, owner: roles.owner, helpers: roles.helpers, apps: await store.listClubApps(c.id) });
       }
       return res.status(200).json({ ok: true, clubs: out });
     }
@@ -95,7 +91,7 @@ export default async function handler(req, res) {
       if (roleOf(roles, me) !== "owner") return res.status(403).json({ ok: false, error: "Only the club owner can change helpers." });
       const who = String(b.who || "").trim().toLowerCase();
       let email = who;
-      if (who.startsWith("@") || (!who.includes("@") && who)) email = (await kv("GET", A.tgUser(who.replace(/^@/, "")))) || "";
+      if (who.startsWith("@") || (!who.includes("@") && who)) email = (await store.emailByTelegramUsername(who.replace(/^@/, ""))) || "";
       if (!isEmail(email)) return res.status(400).json({ ok: false, error: who.includes("@") && !who.startsWith("@") ? "Enter a valid email." : "No Unite user has that Telegram username yet. Use their email instead." });
       const helpers = b.op === "remove" ? roles.helpers.filter((h) => h !== email) : [...new Set([...roles.helpers, email])].filter((h) => h !== roles.owner).slice(0, 10);
       await saveRoles(c.id, { owner: roles.owner, helpers });
@@ -105,20 +101,36 @@ export default async function handler(req, res) {
     if (b.a === "profile") {
       const prev = await getProfile(me);
       const telegram = str(b.telegram, 32).replace(/^@/, "");
-      if (prev.telegram && prev.telegram.toLowerCase() !== telegram.toLowerCase()) await kv("DEL", A.tgUser(prev.telegram)).catch(() => {});
-      if (/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegram)) await kv("SET", A.tgUser(telegram), me);
-      await saveProfile(me, { ...prev, name: str(b.name, 60) || prev.name, telegram, whatsapp: waNumber(b.whatsapp) || prev.whatsapp });
+      await saveProfile(me, {
+        name: str(b.name, 60) || undefined, studentId: b.studentId !== undefined ? str(b.studentId, 20) : undefined,
+        telegram: b.telegram === undefined ? undefined : /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegram) ? telegram : telegram ? undefined : "",
+        whatsapp: waNumber(b.whatsapp) || (b.whatsapp === "" ? "" : undefined),
+        photo: typeof b.photo === "string" && (b.photo === "" || (/^data:image\/(jpeg|png|webp);base64,/.test(b.photo) && b.photo.length < 400000)) ? b.photo : undefined,
+        theme: ["light", "dark"].includes(b.theme) ? b.theme : undefined,
+        notifyEmail: typeof b.notifyEmail === "boolean" ? b.notifyEmail : undefined,
+        notifyTelegram: typeof b.notifyTelegram === "boolean" ? b.notifyTelegram : undefined,
+      });
       return res.status(200).json({ ok: true, tgLinked: !!prev.tgChat });
+    }
+
+    // The app's own copy of memberships and waitlist, saved to the account (so they follow you to another device).
+    if (b.a === "sync") {
+      const clubsIn = Array.isArray(b.memberships) ? b.memberships.slice(0, 60) : null;
+      if (clubsIn) await store.syncMemberships(me, clubsIn.filter((m) => m && CLUBS.some((c) => c.id === Number(m.clubId))).map((m) => ({ clubId: Number(m.clubId), status: m.status === "pending" ? "pending" : "joined", source: m.source === "tryout" ? "tryout" : "app" })));
+      if (Array.isArray(b.waitlist)) await store.syncWaitlist(me, b.waitlist.map((x) => str(x, 20)).filter(Boolean));
+      const memberships = (await store.listMemberships(me)).map((m) => ({ clubId: m.clubId, status: m.status, at: m.joinedAt ? new Date(m.joinedAt).getTime() : null }));
+      return res.status(200).json({ ok: true, memberships });
     }
 
     if (b.a === "consent") {
       const version = str(b.version, 20), at = Number(b.at) || Date.now();
       if (!/^\d{4}-\d{2}-\d{2}(\.\d{1,3})?$/.test(version)) return res.status(400).json({ ok: false, error: "Unknown version." });
-      await saveProfile(me, { ...(await getProfile(me)), legal: { version, at } });
+      await saveProfile(me, { legal: { version, at } });
       return res.status(200).json({ ok: true });
     }
 
     if (b.a === "tglink") {
+      if (!storeConfigured()) return res.status(503).json({ ok: false, error: "Telegram connect isn't available right now." });
       const bot = await botUsername();
       if (!bot) return res.status(503).json({ ok: false, error: "Telegram isn't set up yet." });
       const code = crypto.randomBytes(12).toString("base64url");

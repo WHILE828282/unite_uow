@@ -1,31 +1,16 @@
 /* Club applications (every club except the sports teams, which keep the official UOWD tryouts form).
-   Stored in Redis:
-     unite:app:<id>                 application JSON (status new → contacted → accepted / declined, with timestamps)
-     unite:apps:club:<clubId>       set of application ids for a club
-     unite:apps:user:<email>        set of the student's own application ids
-     unite:apps:dup:<clubId>:<email> one open application per student per club
-     unite:apps:new                 sorted set (score = sent at) for the 48-hour reminder
-     unite:roles:<clubId>           { owner, helpers: [emails] } (falls back to the club lead's email)
-     unite:user:<email>             { name, telegram, whatsapp, tgChat } (Telegram connect + @username lookup)
-   Declined applications expire 90 days after the decision. */
+   Stored in Postgres (tables club_applications, club_roles, users, memberships; see db/schema.js):
+   status new → contacted → accepted / declined, with timestamps. Declined applications are deleted 90 days after the
+   decision. Redis keeps only short-lived things here: Telegram connect codes, the reminder lock, the bot name cache. */
 import crypto from "node:crypto";
 import { CLUBS } from "../src/data/clubs.js";
 import { kv, tg, readToken, sendEmail, storeConfigured } from "./_lib.js";
+import * as store from "./_store.js";
 
 export const SITE = "https://uniteuow.com";
 export const STATES = ["new", "contacted", "accepted", "declined"];
-const DECLINED_TTL_S = 90 * 24 * 3600;
-const KEEP_TTL_S = 400 * 24 * 3600;
+// Redis keys for short-lived things only.
 export const A = {
-  app: (id) => `unite:app:${id}`,
-  club: (c) => `unite:apps:club:${c}`,
-  user: (e) => `unite:apps:user:${e}`,
-  dup: (c, e) => `unite:apps:dup:${c}:${e}`,
-  fresh: "unite:apps:new",
-  roles: (c) => `unite:roles:${c}`,
-  profile: (e) => `unite:user:${e}`,
-  tgUser: (u) => `unite:tguser:${String(u).toLowerCase()}`,
-  tgChat: (id) => `unite:tgchat:${id}`,
   tgLink: (code) => `unite:tglink:${code}`,
   sweep: "unite:apps:sweep-lock",
   bot: "unite:bot-username",
@@ -38,34 +23,16 @@ export const newAppId = () => `AP-${crypto.randomBytes(6).toString("base64url").
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 /* ---------------------------- Roles & profiles -------------------- */
-// Owners can be set without the database too: CLUB_OWNERS='{"21":"name@uowdubai.ac.ae"}'.
-const envOwners = () => { try { return JSON.parse(process.env.CLUB_OWNERS || "{}"); } catch (e) { return {}; } };
-export const getRoles = async (clubId) => {
-  const c = clubById(clubId);
-  let saved = null;
-  try { const v = await kv("GET", A.roles(clubId)); saved = v ? JSON.parse(v) : null; } catch (e) { /* default below */ }
-  const owner = String((saved && saved.owner) || envOwners()[clubId] || (c && c.lead && c.lead.email) || "").toLowerCase();
-  return { owner, helpers: ((saved && saved.helpers) || []).filter((h) => h && h !== owner) };
-};
-export const saveRoles = (clubId, roles) => kv("SET", A.roles(clubId), JSON.stringify(roles));
+// Owner: set on the Manage club screen / in the database, else CLUB_OWNERS='{"21":"name@uowdubai.ac.ae"}', else the club lead.
+export const getRoles = (clubId) => store.getRoles(clubId);
+export const saveRoles = (clubId, roles) => store.saveRoles(clubId, roles);
 export const roleOf = (roles, email) => (email && roles.owner === email ? "owner" : roles.helpers.includes(email) ? "helper" : null);
 export const team = (roles) => [roles.owner, ...roles.helpers].filter(Boolean);
-export const getProfile = async (email) => { try { const v = await kv("GET", A.profile(email)); return v ? JSON.parse(v) : {}; } catch (e) { return {}; } };
-export const saveProfile = (email, p) => kv("SET", A.profile(email), JSON.stringify(p));
+export const getProfile = (email) => store.getProfile(email).catch(() => ({}));
+export const saveProfile = (email, p) => store.saveProfile(email, p);
 
 /* ---------------------------- Records ----------------------------- */
-export const getApp = async (id) => { const v = await kv("GET", A.app(id)); return v ? JSON.parse(v) : null; };
-export const putApp = (app) => kv("SET", A.app(app.id), JSON.stringify(app), "EX", app.status === "declined" ? DECLINED_TTL_S : KEEP_TTL_S);
-// All applications in a set; ids whose record has expired are dropped from the set.
-export const listApps = async (setKey) => {
-  const ids = ((await kv("SMEMBERS", setKey)) || []).filter(isAppId);
-  const out = [];
-  for (const id of ids) {
-    const a = await getApp(id);
-    if (a) out.push(a); else await kv("SREM", setKey, id).catch(() => {});
-  }
-  return out.sort((x, y) => y.at - x.at);
-};
+export const getApp = (id) => store.getApp(id);
 // What the student sees about their own applications (no one else's details).
 export const studentView = (a) => ({ id: a.id, clubId: a.clubId, club: a.club, status: a.status, at: a.at, updatedAt: a.updatedAt || a.at });
 
@@ -108,10 +75,11 @@ export const tgCard = (a, heading) => [
   `<i>Status: ${a.status}</i>`,
 ].filter((x) => x !== null).join("\n");
 
-const tgSend = async (chatId, text, markup) => {
+const tgSend = async (chatId, text, markup, meta = {}) => {
   const token = readToken();
   if (!token || !chatId) return false;
   const r = await tg(token, "sendMessage", { chat_id: chatId, text, parse_mode: "HTML", ...(markup ? { reply_markup: markup } : {}) }).catch(() => ({ ok: false }));
+  if (store.dbConfigured()) store.logNotification({ ...meta, channel: "telegram", ok: r.ok });
   return r.ok;
 };
 
@@ -122,10 +90,11 @@ export const notifyTeam = async (a, reminder = false) => {
   const intro = reminder ? `${esc(a.name)} applied to <b>${esc(a.club)}</b> two days ago and hasn't been contacted yet.` : `<b>${esc(a.name)}</b> wants to join <b>${esc(a.club)}</b>.`;
   const html = shell(subject, `${intro}${details(a)}${button(trackedWa(a), "Chat on WhatsApp", "#16a34a")}${button(mailto(a), "Reply by email", "#0f172a")}${button(openUrl(a), "Open in Unite", "#741629")}`);
   const text = `${subject}\n\n${a.name}${a.year ? ` (${a.year})` : ""}\n${a.message || ""}\n\nEmail: ${a.email}\nWhatsApp: +${a.whatsapp}\n\nChat on WhatsApp: ${trackedWa(a)}\nOpen in Unite: ${openUrl(a)}`;
+  const kind = reminder ? "application_reminder" : "application_new";
   for (const email of team(roles)) {
-    await sendEmail(email, subject, text, html);
     const p = await getProfile(email);
-    if (p.tgChat) await tgSend(p.tgChat, tgCard(a, reminder ? `⏰ <b>Still waiting · ${esc(a.club)}</b>` : `📝 <b>New application · ${esc(a.club)}</b>`), tgKeyboard(a));
+    if (p.notifyEmail !== false) await sendEmail(email, subject, text, html, { kind, ref: a.id });
+    if (p.tgChat && p.notifyTelegram !== false) await tgSend(p.tgChat, tgCard(a, reminder ? `⏰ <b>Still waiting · ${esc(a.club)}</b>` : `📝 <b>New application · ${esc(a.club)}</b>`), tgKeyboard(a), { email, kind, subject, ref: a.id });
   }
 };
 
@@ -136,9 +105,10 @@ export const notifyStudent = async (a) => {
   const body = ok
     ? `Great news: <b>${esc(a.club)}</b> accepted your application. The club is now in your memberships and its weekly sessions are in My Schedule.`
     : `Thanks for applying to <b>${esc(a.club)}</b>. The committee can't take you on this time, but there are plenty of other clubs on Unite and you're welcome to apply again later.`;
-  await sendEmail(a.email, subject, `${subject}\n\n${body.replace(/<[^>]+>/g, "")}\n\nUnite · uniteuow.com`, shell(subject, `${body}<div style="margin-top:14px">${button(SITE, "Open Unite", "#741629")}</div>`));
+  const kind = ok ? "application_accepted" : "application_declined";
   const p = await getProfile(a.email);
-  if (p.tgChat) await tgSend(p.tgChat, ok ? `🎉 <b>${esc(a.club)}</b> accepted your application! Its sessions are now in your schedule on Unite.` : `Thanks for applying to <b>${esc(a.club)}</b>. They can't take you on this time — have a look at the other clubs on Unite.`);
+  if (p.notifyEmail !== false) await sendEmail(a.email, subject, `${subject}\n\n${body.replace(/<[^>]+>/g, "")}\n\nUnite · uniteuow.com`, shell(subject, `${body}<div style="margin-top:14px">${button(SITE, "Open Unite", "#741629")}</div>`), { kind, ref: a.id });
+  if (p.tgChat && p.notifyTelegram !== false) await tgSend(p.tgChat, ok ? `🎉 <b>${esc(a.club)}</b> accepted your application! Its sessions are now in your schedule on Unite.` : `Thanks for applying to <b>${esc(a.club)}</b>. They can't take you on this time — have a look at the other clubs on Unite.`, null, { email: a.email, kind, subject, ref: a.id });
 };
 
 // Owner/helper changes the status. Returns the updated record, or an error string.
@@ -149,30 +119,25 @@ export const setStatus = async (id, status, by) => {
   const roles = await getRoles(a.clubId);
   if (by !== "link" && !roleOf(roles, by)) return "Only this club's owner and helpers can do that.";
   if (a.status === status) return a;
-  const decided = status === "accepted" || status === "declined";
   if (status === "contacted" && a.status !== "new") return a; // contacting never undoes a decision
-  const next = { ...a, status, updatedAt: Date.now(), [`${status}At`]: Date.now(), ...(by !== "link" ? { by } : {}) };
-  await putApp(next);
-  await kv("ZREM", A.fresh, id).catch(() => {});
-  if (status === "declined") await kv("EXPIRE", A.dup(a.clubId, a.email), DECLINED_TTL_S).catch(() => {});
-  if (decided && a.status !== status) await notifyStudent(next);
+  const next = await store.updateApp(id, { status, [`${status}At`]: Date.now(), ...(by !== "link" ? { by } : {}) });
+  // Accepted: the club becomes one of the student's memberships. Declined after accepting: membership removed.
+  if (status === "accepted") await store.setMembership(a.clubId, a.email, "joined", "application");
+  if (status === "declined" && a.status === "accepted") await store.removeMembership(a.clubId, a.email);
+  if (status === "accepted" || status === "declined") await notifyStudent(next);
   return next;
 };
 
-/* ---------------------------- 48-hour reminder -------------------- */
+/* ---------------------------- 48-hour reminder & cleanup ---------- */
 // Piggybacks on app traffic (the events feed and these API calls), at most every 10 minutes.
 export const sweepApps = async () => {
-  if (!storeConfigured()) return;
-  try { if ((await kv("SET", A.sweep, "1", "NX", "EX", "600")) !== "OK") return; } catch (e) { return; }
-  const due = (await kv("ZRANGEBYSCORE", A.fresh, "-inf", String(Date.now() - 48 * 36e5))) || [];
-  for (const id of due) {
-    await kv("ZREM", A.fresh, id).catch(() => {});
-    const a = await getApp(id).catch(() => null);
-    if (a && a.status === "new" && !a.remindedAt) {
-      await putApp({ ...a, remindedAt: Date.now() });
-      await notifyTeam(a, true).catch((e) => console.error("Application reminder failed:", e && e.message));
-    }
+  if (!store.dbConfigured()) return;
+  if (storeConfigured()) { try { if ((await kv("SET", A.sweep, "1", "NX", "EX", "600")) !== "OK") return; } catch (e) { return; } }
+  for (const a of await store.appsDueReminder()) {
+    await store.updateApp(a.id, { remindedAt: Date.now() });
+    await notifyTeam(a, true).catch((e) => console.error("Application reminder failed:", e && e.message));
   }
+  await store.purgeDeclinedApps();
 };
 
 /* ---------------------------- Telegram connect -------------------- */

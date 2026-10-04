@@ -2,7 +2,8 @@
    GET /api/events                         -> approved events, visible to the whole campus
    GET /api/events?mine=REF.KEY,REF.KEY    -> status of your own applications (KEY is returned on submit)
    GET /api/events?img=REF&kind=cover|logo -> artwork of an approved event (or your own, with &k=KEY) */
-import { kv, K, storeConfigured, isRef, getPitch, ownerOk, STATUSES, sweepTrips } from "./_lib.js";
+import { isRef, getPitch, ownerOk, STATUSES, sweepTrips, isTrip, tripState } from "./_lib.js";
+import { dbConfigured, getEventImage, listApprovedEvents } from "./_store.js";
 import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
@@ -13,7 +14,7 @@ const pick = (rec) => Object.fromEntries(PUBLIC.map((k) => [k, rec[k]]));
 export default async function handler(req, res) {
   if (req.method !== "GET") { res.setHeader("Allow", "GET"); return res.status(405).json({ ok: false }); }
   const q = req.query || {};
-  if (!storeConfigured()) return res.status(200).json({ ok: true, store: false, events: [], mine: [] });
+  if (!dbConfigured()) return res.status(200).json({ ok: true, store: false, events: [], mine: [] });
 
   try {
     if (q.img) {
@@ -21,7 +22,7 @@ export default async function handler(req, res) {
       if (!isRef(ref)) return res.status(404).end();
       const rec = await getPitch(ref);
       if (!rec || (rec.status !== "approved" && !ownerOk(ref, q.k))) return res.status(404).end();
-      const raw = await kv("GET", K.img(ref, kind));
+      const raw = await getEventImage(ref, kind);
       const m = /^data:(image\/(?:webp|jpeg|png));base64,(.+)$/.exec(String(raw || ""));
       if (!m) return res.status(404).end();
       res.setHeader("Content-Type", m[1]);
@@ -41,10 +42,8 @@ export default async function handler(req, res) {
 
     await sweepTrips().catch((e) => console.error("Trip sweep failed:", e && e.message)); // group trip deadlines (at most every 2 min)
     await sweepApps().catch((e) => console.error("Application sweep failed:", e && e.message)); // 48-hour application reminders
-    const refs = ((await kv("SMEMBERS", K.approved)) || []).filter(isRef).slice(0, 100);
-    const recs = refs.length ? await kv("MGET", ...refs.map(K.pitch)) : [];
-    const events = recs.map((v) => { try { return v && JSON.parse(v); } catch (e) { return null; } })
-      .filter((r) => r && r.status === "approved").map(pick);
+    // Approved events, minus group trips that were cancelled at their payment deadline.
+    const events = (await listApprovedEvents()).filter((r) => !(isTrip(r) && tripState(r) === "cancelled")).map(pick);
     res.setHeader("Cache-Control", "public, max-age=15");
     return res.status(200).json({ ok: true, store: true, events });
   } catch (e) {

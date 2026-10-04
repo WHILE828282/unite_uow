@@ -5,7 +5,7 @@ import { UniteIcon } from "../UniteIcon.jsx";
 import { Modal } from "./Modal.jsx";
 import { AnimatedCheck, Check } from "../ui.jsx";
 import { maskEmail, validEmail } from "../../lib/format.js";
-import { RESTRICTED_MSG, isCampusEmail } from "../../lib/auth.js";
+import { RESTRICTED_MSG } from "../../lib/auth.js";
 import { ConsentRow, deviceAccepted } from "../Legal.jsx";
 
 export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName = "", defaultSid = "", title = "Campus Login" }) {
@@ -48,7 +48,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     try {
       const r = await fetch("/api/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
       const data = await r.json().catch(() => ({}));
-      return r.ok && data.ok ? data : { ok: false, error: data.error || "We couldn't send the code. Try again, or use the demo account." };
+      return r.ok && data.ok ? data : { ok: false, code: data.code, error: data.error || "We couldn't send the code. Try again, or use the demo account." };
     } catch (e) {
       return { ok: false, error: "Couldn't reach the server. Check your connection, or use the demo account." };
     } finally { clearTimeout(t); }
@@ -58,7 +58,7 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     setSending(true);
     const r = await otpApi({ action: "send", email: v });
     setSending(false);
-    if (!r.ok) return r.error;
+    if (!r.ok) return r.code === "domain" ? RESTRICTED_MSG : r.error;
     setChallenge(r.challenge); setMode("live"); setAttempts(0); setOtpError("");
     setDigits(blank(6)); setSeconds(45); setStep("otp");
     return "";
@@ -70,9 +70,14 @@ export function AuthModal({ reason, onClose, onSignIn, onRestricted, defaultName
     const v = (typeof override === "string" ? override : email).trim().toLowerCase();
     if (!validEmail(v)) return setError("Enter a valid email address, like name@uowdubai.ac.ae.");
     // Live codes: UOWD campus accounts only (the demo account below is open to everyone).
-    if (typeof override !== "string" && !isCampusEmail(v)) { setError(RESTRICTED_MSG); if (onRestricted) onRestricted(); return; }
+    // (Admin addresses in ADMIN_EMAILS are allowed too: the server decides and answers "domain" for everyone else.)
     setEmail(v); setError("");
-    if (typeof override !== "string") { const err = await sendLive(v); if (err) setError(err); return; }
+    if (typeof override !== "string") {
+      const err = await sendLive(v);
+      if (err === RESTRICTED_MSG) { setError(RESTRICTED_MSG); if (onRestricted) onRestricted(); return; }
+      if (err) setError(err);
+      return;
+    }
     // Demo account: unchanged walkthrough, any 4-digit code works.
     setMode("demo"); setOtpError(""); setSending(true);
     later(() => { setSending(false); setDigits(["", "", "", ""]); setSeconds(45); setStep("otp"); }, 800);

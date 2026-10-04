@@ -502,7 +502,7 @@ export default function App() {
     if (isDemo) app = { id: makeId("AP-DM", 4), clubId: c.id, club: c.name, status: "new", at: Date.now() };
     else {
       if (!tokenRef.current) return "Please sign in again with your UOWD email to send applications.";
-      const r = await appsApi({ a: "apply", s: tokenRef.current, clubId: c.id, ...f });
+      const r = await appsApi({ a: "apply", s: tokenRef.current, clubId: c.id, legalVersion: LEGAL_VERSION, ...f });
       if (!r.ok) { if (r.app) setMyApps((x) => (x.some((y) => y.id === r.app.id) ? x : [r.app, ...x])); return r.error; }
       app = r.app;
     }
@@ -574,6 +574,34 @@ export default function App() {
     if (r.ok && w) w.location.href = r.url;
     else { if (w) w.close(); notify(r.error || "Couldn't open Telegram."); }
   };
+  // Signed-in (verified) accounts keep their clubs, waitlist and theme on the server, so they follow them to other devices.
+  const pulledMemberships = useRef(false);
+  useEffect(() => {
+    if (!user || isDemo || !tokenRef.current) return;
+    const t = setTimeout(async () => {
+      if (!pulledMemberships.current) {
+        // First run on this device: bring in clubs saved from elsewhere before sending ours (nothing is dropped).
+        pulledMemberships.current = true;
+        const r = await appsApi({ a: "sync", s: tokenRef.current });
+        const missing = r.ok ? r.memberships.filter((m) => !joinedClubs[m.clubId] && clubs.some((c) => c.id === m.clubId)) : [];
+        if (missing.length) { setJoinedClubs((x) => ({ ...x, ...Object.fromEntries(missing.map((m) => [m.clubId, { status: m.status, at: m.at || Date.now() }])) })); return; }
+      }
+      const memberships = Object.entries(joinedClubs).map(([id, r]) => {
+        const c = clubs.find((x) => x.id === Number(id));
+        return { clubId: Number(id), status: r.status === "pending" ? "pending" : "joined", source: c && isSports(c) ? "tryout" : "app" };
+      });
+      appsApi({ a: "sync", s: tokenRef.current, memberships, waitlist: Object.keys(waitlist) });
+    }, 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [user, joinedClubs, waitlist]);
+  useEffect(() => {
+    if (!user || isDemo || !tokenRef.current) return;
+    const t = setTimeout(() => appsApi({ a: "profile", s: tokenRef.current, theme: dark ? "dark" : "light" }), 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [user, dark]);
+
   // Links from notification emails: /?manage=<clubId> opens that club's applications.
   useEffect(() => {
     const id = Number(new URLSearchParams(window.location.search).get("manage"));
@@ -906,7 +934,7 @@ export default function App() {
         <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }}
           onSave={(p) => {
             setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved");
-            if (!isDemo && tokenRef.current) appsApi({ a: "profile", s: tokenRef.current, name: p.name, telegram: p.telegram, whatsapp: p.whatsapp });
+            if (!isDemo && tokenRef.current) appsApi({ a: "profile", s: tokenRef.current, name: p.name, studentId: p.sid, photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp });
           }}
           onChangeEmail={() => setModal({ type: "auth", changeEmail: true, reason: "Enter your new email. We'll send a code to confirm it's yours." })}
           onMyEvents={showMyEvents ? () => { setModal(null); jumpTo("events"); } : undefined}

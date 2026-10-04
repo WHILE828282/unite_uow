@@ -2,9 +2,9 @@
    POST { action: "send", email }                      -> emails a 6-digit code, returns a signed challenge
    POST { action: "verify", email, code, challenge }   -> { ok: true } when the code matches
    Stateless: the challenge carries the email and expiry, signed with HMAC so it can't be forged or reused
-   for another address. Needs RESEND_API_KEY. Sender: Unite Team <welcome@uniteuow.com>. Only UOW addresses (@uowdubai.ac.ae, @uowmail.edu.au, @uow.edu.au) and @uniteuow.com. */
+   for another address. Needs RESEND_API_KEY. Sender: Unite Team <welcome@uniteuow.com>. Only UOW addresses (@uowdubai.ac.ae, @uowmail.edu.au, @uow.edu.au), @uniteuow.com and the admins in ADMIN_EMAILS. */
 import crypto from "node:crypto";
-import { sessionToken } from "./_lib.js";
+import { sessionToken, isAdminEmail } from "./_lib.js";
 
 const TTL_MS = 10 * 60 * 1000; // codes expire after 10 minutes
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
   b = b || {};
   const email = String(b.email || "").trim().toLowerCase().slice(0, 254);
   if (!isEmail(email)) return res.status(400).json({ ok: false, error: "Enter a valid email address, like name@uowdubai.ac.ae." });
-  if (!isCampus(email)) return res.status(403).json({ ok: false, code: "domain", error: RESTRICTED });
+  if (!isCampus(email) && !isAdminEmail(email)) return res.status(403).json({ ok: false, code: "domain", error: RESTRICTED });
   if (!apiKey()) {
     console.error("RESEND_API_KEY is missing for this deployment");
     return res.status(503).json({ ok: false, code: "config", error: "Email sign-in isn't available right now. Use the demo account instead." });

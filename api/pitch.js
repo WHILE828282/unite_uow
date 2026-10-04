@@ -3,7 +3,10 @@
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
 import crypto from "node:crypto";
-import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, storeConfigured, kv, K, TTL_S, ownerKey, ownerOk, isRef, getPitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
+import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, ownerKey, ownerOk, isRef, getPitch, savePitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
+import { dbConfigured, eventExists, saveEventImage } from "./_store.js";
+import { db } from "../db/client.js";
+import { sql } from "drizzle-orm";
 
 const MAX_MESSAGE = 4096; // Telegram sendMessage limit
 
@@ -95,9 +98,9 @@ export default async function handler(req, res) {
       if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data, token) });
       const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
       // Moderation buttons: need the database, and Telegram must know where to send clicks.
-      let moderation = { database: storeConfigured() };
+      let moderation = { database: dbConfigured() };
       if (moderation.database) {
-        try { await kv("PING"); } catch (e) { moderation = { database: false, databaseError: e.message }; }
+        try { await db().execute(sql`select 1`); } catch (e) { moderation = { database: false, databaseError: e.message }; }
       }
       if (moderation.database) {
         const hook = await ensureWebhook(token, req, "force" in (req.query || {}));
@@ -135,15 +138,13 @@ export default async function handler(req, res) {
   if (b.action === "delete") {
     const ref = str(b.ref, 20);
     if (!isRef(ref) || !ownerOk(ref, b.key)) return res.status(403).json({ ok: false, error: "You can only delete your own events." });
-    if (!storeConfigured()) return res.status(200).json({ ok: true });
+    if (!dbConfigured()) return res.status(200).json({ ok: true });
     try {
       const rec = await getPitch(ref);
       if (!rec || rec.status === "deleted") return res.status(200).json({ ok: true });
       const sold = (await getTickets(ref)).filter((t) => !t.refunded).length;
       if (sold) return res.status(409).json({ ok: false, code: "sold", error: `${sold} ticket${sold > 1 ? "s have" : " has"} already been sold, so this event can't be deleted here. Email events@uniteuow.com and we'll help cancel it and refund your guests.` });
-      await kv("SET", K.pitch(ref), JSON.stringify({ ...rec, status: "deleted", deletedAt: Date.now(), updatedAt: Date.now() }), "EX", 7 * 24 * 3600);
-      await kv("SREM", K.approved, ref);
-      await kv("SREM", K.trips, ref);
+      await savePitch({ ...rec, status: "deleted", deletedAt: Date.now(), updatedAt: Date.now() });
       if (rec.kbMsg) {
         const r = await tg(token, "editMessageReplyMarkup", { chat_id: CHAT_ID, message_id: rec.kbMsg, reply_markup: { inline_keyboard: [[{ text: "🗑 Deleted by the host", callback_data: `m:i:${ref}` }]] } });
         if (!r.ok && !/not modified/i.test(String(r.data && r.data.description))) console.error("Telegram editMessageReplyMarkup (deleted) rejected:", JSON.stringify(r.data));
@@ -191,10 +192,10 @@ export default async function handler(req, res) {
 
   // Moderation needs the database: the application is stored with status "pending" and the admin decides
   // with inline buttons (handled by /api/telegram). Without a database the app falls back to its 2-hour demo review.
-  let moderated = storeConfigured();
+  let moderated = dbConfigured();
   if (moderated) {
     p.ref = newRef();
-    try { for (let i = 0; i < 4 && (await kv("EXISTS", K.pitch(p.ref))) === 1; i++) p.ref = newRef(); }
+    try { for (let i = 0; i < 4 && (await eventExists(p.ref)); i++) p.ref = newRef(); }
     catch (e) { console.error("Database unavailable, moderation buttons skipped:", e.message); moderated = false; }
   }
   p.moderated = moderated;
@@ -219,17 +220,12 @@ export default async function handler(req, res) {
   if (delivered && moderated) {
     try {
       const { moderated: _m, ...rec } = p;
-      await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), hasCover: false, hasLogo: false }), "EX", TTL_S);
-      const stored = {};
+      await savePitch({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now() });
       for (const [kind, raw] of [["cover", b.cover], ["logo", b.logo]]) {
         if (!raw || raw.length > MAX_STORED_IMAGE) continue;
-        try { await kv("SET", K.img(p.ref, kind), raw, "EX", TTL_S); stored[kind] = true; }
+        try { await saveEventImage(p.ref, kind, raw); }
         catch (e) { console.error(`Database: ${kind} image not stored:`, e.message); }
       }
-      if (stored.cover || stored.logo) {
-        await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), hasCover: !!stored.cover, hasLogo: !!stored.logo }), "EX", TTL_S);
-      }
-      if (p.kind === "trip") await kv("SADD", K.trips, p.ref);
       const hook = await ensureWebhook(token, req);
       if (!hook.ok) console.error("Moderation webhook not registered:", hook.error);
     } catch (e) { console.error("Database save failed, moderation buttons skipped:", e.message); moderated = false; }
@@ -266,7 +262,7 @@ export default async function handler(req, res) {
   }
   // Remember which Telegram message carries the buttons, so a later "deleted by the host" can replace them.
   if (kbMsg && moderated) {
-    try { const rec = await getPitch(p.ref); if (rec) await kv("SET", K.pitch(p.ref), JSON.stringify({ ...rec, kbMsg }), "EX", TTL_S); } catch (e) { /* not critical */ }
+    try { const rec = await getPitch(p.ref); if (rec) await savePitch({ ...rec, kbMsg }); } catch (e) { /* not critical */ }
   }
   return res.status(200).json({ ok: true, delivered, moderated: delivered && moderated, ...(delivered && moderated ? { ref: p.ref, key: ownerKey(p.ref) } : {}) });
 }

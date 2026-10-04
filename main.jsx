@@ -128,11 +128,16 @@ const onInstallPage = /^\/install\/?$/.test(window.location.pathname);
 // /terms and /privacy: the full Terms of Use and Privacy Policy pages.
 const LegalPage = lazy(() => import("./src/components/Legal.jsx").then((m) => ({ default: m.LegalPage })));
 const legalPage = (/^\/(terms|privacy)\/?$/.exec(window.location.pathname) || [])[1];
+// /admin: admin tables (access checked on the server against ADMIN_EMAILS).
+const AdminPage = lazy(() => import("./src/pages/Admin.jsx"));
+const adminPage = /^\/admin\/?$/.test(window.location.pathname);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {onInstallPage ? (
       <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0a192f" }} />}><InstallPage /></Suspense>
+    ) : adminPage ? (
+      <Suspense fallback={null}><AdminPage /></Suspense>
     ) : legalPage ? (
       <Suspense fallback={null}><LegalPage kind={legalPage} /></Suspense>
     ) : (

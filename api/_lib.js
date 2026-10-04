@@ -3,6 +3,7 @@
    Database: Upstash Redis over its REST API (Vercel → Storage → Upstash for Redis injects
    KV_REST_API_URL / KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN). */
 import crypto from "node:crypto";
+import * as store from "./_store.js";
 
 const clean = (v) => String(v || "").trim().replace(/^["']|["']$/g, "").trim();
 
@@ -55,20 +56,22 @@ export const kv = async (...cmd) => {
   return data.result;
 };
 
-export const TTL_S = 120 * 24 * 3600; // applications are kept for 120 days
+export const TTL_S = 120 * 24 * 3600; // kept for reading old Redis data during the copy to Postgres
+// Redis keys still in use: short-lived markers and locks. (Old permanent-data keys are read once by the Redis → Postgres copy.)
 export const K = {
   pitch: (ref) => `unite:pitch:${ref}`,
   img: (ref, kind) => `unite:img:${ref}:${kind}`,
   approved: "unite:approved",
   webhook: "unite:webhook",
-  tix: (ref) => `unite:tix:${ref}`, // hash: ticket id -> ticket JSON (one per event)
-  tixFile: (id, i) => `unite:tixfile:${id}:${i}`, // private delivered-ticket upload, in chunks
-  trips: "unite:trips", // group trips the sweep keeps an eye on
+  tix: (ref) => `unite:tix:${ref}`,
+  tixFile: (id, i) => `unite:tixfile:${id}:${i}`,
+  trips: "unite:trips",
   sweep: "unite:sweep-lock",
 };
 export const STATUSES = ["pending", "under_review", "approved", "rejected"];
 export const isRef = (v) => /^UN-[A-Z0-9]{6}$/.test(String(v || ""));
-export const getPitch = async (ref) => { const v = await kv("GET", K.pitch(ref)); return v ? JSON.parse(v) : null; };
+// Events (hosted applications) live in Postgres.
+export const getPitch = (ref) => store.getEvent(ref);
 
 /* ---------------------------- Secrets ----------------------------- */
 // Derived from the bot token (or OTP_SECRET), so no extra variables are needed.
@@ -97,6 +100,9 @@ export const FILE_LINK_MS = 5 * 60 * 1000;
 export const fileSig = (id, exp) => hmac("unite-file", `${id}|${exp}`).slice(0, 24);
 export const fileLink = (id) => { const exp = Date.now() + FILE_LINK_MS; return `/api/tickets?a=file&t=${id}&exp=${exp}&s=${fileSig(id, exp)}`; };
 export const fileLinkOk = (id, exp, sig) => Number(exp) > Date.now() && same(fileSig(id, Number(exp)), sig);
+// Admins: ADMIN_EMAILS="a@x.com, b@y.com" (Vercel env). They may sign in with an email code even without a UOWD address.
+export const adminEmails = () => String(process.env.ADMIN_EMAILS || "").split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => e.includes("@"));
+export const isAdminEmail = (email) => !!email && adminEmails().includes(String(email).trim().toLowerCase());
 // Signed-in session: issued by /api/otp after a live code is verified, sent back with club application requests.
 // "S1.<email, base64url>.<expiry ms>.<signature>", valid for 60 days. Signing key: OTP_SECRET, else the Resend key or bot token.
 const sessKey = () => clean(process.env.OTP_SECRET) || clean(process.env.RESEND_API_KEY) || readToken();
@@ -158,26 +164,23 @@ export const collectMs = (rec) => dubaiMs(rec.collectUntil, "23:59");
 export const isTrip = (rec) => rec && rec.kind === "trip";
 // collecting -> confirmed (minimum reached at the deadline) or cancelled (everyone refunded).
 export const tripState = (rec) => (rec.tripState || "collecting");
-export const getTickets = async (ref) => {
-  const raw = (await kv("HGETALL", K.tix(ref))) || [];
-  const out = [];
-  for (let i = 0; i + 1 < raw.length; i += 2) { try { out.push(JSON.parse(raw[i + 1])); } catch (e) { /* skip */ } }
-  return out.sort((a, b) => a.at - b.at);
-};
-export const saveTicket = (t) => kv("HSET", K.tix(t.ref), t.id, JSON.stringify(t));
-export const savePitch = (rec) => kv("SET", K.pitch(rec.ref), JSON.stringify(rec), "EX", TTL_S);
+export const getTickets = (ref) => store.getTickets(ref);
+export const saveTicket = (t) => store.saveTicket(t);
+export const savePitch = (rec) => store.saveEvent(rec);
 
 /* ---------------------------- Email (best effort) ----------------- */
-export const sendEmail = async (to, subject, text, html) => {
+// meta { kind, ref } is written to notifications_log.
+export const sendEmail = async (to, subject, text, html, meta = {}) => {
   const key = clean(process.env.RESEND_API_KEY);
   if (!key || !to) return false;
+  const log = (ok) => { if (store.dbConfigured()) store.logNotification({ email: to, channel: "email", kind: meta.kind || "email", subject, ref: meta.ref, ok }); return ok; };
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: "Unite Team <welcome@uniteuow.com>", to: [to], subject, text, ...(html ? { html } : {}) }),
     });
-    return r.ok;
-  } catch (e) { return false; }
+    return log(r.ok);
+  } catch (e) { return log(false); }
 };
 
 /* ---------------------------- Group trip sweep -------------------- */
@@ -185,19 +188,19 @@ export const sendEmail = async (to, subject, text, html) => {
 // at the payment deadline a trip is confirmed or cancelled with automatic (demo) refunds; before the event the
 // host is reminded 48 h and 24 h ahead about undelivered tickets, and at 24 h missing tickets are flagged to the admin.
 export const sweepTrips = async () => {
-  if (!storeConfigured()) return;
-  try { if ((await kv("SET", K.sweep, "1", "NX", "EX", "120")) !== "OK") return; } catch (e) { return; }
-  const refs = ((await kv("SMEMBERS", K.trips)) || []).filter(isRef);
-  for (const ref of refs) await sweepTrip(ref);
+  if (!store.dbConfigured()) return;
+  if (storeConfigured()) { try { if ((await kv("SET", K.sweep, "1", "NX", "EX", "120")) !== "OK") return; } catch (e) { return; } }
+  const now = Date.now();
+  for (const rec of await store.listActiveTrips()) if (now <= startMs(rec) + 864e5) await sweepTrip(rec.ref);
 };
 // One trip's deadline, reminders and admin flag. A short per-trip lock stops two requests acting twice.
 export const sweepTrip = async (ref) => {
   const token = readToken(), now = Date.now();
-  try { if ((await kv("SET", `${K.sweep}:${ref}`, "1", "NX", "EX", "30")) !== "OK") return; } catch (e) { return; }
+  if (storeConfigured()) { try { if ((await kv("SET", `${K.sweep}:${ref}`, "1", "NX", "EX", "30")) !== "OK") return; } catch (e) { return; } }
   {
     try {
       const rec = await getPitch(ref);
-      if (!rec || !isTrip(rec) || now > startMs(rec) + 864e5) { await kv("SREM", K.trips, ref); return; }
+      if (!rec || !isTrip(rec) || now > startMs(rec) + 864e5) return;
       if (rec.status !== "approved") return;
       let next = rec;
       const tix = await getTickets(ref);
@@ -208,11 +211,10 @@ export const sweepTrip = async (ref) => {
           next = { ...rec, tripState: "cancelled", cancelledAt: now };
           for (const t of live) {
             await saveTicket({ ...t, refunded: true, refundedAt: now });
-            await sendEmail(t.email, `Cancelled: ${rec.title}`, `The group trip "${rec.title}" didn't reach its minimum of ${rec.minGroup} people by the deadline, so it's cancelled. Your payment of ${t.price || 0} AED has been refunded automatically.\n\nUnite · uniteuow.com`);
+            await sendEmail(t.email, `Cancelled: ${rec.title}`, `The group trip "${rec.title}" didn't reach its minimum of ${rec.minGroup} people by the deadline, so it's cancelled. Your payment of ${t.price || 0} AED has been refunded automatically.\n\nUnite · uniteuow.com`, null, { kind: "trip_refund", ref });
           }
-          await kv("SREM", K.approved, ref);
           if (token) await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `🚫 Group trip cancelled: "${rec.title}" (${ref}) reached ${live.length} of ${rec.minGroup} people by the deadline. ${live.length} purchase(s) marked refunded (demo).` }).catch(() => {});
-          await sendEmail(rec.email, `Your group trip "${rec.title}" was cancelled`, `It reached ${live.length} of the ${rec.minGroup} people needed by the payment deadline, so everyone has been refunded automatically.\n\nUnite · uniteuow.com`);
+          await sendEmail(rec.email, `Your group trip "${rec.title}" was cancelled`, `It reached ${live.length} of the ${rec.minGroup} people needed by the payment deadline, so everyone has been refunded automatically.\n\nUnite · uniteuow.com`, null, { kind: "trip_cancelled", ref });
         }
       }
       if (tripState(next) === "confirmed") {
@@ -220,7 +222,7 @@ export const sweepTrip = async (ref) => {
         const remind = async (flag, hours) => {
           if (next[flag] || left > hours * 36e5 || !missing) return;
           next = { ...next, [flag]: now };
-          await sendEmail(next.email, `Reminder: ${missing} ticket(s) to deliver for "${next.title}"`, `${live.length - missing} of ${live.length} tickets are delivered. Every ticket must be delivered at least 24 hours before the event: open Unite → My Events → ${next.title} → Attendees.\n\nUnite · uniteuow.com`);
+          await sendEmail(next.email, `Reminder: ${missing} ticket(s) to deliver for "${next.title}"`, `${live.length - missing} of ${live.length} tickets are delivered. Every ticket must be delivered at least 24 hours before the event: open Unite → My Events → ${next.title} → Attendees.\n\nUnite · uniteuow.com`, null, { kind: "trip_deliver_reminder", ref });
         };
         await remind("remind48", 48);
         await remind("remind24", 24);
@@ -231,6 +233,6 @@ export const sweepTrip = async (ref) => {
       }
       if (next !== rec) await savePitch({ ...next, updatedAt: now });
     } catch (e) { console.error(`Trip sweep failed for ${ref}:`, e && e.message); }
-    finally { await kv("DEL", `${K.sweep}:${ref}`).catch(() => {}); }
+    finally { if (storeConfigured()) await kv("DEL", `${K.sweep}:${ref}`).catch(() => {}); }
   }
 };
