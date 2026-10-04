@@ -30,22 +30,20 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
   );
 }
 
-/* True once `src` has loaded as an image; cards only switch to the photo design then,
-   so a missing or non-image link keeps the standard card instead of a blank one. */
-export function useImageReady(src) {
-  const [ready, setReady] = useState(false);
+// False only if the photo fails to load: cards show the photo layout straight away (no flash of the
+// emoji layout while it downloads) and fall back to the plain card on a broken image.
+export function usePhotoOk(src) {
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    setReady(false);
+    setFailed(false);
     if (!src) return;
     let alive = true;
     const img = new Image();
-    img.decoding = "async";
-    img.onload = () => alive && img.naturalWidth > 0 && setReady(true);
-    img.onerror = () => {};
+    img.onerror = () => alive && setFailed(true);
     img.src = src;
     return () => { alive = false; };
   }, [src]);
-  return ready;
+  return !!src && !failed;
 }
 
 /* Each club room has its own accent: a tinted icon tile and a hairline along the card's top edge. */
@@ -55,7 +53,7 @@ const ROOM_TILE = {
   Arts: "linear-gradient(135deg, #f43f5e 0%, #7c2d12 100%)",
 };
 export function ClubCard({ c, i, open, members, button }) {
-  const photo = useImageReady(c.backgroundImage);
+  const photo = usePhotoOk(c.backgroundImage);
   const team = c.category === "Sports";
   const meta = (cls) => (
     <div className={`min-w-0 space-y-1.5 text-xs ${cls}`}>
