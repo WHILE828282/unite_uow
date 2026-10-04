@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { dubaiStart } from "../components/cards.jsx";
-import { Icon } from "../components/icons/Icon.jsx";
 import { fmtDate } from "../lib/format.js";
 
 /* Home: its own page, not a copy of the others. A dark photo-collage hero (with the launch party built in), a grid of
@@ -147,21 +146,21 @@ const EXPLORE_ART = {
 };
 export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, memberCount, setModal, goEvents, goRoom, hostEvent }) {
   const explore = [
-    ["Events", "party", "Parties & events", `${upcomingCount} upcoming`, goEvents],
-    ["Sports", "trophy", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
-    ["Tech", "laptop", "Tech & E\u2011sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
-    ["Business", "chart", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
-    ["Arts", "palette", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
-    ["Host", "megaphone", "Host an event", "Sell tickets with QR", hostEvent],
+    ["Events", "Parties & events", `${upcomingCount} upcoming`, goEvents],
+    ["Sports", "Sports teams", `${roomCounts.Sports} squads`, () => goRoom("Sports")],
+    ["Tech", "Tech & E\u2011sports", `${roomCounts.Tech} clubs`, () => goRoom("Tech")],
+    ["Business", "Finance & Growth", `${roomCounts.Business} societies`, () => goRoom("Business")],
+    ["Arts", "Music & Arts", `${roomCounts.Arts} clubs`, () => goRoom("Arts")],
+    ["Host", "Host an event", "Sell tickets with QR", hostEvent],
   ];
   return (
     <div className="space-y-12 pt-2">
       <section>
         <Head eyebrow="Explore" title="What are you into?" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {explore.map(([k, e, t, d, go]) => (
+          {explore.map(([k, t, d, go]) => (
             <Tile key={k} onClick={go} bg={ROOM_BG[k]} img={EXPLORE_ART[k][0]} tint={EXPLORE_ART[k][1]} className="h-40 w-full sm:h-44">
-              <span className="u-glass-tile flex h-11 w-11 items-center justify-center rounded-[14px]" style={{ color: "#FFFFFF" }}><Icon name={e} className="h-6 w-6" /></span>
+              <span aria-hidden="true" />
               <span><span className="block text-[15px] font-bold leading-tight [text-shadow:0_1px_8px_rgba(0,0,0,0.45)]">{t}</span><span className="mt-0.5 block text-xs text-white/80">{d}</span></span>
             </Tile>
           ))}
