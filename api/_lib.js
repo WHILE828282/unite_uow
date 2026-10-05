@@ -1,5 +1,5 @@
 /* Shared server helpers for Unite's API routes (files starting with "_" are not deployed as routes).
-   Telegram: bot token from TELEGRAM_BOT_TOKEN, admin chat from TELEGRAM_CHAT_ID.
+   Telegram: bot token from TELEGRAM_BOT_TOKEN, admin chat from TELEGRAM_CHAT_ID (plus TELEGRAM_TEAM_CHAT_ID for the team group).
    Database: Upstash Redis over its REST API (Vercel → Storage → Upstash for Redis injects
    KV_REST_API_URL / KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN). */
 import crypto from "node:crypto";
@@ -9,6 +9,10 @@ const clean = (v) => String(v || "").trim().replace(/^["']|["']$/g, "").trim();
 
 // Admin moderation chat. Stray spaces or quotes from pasting are ignored.
 export const CHAT_ID = clean(process.env.TELEGRAM_CHAT_ID) || "8951261399";
+// Optional second chat for the team (a Telegram group with the managers): TELEGRAM_TEAM_CHAT_ID. Event applications and
+// admin notices go to both chats, and a decision taken in one shows in the other.
+export const TEAM_CHAT_ID = clean(process.env.TELEGRAM_TEAM_CHAT_ID);
+export const ADMIN_CHATS = [...new Set([CHAT_ID, TEAM_CHAT_ID].filter(Boolean))];
 
 // Accepts the usual naming slips (stray spaces or quotes, different case, a VITE_ prefix, TELEGRAM_TOKEN/BOT_TOKEN).
 const TOKEN_NAMES = ["TELEGRAM_BOT_TOKEN", "VITE_TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN", "BOT_TOKEN"];
@@ -214,7 +218,7 @@ export const sweepTrip = async (ref) => {
             await saveTicket({ ...t, refunded: true, refundedAt: now });
             await sendEmail(t.email, `Cancelled: ${rec.title}`, `The group trip "${rec.title}" didn't reach its minimum of ${rec.minGroup} people by the deadline, so it's cancelled. Your payment of ${t.price || 0} AED has been refunded automatically.\n\nUnite · uniteuow.com`, null, { kind: "trip_refund", ref });
           }
-          if (token) await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `🚫 Group trip cancelled: "${rec.title}" (${ref}) reached ${live.length} of ${rec.minGroup} people by the deadline. ${live.length} purchase(s) marked refunded (demo).` }).catch(() => {});
+          if (token) for (const chat_id of ADMIN_CHATS) await tg(token, "sendMessage", { chat_id, text: `🚫 Group trip cancelled: "${rec.title}" (${ref}) reached ${live.length} of ${rec.minGroup} people by the deadline. ${live.length} purchase(s) marked refunded (demo).` }).catch(() => {});
           await sendEmail(rec.email, `Your group trip "${rec.title}" was cancelled`, `It reached ${live.length} of the ${rec.minGroup} people needed by the payment deadline, so everyone has been refunded automatically.\n\nUnite · uniteuow.com`, null, { kind: "trip_cancelled", ref });
         }
       }
@@ -229,7 +233,7 @@ export const sweepTrip = async (ref) => {
         await remind("remind24", 24);
         if (!next.flagged && left <= 24 * 36e5 && missing) {
           next = { ...next, flagged: now };
-          if (token) await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `⚠️ Tickets missing for group trip "${next.title}" (${ref}): ${live.length - missing} of ${live.length} delivered, and the event starts ${new Date(startMs(next)).toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} (Dubai). Host: ${next.email}` }).catch(() => {});
+          if (token) for (const chat_id of ADMIN_CHATS) await tg(token, "sendMessage", { chat_id, text: `⚠️ Tickets missing for group trip "${next.title}" (${ref}): ${live.length - missing} of ${live.length} delivered, and the event starts ${new Date(startMs(next)).toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} (Dubai). Host: ${next.email}` }).catch(() => {});
         }
       }
       if (next !== rec) await savePitch({ ...next, updatedAt: now });

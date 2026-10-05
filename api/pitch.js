@@ -3,7 +3,7 @@
    never be shipped in browser code, where anyone could read it and take over the bot. */
 
 import crypto from "node:crypto";
-import { CHAT_ID, tokenVar, readToken, telegramVarNames, deployment, tg, explain, ownerKey, ownerOk, isRef, getPitch, savePitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
+import { CHAT_ID, TEAM_CHAT_ID, ADMIN_CHATS, tokenVar, readToken, telegramVarNames, deployment, tg, explain, ownerKey, ownerOk, isRef, getPitch, savePitch, getTickets, moderationKeyboard, ensureWebhook, dubaiMs, collectMs } from "./_lib.js";
 import { dbConfigured, eventExists, saveEventImage, countHosted } from "./_store.js";
 import { db } from "../db/client.js";
 import { sql } from "drizzle-orm";
@@ -125,6 +125,7 @@ export default async function handler(req, res) {
       const me = await tg(token, "getMe");
       if (!me.ok) return res.status(200).json({ configured: true, tokenValid: false, help: explain(me.data, token) });
       const chat = await tg(token, "getChat", { chat_id: CHAT_ID });
+      const team = TEAM_CHAT_ID ? await tg(token, "getChat", { chat_id: TEAM_CHAT_ID }) : null;
       // Moderation buttons: need the database, and Telegram must know where to send clicks.
       let moderation = { database: dbConfigured() };
       if (moderation.database) {
@@ -139,7 +140,7 @@ export default async function handler(req, res) {
         ? " Moderation buttons are off: connect a database (Vercel → Storage → Upstash for Redis → Connect to this project), then redeploy."
         : moderation.webhookError ? ` Moderation buttons: ${moderation.webhookError}` : " Moderation buttons are on.";
       return res.status(200).json({
-        configured: true, variable: tokenVar(), deployment: deployment(), tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok,
+        configured: true, variable: tokenVar(), deployment: deployment(), tokenValid: true, bot: `@${me.data.result.username}`, chatId: CHAT_ID, chatReachable: chat.ok, ...(team ? { teamChatId: TEAM_CHAT_ID, teamChatReachable: team.ok, ...(team.ok ? {} : { teamChatHelp: explain(team.data, token) }) } : {}),
         moderation,
         help: chat.ok ? `All set: party pitches will be delivered.${modHelp}` : explain(chat.data, token),
       });
@@ -173,11 +174,16 @@ export default async function handler(req, res) {
       const sold = (await getTickets(ref)).filter((t) => !t.refunded).length;
       if (sold) return res.status(409).json({ ok: false, code: "sold", error: `${sold} ticket${sold > 1 ? "s have" : " has"} already been sold, so this event can't be deleted here. Email events@uniteuow.com and we'll help cancel it and refund your guests.` });
       await savePitch({ ...rec, status: "deleted", deletedAt: Date.now(), updatedAt: Date.now() });
-      if (rec.kbMsg) {
-        const r = await tg(token, "editMessageReplyMarkup", { chat_id: CHAT_ID, message_id: rec.kbMsg, reply_markup: { inline_keyboard: [[{ text: "🗑 Deleted by the host", callback_data: `m:i:${ref}` }]] } });
+      // Every admin chat that got the application: buttons become "Deleted by the host", plus a short note.
+      const msgs = Array.isArray(rec.kbMsgs) && rec.kbMsgs.length ? rec.kbMsgs : rec.kbMsg ? [{ chat: String(CHAT_ID), msg: rec.kbMsg }] : [];
+      for (const { chat, msg } of msgs) {
+        const r = await tg(token, "editMessageReplyMarkup", { chat_id: chat, message_id: msg, reply_markup: { inline_keyboard: [[{ text: "🗑 Deleted by the host", callback_data: `m:i:${ref}` }]] } });
         if (!r.ok && !/not modified/i.test(String(r.data && r.data.description))) console.error("Telegram editMessageReplyMarkup (deleted) rejected:", JSON.stringify(r.data));
       }
-      await tg(token, "sendMessage", { chat_id: CHAT_ID, text: `🗑 <b>Application deleted by the host</b>\n"${esc(rec.title)}" (${ref}) was withdrawn${rec.status === "approved" ? " and removed from Events" : ""}. No action needed.`, parse_mode: "HTML", ...(rec.kbMsg ? { reply_to_message_id: rec.kbMsg, allow_sending_without_reply: true } : {}) });
+      for (const chat of ADMIN_CHATS) {
+        const m = msgs.find((x) => x.chat === String(chat));
+        await tg(token, "sendMessage", { chat_id: chat, text: `🗑 <b>Application deleted by the host</b>\n"${esc(rec.title)}" (${ref}) was withdrawn${rec.status === "approved" ? " and removed from Events" : ""}. No action needed.`, parse_mode: "HTML", ...(m ? { reply_to_message_id: m.msg, allow_sending_without_reply: true } : {}) });
+      }
       return res.status(200).json({ ok: true });
     } catch (e) {
       console.error("Pitch delete failed:", e && e.message);
@@ -235,38 +241,42 @@ export default async function handler(req, res) {
   const card = parseImage(b.card) || cover;
   const text = buildMessage(p);
   const plain = text.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-  let delivered = false, kbMsg = null;
-  try {
-    const form = new FormData();
-    form.append("chat_id", CHAT_ID);
-    form.append("caption", buildCaption(p));
-    form.append("parse_mode", "HTML");
-    if (keyboard) form.append("reply_markup", keyboard);
-    form.append("photo", new Blob([card.data], { type: card.type }), `event.${card.type.split("/")[1].replace("jpeg", "jpg")}`);
-    const pr = await tg(token, "sendPhoto", form);
-    if (pr.ok) { delivered = true; kbMsg = pr.data.result && pr.data.result.message_id; }
-    else console.error(`Telegram sendPhoto (${card.type}, ${card.data.length} bytes) rejected:`, JSON.stringify(pr.data));
-  } catch (e) { console.error("Telegram sendPhoto error:", e && e.message); }
-  if (!delivered) {
+  // Sent to every admin chat (yours and the team group); kbMsgs remembers each message so later changes reach all of them.
+  const sendTo = async (chat) => {
+    try {
+      const form = new FormData();
+      form.append("chat_id", chat);
+      form.append("caption", buildCaption(p));
+      form.append("parse_mode", "HTML");
+      if (keyboard) form.append("reply_markup", keyboard);
+      form.append("photo", new Blob([card.data], { type: card.type }), `event.${card.type.split("/")[1].replace("jpeg", "jpg")}`);
+      const pr = await tg(token, "sendPhoto", form);
+      if (pr.ok) return pr.data.result && pr.data.result.message_id;
+      console.error(`Telegram sendPhoto to ${chat} (${card.type}, ${card.data.length} bytes) rejected:`, JSON.stringify(pr.data));
+    } catch (e) { console.error(`Telegram sendPhoto to ${chat} error:`, e && e.message); }
     try {
       const markup = keyboard ? { reply_markup: JSON.parse(keyboard) } : {};
-      let sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text, parse_mode: "HTML", disable_web_page_preview: true, ...markup });
+      let sent = await tg(token, "sendMessage", { chat_id: chat, text, parse_mode: "HTML", disable_web_page_preview: true, ...markup });
       if (!sent.ok) {
-        console.error("Telegram sendMessage (HTML) rejected:", JSON.stringify(sent.data));
-        sent = await tg(token, "sendMessage", { chat_id: CHAT_ID, text: plain, disable_web_page_preview: true, ...markup });
-        if (!sent.ok) console.error("Telegram sendMessage (plain) rejected:", JSON.stringify(sent.data), "|", explain(sent.data, token));
+        console.error(`Telegram sendMessage (HTML) to ${chat} rejected:`, JSON.stringify(sent.data));
+        sent = await tg(token, "sendMessage", { chat_id: chat, text: plain, disable_web_page_preview: true, ...markup });
+        if (!sent.ok) console.error(`Telegram sendMessage (plain) to ${chat} rejected:`, JSON.stringify(sent.data), "|", explain(sent.data, token));
       }
-      delivered = sent.ok;
-      if (sent.ok) kbMsg = sent.data.result && sent.data.result.message_id;
-    } catch (e) { console.error("Telegram sendMessage error:", e && e.message); }
-  }
+      if (sent.ok) return sent.data.result && sent.data.result.message_id;
+    } catch (e) { console.error(`Telegram sendMessage to ${chat} error:`, e && e.message); }
+    return null;
+  };
+  const kbMsgs = [];
+  for (const chat of ADMIN_CHATS) { const msg = await sendTo(chat); if (msg) kbMsgs.push({ chat: String(chat), msg }); }
+  const delivered = kbMsgs.length > 0;
+  const kbMsg = (kbMsgs.find((x) => x.chat === String(CHAT_ID)) || {}).msg || null;
   if (!delivered) console.error(`Pitch NOT delivered to chat ${CHAT_ID}; full text follows so it isn't lost:\n${plain}`);
 
   // Save the application (status "pending") and make sure button clicks are routed back to this site.
   if (delivered && moderated) {
     try {
       const { moderated: _m, ...rec } = p;
-      await savePitch({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), ...(kbMsg ? { kbMsg } : {}) });
+      await savePitch({ ...rec, status: "pending", at: Date.now(), updatedAt: Date.now(), kbMsgs, ...(kbMsg ? { kbMsg } : {}) });
       for (const [kind, raw] of [["cover", b.cover], ["logo", b.logo]]) {
         if (!raw || raw.length > MAX_STORED_IMAGE) continue;
         try { await saveEventImage(p.ref, kind, raw); }

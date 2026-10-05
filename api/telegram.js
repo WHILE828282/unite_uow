@@ -1,7 +1,7 @@
 /* Vercel serverless function: Telegram webhook for the moderation buttons under each party application.
    ✅ Approve → "approved" (goes live in Events), 🔍 Additional Check → "under_review", ❌ Reject → "rejected".
    Only accepts calls carrying the secret Telegram was given at registration, and only clicks made in the admin chat. */
-import { CHAT_ID, readToken, tg, kv, storeConfigured, isRef, getPitch, savePitch, statusFromCode, moderationKeyboard, webhookSecret } from "./_lib.js";
+import { CHAT_ID, ADMIN_CHATS, readToken, tg, kv, storeConfigured, isRef, getPitch, savePitch, statusFromCode, moderationKeyboard, webhookSecret } from "./_lib.js";
 import { dbConfigured, emailByTelegramChat } from "./_store.js";
 import { A, saveProfile, setStatus, tgCard } from "./_apps.js";
 
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   }
   const [, code, ref] = /^m:([acri]):(UN-[A-Z0-9]{6})$/.exec(String(q.data || "")) || [];
   const chatId = q.message && q.message.chat && String(q.message.chat.id);
-  if (!code || !isRef(ref) || chatId !== CHAT_ID) { await answer("This button isn't valid here.", true); return res.status(200).json({ ok: true }); }
+  if (!code || !isRef(ref) || !ADMIN_CHATS.includes(chatId)) { await answer("This button isn't valid here.", true); return res.status(200).json({ ok: true }); }
   if (!dbConfigured()) { await answer("The database isn't connected, so decisions can't be saved yet.", true); return res.status(200).json({ ok: true }); }
 
   try {
@@ -67,6 +67,11 @@ export default async function handler(req, res) {
     // Mark the chosen button and show who decided and when; the buttons stay so a decision can be changed.
     const edit = await tg(token, "editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: moderationKeyboard(ref, status, `${who}, ${when}`) });
     if (!edit.ok && !/not modified/i.test(String(edit.data && edit.data.description))) console.error("Telegram editMessageReplyMarkup rejected:", JSON.stringify(edit.data));
+    // The same application in the other admin chat (yours or the team group) shows the decision too.
+    for (const { chat, msg } of Array.isArray(rec.kbMsgs) ? rec.kbMsgs : []) {
+      if (chat === chatId && msg === q.message.message_id) continue;
+      await tg(token, "editMessageReplyMarkup", { chat_id: chat, message_id: msg, reply_markup: moderationKeyboard(ref, status, `${who}, ${when}`) }).catch(() => {});
+    }
     await answer(TOAST[status]);
   } catch (e) {
     console.error("Moderation update failed:", e && e.message);
