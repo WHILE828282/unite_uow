@@ -7,7 +7,6 @@ import { fmtDate } from "../lib/format.js";
    Every tile on this page shares one style: full-bleed picture or colour, white text at the bottom. */
 
 // Hero backdrop: 18 small square crops (public/collage) of club, team and event photos, faces kept in frame.
-const COLLAGE = Array.from({ length: 18 }, (_, i) => `/collage/${String(i + 1).padStart(2, "0")}.webp`);
 const greeting = () => { const h = new Date().getHours(); return h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
 export const ROOM_BG = {
   Tech: "linear-gradient(140deg, #0ea5e9 0%, #1e3a8a 100%)",
@@ -50,14 +49,10 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
   return (
     <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#0b0b0e] text-white shadow-[0_20px_40px_-24px_rgba(0,0,0,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-60 sm:-inset-x-10 sm:grid-cols-6">
-          {COLLAGE.map((src, i) => (
-            <div key={i} className={`aspect-square overflow-hidden rounded-2xl bg-white/5 ${i % 2 ? "translate-y-6" : ""}`}>
-              <img src={src} alt="" loading={i < 8 ? "eager" : "lazy"} decoding="async" className="h-full w-full object-cover" />
-            </div>
-          ))}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0e]/45 via-[#0b0b0e]/75 to-[#0b0b0e]" />
+        {/* The main photo: a student in the Unite cap on campus. Dark on the text side, the photo shows on the right. */}
+        <img src="/collage/hero.webp" alt="" fetchpriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover object-[72%_28%] sm:object-[60%_30%]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0e]/30 via-[#0b0b0e]/60 to-[#0b0b0e] sm:bg-gradient-to-r sm:from-[#0b0b0e]/90 sm:via-[#0b0b0e]/55 sm:to-[#0b0b0e]/10" />
+        <div className="absolute inset-x-0 bottom-0 hidden h-40 bg-gradient-to-t from-[#0b0b0e] to-transparent sm:block" />
         <div className="u-hero-glow absolute -right-24 -top-24 h-80 w-80 rounded-full" />
         <div className="u-hero-glow absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-60" />
       </div>
