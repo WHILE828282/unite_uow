@@ -11,7 +11,7 @@ const CHIP = {
 };
 const TicketChip = ({ b }) => {
   const [label, cls] = b.kind === "trip" ? CHIP[b.state] || CHIP.waiting
-    : b.state === "cancelled" ? CHIP.cancelled : b.checkedIn ? ["Checked in", "bg-sky-50 text-sky-700"] : [b.paid ? "Paid" : "Free", "bg-emerald-50 text-emerald-700"];
+    : b.state === "cancelled" ? ["Event cancelled", "bg-rose-50 text-rose-700"] : b.checkedIn ? ["Checked in", "bg-sky-50 text-sky-700"] : [b.paid ? "Paid" : "Free", "bg-emerald-50 text-emerald-700"];
   return <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>{label}</span>;
 };
 
@@ -46,7 +46,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {bookings.map((b) => (
                 <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
-                  {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
+                  {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo, id: b.id, key: b.key, emoji: b.emoji }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{b.title}</p>
                     <p className="text-sm text-slate-500">{fmtDate(b.date)} · {b.time}</p>

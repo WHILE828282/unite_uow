@@ -24,7 +24,7 @@ const DELIVER_LEAD_MS = 24 * 36e5; // tickets must be delivered 24 h before the 
 const holderView = (t, rec) => ({
   id: t.id, ref: t.ref, checkedIn: !!t.checkedIn, refunded: !!t.refunded,
   kind: rec ? rec.kind || "own" : "own",
-  state: !rec ? "missing" : t.refunded || (isTrip(rec) && tripState(rec) === "cancelled") ? "cancelled"
+  state: !rec ? "missing" : rec.status === "deleted" || t.refunded || (isTrip(rec) && tripState(rec) === "cancelled") ? "cancelled"
     : !isTrip(rec) ? "valid" : t.delivery ? "ready" : tripState(rec) === "confirmed" ? "preparing" : "waiting",
   delivery: t.delivery ? { mode: t.delivery.mode, note: t.delivery.note || "", at: t.delivery.at, hasFile: t.delivery.mode === "file" } : null,
   // The host's guest group chat: only for a live ticket.

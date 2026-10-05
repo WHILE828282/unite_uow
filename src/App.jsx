@@ -332,6 +332,7 @@ export default function App() {
       setTimeout(() => news.forEach(([b, st]) => {
         if (st === "ready") notify({ title: "Your ticket is ready", body: `${b.title}: open My Tickets to see it.` }, 6000);
         else if (st === "preparing") notify({ title: "Group confirmed", body: `${b.title} is going ahead. The host is preparing your ticket.` }, 5000);
+        else if (st === "cancelled" && b.kind !== "trip") notify({ title: "Event cancelled", body: `${b.title} was cancelled by the organizers.` }, 6000);
         else if (st === "cancelled") notify({ title: "Trip cancelled · refunded", body: `${b.title} didn't reach its minimum group size. ${b.paid ? `Your ${b.price} AED was refunded.` : ""}` }, 6500);
       }), 0);
     };

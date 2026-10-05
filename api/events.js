@@ -2,8 +2,8 @@
    GET /api/events                         -> approved events, visible to the whole campus
    GET /api/events?mine=REF.KEY,REF.KEY    -> status of your own applications (KEY is returned on submit)
    GET /api/events?img=REF&kind=cover|logo -> artwork of an approved event (or your own, with &k=KEY) */
-import { isRef, getPitch, ownerOk, STATUSES, sweepTrips, isTrip, tripState } from "./_lib.js";
-import { dbConfigured, getEventImage, listApprovedEvents, demoSeats } from "./_store.js";
+import { isRef, getPitch, ownerOk, holderKey, STATUSES, sweepTrips, isTrip, tripState } from "./_lib.js";
+import { dbConfigured, getEventImage, getTicket, listApprovedEvents, demoSeats } from "./_store.js";
 import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
@@ -21,12 +21,15 @@ export default async function handler(req, res) {
       const ref = String(q.img), kind = q.kind === "logo" ? "logo" : "cover";
       if (!isRef(ref)) return res.status(404).end();
       const rec = await getPitch(ref);
-      if (!rec || (rec.status !== "approved" && !ownerOk(ref, q.k))) return res.status(404).end();
+      // Ticket holders keep the event's logo on their ticket even after the event is taken down.
+      const [tid, tkey] = String(q.t || "").split(".");
+      const holder = kind === "logo" && tid && tkey && tkey === holderKey(tid) && !!(await getTicket(ref, tid));
+      if (!rec || (rec.status !== "approved" && !ownerOk(ref, q.k) && !holder)) return res.status(404).end();
       const raw = await getEventImage(ref, kind);
       const m = /^data:(image\/(?:webp|jpeg|png));base64,(.+)$/.exec(String(raw || ""));
       if (!m) return res.status(404).end();
       res.setHeader("Content-Type", m[1]);
-      res.setHeader("Cache-Control", rec.status === "approved" ? "public, max-age=3600" : "private, max-age=300");
+      res.setHeader("Cache-Control", rec.status === "approved" ? "public, max-age=3600" : "private, max-age=86400");
       return res.status(200).send(Buffer.from(m[2], "base64"));
     }
 

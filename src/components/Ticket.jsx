@@ -91,7 +91,7 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
               <span className="text-sm font-extrabold tracking-tight text-white">unite</span>
               <span className="text-xs font-medium uppercase tracking-widest text-slate-400">· Admit one</span>
             </div>
-            {b.state === "cancelled" ? <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">Refunded</span>
+            {b.state === "cancelled" ? <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white">{trip ? "Refunded" : "Cancelled"}</span>
               : b.checkedIn ? <span className="inline-flex items-center gap-1 rounded-full bg-sky-500 px-2 py-0.5 text-xs font-semibold text-white"><Check className="h-3 w-3" /> Checked in</span>
               : <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white"><Check className="h-3 w-3" /> {trip ? "Place in group" : "Confirmed"}</span>}
           </div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { dayTag, shortVenue } from "../lib/format.js";
 import { tgHandle, waDigits } from "../lib/maps.js";
 import { qrMatrix } from "../lib/qr.js";
@@ -142,9 +143,13 @@ export const AnimatedCheck = ({ className = "h-16 w-16" }) => (
 );
 
 /* Event artwork for headers/thumbnails: logo image or emoji fallback. */
-export const EventLogo = ({ p, className = "h-12 w-12 text-2xl" }) =>
-  p.logo ? <img src={p.logo} alt="" loading="lazy" decoding="async" draggable={false} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
-    : <span className={`${className} flex shrink-0 items-center justify-center`}>{p.emoji}</span>;
+// On a ticket (id + holder key) the logo keeps loading even after the event is taken down; a broken image falls back to the emoji.
+export function EventLogo({ p, className = "h-12 w-12 text-2xl" }) {
+  const [bad, setBad] = useState("");
+  const src = p.logo && p.key && p.id && /^\/api\/events\?img=/.test(p.logo) && !/[?&]t=/.test(p.logo) ? `${p.logo}&t=${encodeURIComponent(`${p.id}.${p.key}`)}` : p.logo;
+  return src && bad !== src ? <img src={src} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setBad(src)} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
+    : <span className={`${className} flex shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl`}>{p.emoji || "🎟️"}</span>;
+}
 
 export const ReviewBadge = ({ r }) =>
   r.status === "approved" ? (
