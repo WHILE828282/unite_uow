@@ -299,7 +299,7 @@ export function HostPreview({ sub, onEdit }) {
         <div className="space-y-10">
           <PreviewBlock title="Event card" note="Events" onEdit={() => onEdit("logo")}>
             <div className="pointer-events-none select-none" aria-hidden="true">
-              <PartyCard p={p} onShare={() => {}} actions={<>{fake(buy, true)}{fake("Details")}</>} />
+              <PartyCard p={p} onShare={() => {}} actions={fake(p.price > 0 ? "Buy ticket" : "Reserve a spot")} />
             </div>
           </PreviewBlock>
           <PreviewBlock title="Application details" onEdit={() => onEdit("title")}>

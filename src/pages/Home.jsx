@@ -99,14 +99,6 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
 
         {spotlight && <Spotlight p={spotlight} booked={spotlightBooked} onOpen={onSpotlight} />}
 
-        <div className="mt-6 grid max-w-lg grid-cols-3 divide-x divide-white/10 rounded-2xl bg-white/[0.05] py-2.5 ring-1 ring-inset ring-white/10">
-          {stats.map(([n, l]) => (
-            <div key={l} className="px-3">
-              <span className="block text-lg font-bold tabular-nums leading-tight text-white sm:text-xl">{n}</span>
-              <span className="block text-[11px] leading-tight text-slate-400">{l}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

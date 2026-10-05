@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DateBlock, DayTag, EventLogo, Icon, ShareBtn, Spots, VenueChip } from "./ui.jsx";
+import { DateBlock, DayTag, EventLogo, Icon } from "./ui.jsx";
 import { clubDays, dayTag, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 import { roomLabel } from "../data/clubs.js";
@@ -33,11 +33,13 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-slate-500">
               {p.logo && !p.cover ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} {!p.cover && <DayTag iso={p.date} />}
             </p>
-            <p className="mt-0.5 truncate text-sm text-slate-500">{p.category} · {p.lang} · by {p.host}</p>
           </div>
         </div>
-        <div className="mt-3 text-xs"><Spots left={left} total={p.spots} unit={p.price > 0 ? "tickets" : "spots"} wait={p.wait} bar={false} /></div>
-        <div className="mt-auto flex gap-2 pt-3">{actions}<ShareBtn light onClick={onShare} /></div>
+        {/* One quiet row: availability only when it matters, then the single action. Tap the card for the rest. */}
+        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+          <span className={`min-w-0 truncate text-xs font-semibold ${left <= 0 ? "text-slate-500" : "text-crimson-700"}`}>{left <= 0 ? "Fully booked" : left <= 5 ? `Only ${left} left` : ""}</span>
+          {actions}
+        </div>
       </div>
     </article>
   );
@@ -69,15 +71,7 @@ export function ClubCard({ c, i, open, members, button }) {
   const photo = usePhotoOk(c.backgroundImage);
   const team = c.category === "Sports";
   const meta = (cls) => (
-    <div className={`min-w-0 space-y-1.5 text-xs ${cls}`}>
-      <div className="flex flex-wrap items-center gap-1.5">
-        {photo
-          ? <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 font-medium text-white ring-1 ring-inset ring-white/15 backdrop-blur-sm"><Icon name="pin" className="h-3 w-3" />{shortVenue(c.where)}</span>
-          : <VenueChip where={c.where} />}
-        <span className="inline-flex items-center gap-1"><Icon name="users" className="h-3.5 w-3.5" />{members} members</span>
-      </div>
-      <p className="flex items-center gap-1.5"><Icon name="calendar" className="h-3.5 w-3.5" />{c.slots.length} weekly session{c.slots.length > 1 ? "s" : ""} · {clubDays(c)}</p>
-    </div>
+    <p className={`min-w-0 truncate text-xs ${cls}`}>{members} members · {clubDays(c)}</p>
   );
   if (photo)
     return (
@@ -128,7 +122,6 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const ms = Math.max(0, dubaiStart(p) - now);
   const parts = [["days", Math.floor(ms / 864e5)], ["hrs", Math.floor(ms / 36e5) % 24], ["min", Math.floor(ms / 6e4) % 60], ["sec", Math.floor(ms / 1e3) % 60]];
-  const left = p.spots - p.taken, pct = Math.min(100, Math.round((p.taken / p.spots) * 100));
   return (
     <article id={"event-" + p.id} {...open}
       className="u-keep u-featured u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7"
@@ -154,15 +147,9 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
         ))}
       </div>
 
-      <div className="mt-5 max-w-sm">
-        <div className="flex justify-between text-xs text-slate-300"><span>{left > 0 ? `${left} of ${p.spots} tickets left` : "Sold out"}</span><span>{pct}% sold</span></div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-crimson-500 to-crimson-300" style={{ width: `${pct}%` }} /></div>
-      </div>
 
       <div className="mt-5 flex max-w-md gap-2">
         {action}
-        <button onClick={onDetails} className="u-keep u-btn rounded-xl px-4 text-sm font-semibold text-white ring-1 ring-white/20 hover:bg-white/10">Details</button>
-        <button onClick={onShare} aria-label="Share" className="u-keep u-btn flex w-11 shrink-0 items-center justify-center rounded-xl text-white ring-1 ring-white/20 hover:bg-white/10"><Icon name="share" className="h-4 w-4" /></button>
       </div>
     </article>
   );

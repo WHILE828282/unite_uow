@@ -57,7 +57,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
                 {g.items.map((p) => (
                   <FeaturedCard key={p.id} p={p} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
                     onDetails={() => setModal({ type: "detail", id: p.id })}
-                    action={partyBtn(p, "u-keep flex-1 !bg-white !text-slate-900 !ring-0 hover:!bg-slate-100", true)} />
+                    action={partyBtn(p, "u-keep w-full sm:w-auto sm:px-8 !bg-white !text-slate-900 !ring-0 hover:!bg-slate-100", true)} />
                 ))}
               </div>
             ) : (<>
@@ -65,7 +65,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {g.items.map((p, k) => (
                 <PartyCard key={p.id} p={p} i={n++} wide={g.items.length % 2 === 1 && k === g.items.length - 1} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
-                  actions={<>{partyBtn(p, "flex-1", true, true)}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
+                  actions={partyBtn(p, "shrink-0 px-4", true, true)} />
               ))}
             </div>
             </>)}
