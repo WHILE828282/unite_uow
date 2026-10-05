@@ -27,7 +27,6 @@ import { overlaps, scheduleLabel } from "./lib/schedule.js";
 import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
 import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
 import { CSS, glassDark } from "./lib/styles.js";
-import { versionLabel } from "./lib/version.js";
 import { Events } from "./pages/Events.jsx";
 import { CreateModal, composeCard } from "./pages/HostEvent.jsx";
 import { HomeHero, HomeSections } from "./pages/Home.jsx";
@@ -996,7 +995,6 @@ export default function App() {
             <a href="/terms" className="hover:text-slate-900">Terms of Use</a>
             <a href="/privacy" className="hover:text-slate-900">Privacy Policy</a>
           </nav>
-          <p className="mt-4 text-xs text-slate-400">Payments via Ziina (demo mode) · <span className="text-slate-400/80">{versionLabel()}</span></p>
         </footer>
       </main>
       </div>
