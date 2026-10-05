@@ -1,9 +1,12 @@
 /* Vercel serverless function: the /admin page's data. Only for the emails in ADMIN_EMAILS (signed in with an email code).
    POST { s, a: "overview" }                                  → row counts, Redis copy status
    POST { s, a: "table", table, q, limit }                     → rows of users | clubs | applications | events | tickets (search q)
-   POST { s, a: "copy", dryRun } / { s, a: "seed" }            → copy permanent data from Redis again / re-seed demo data */
+   POST { s, a: "copy", dryRun } / { s, a: "seed" }            → copy permanent data from Redis again / re-seed demo data
+   POST { s, a: "moderate", ref, status }                      → approved | under_review | rejected | deleted, the same decision as the
+                                                                 Telegram buttons (which update to match) */
 import { desc, eq, ilike, or, sql } from "drizzle-orm";
-import { sessionEmail, isAdminEmail } from "./_lib.js";
+import { sessionEmail, isAdminEmail, readToken, getPitch, savePitch, syncModerationButtons } from "./_lib.js";
+import { countTickets } from "./_store.js";
 import { db, dbConfigured, schema as S } from "../db/client.js";
 import { getMeta } from "./_store.js";
 import { copyFromRedis, counts, seed } from "./_migrate.js";
@@ -64,6 +67,19 @@ export default async function handler(req, res) {
       const q = String(b.q || "").trim().slice(0, 100), limit = Math.min(5000, Math.max(1, Number(b.limit) || 200));
       const rows = (await fn(q, limit)).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, v instanceof Date ? iso(v) : v])));
       return res.status(200).json({ ok: true, rows });
+    }
+    if (b.a === "moderate") {
+      const ref = String(b.ref || ""), status = String(b.status || "");
+      if (!/^UN-[A-Z0-9]{6}$/.test(ref)) return res.status(400).json({ ok: false, error: "Only student events can be moderated here." });
+      if (!["approved", "under_review", "rejected", "deleted"].includes(status)) return res.status(400).json({ ok: false, error: "Unknown status." });
+      const rec = await getPitch(ref);
+      if (!rec) return res.status(404).json({ ok: false, error: "Event not found." });
+      const when = new Date().toLocaleString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      const next = { ...rec, status, updatedAt: Date.now(), decidedBy: me, ...(status === "deleted" ? { deletedAt: Date.now() } : {}) };
+      if (status !== "deleted") delete next.deletedAt;
+      await savePitch(next);
+      await syncModerationButtons(readToken(), rec, status, `${me}, ${when}`);
+      return res.status(200).json({ ok: true, status, sold: await countTickets(ref) });
     }
     if (b.a === "copy") return res.status(200).json(await copyFromRedis({ dryRun: !!b.dryRun }));
     if (b.a === "seed") return res.status(200).json({ ok: true, seeded: await seed() });

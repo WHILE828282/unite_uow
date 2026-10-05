@@ -38,6 +38,8 @@ export default function AdminPage() {
     setMe(r.me); setCounts(r.counts || {});
   };
   useEffect(() => { overview(); }, []);
+  const [reload, setReload] = useState(0);
+  const [note, setNote] = useState("");
   useEffect(() => {
     if (!me) return;
     let stop = false;
@@ -47,7 +49,7 @@ export default function AdminPage() {
       if (!stop) { setRows(r.ok ? r.rows : []); setLoading(false); }
     }, 250);
     return () => { stop = true; clearTimeout(t); };
-  }, [me, tab, q]);
+  }, [me, tab, q, reload]);
 
   const exportCsv = async () => {
     setBusy("csv");
@@ -61,7 +63,28 @@ export default function AdminPage() {
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
+  // Student events: the same decisions as the Telegram buttons. Telegram's copies update to match, and a decision
+  // taken in Telegram shows here on the next refresh (both use the same database).
+  const MOD = [["approved", "Approve", "bg-emerald-600 text-white"], ["under_review", "Check", "bg-amber-500 text-white"], ["rejected", "Reject", "bg-rose-600 text-white"], ["deleted", "Delete", "ring-1 ring-rose-300 text-rose-600"]];
+  const moderate = async (row, status, label) => {
+    const ask = status === "deleted" ? `Delete "${row.title}"? It disappears from Unite${row.sold ? ` (${row.sold} ticket${row.sold > 1 ? "s" : ""} already sold: refund them separately)` : ""}.`
+      : status === "rejected" ? `Reject "${row.title}"?${row.sold ? ` ${row.sold} ticket${row.sold > 1 ? "s were" : " was"} already sold.` : ""}` : null;
+    if (ask && !window.confirm(ask)) return;
+    setBusy(row.ref);
+    const r = await api({ a: "moderate", ref: row.ref, status });
+    setBusy("");
+    const done = { approved: "approved, now live on Unite", under_review: "sent for an additional check", rejected: "rejected", deleted: "deleted from Unite" }[status];
+    setNote(r.ok ? `${row.title}: ${done}. Telegram updated.` : r.error);
+    setReload((n) => n + 1);
+  };
   const cols = useMemo(() => (rows[0] ? Object.keys(rows[0]) : []), [rows]);
+  const modCell = (r) => (r.source === "hosted" ? (
+    <div className="flex gap-1.5">
+      {MOD.filter(([s]) => s !== r.status).map(([s, l, cls]) => (
+        <button key={s} onClick={() => moderate(r, s, l)} disabled={busy === r.ref} className={`u-btn u-keep rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50 ${cls}`}>{l}</button>
+      ))}
+    </div>
+  ) : <span className="text-xs text-slate-400">Built-in</span>);
   const tableCounts = { users: counts.users, clubs: counts.clubs, applications: counts.club_applications, events: counts.events, tickets: counts.tickets };
 
   return (
@@ -95,14 +118,16 @@ export default function AdminPage() {
                 className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[15px] placeholder:text-slate-400 focus:border-crimson-400 focus:outline-none focus:ring-2 focus:ring-crimson-100" />
               <button onClick={exportCsv} disabled={busy === "csv" || !rows.length} className="u-btn rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-50">{busy === "csv" ? "Exporting…" : "Export CSV"}</button>
             </div>
+            {note && <p role="status" className="mt-3 rounded-xl bg-slate-900 px-4 py-2.5 text-sm text-white">{note}</p>}
             <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>{cols.map((c) => <th key={c} className="whitespace-nowrap px-3 py-2.5 font-semibold">{label(c)}</th>)}</tr>
+                  <tr>{tab === "events" && cols.length > 0 && <th className="px-3 py-2.5 font-semibold">Decision</th>}{cols.map((c) => <th key={c} className="whitespace-nowrap px-3 py-2.5 font-semibold">{label(c)}</th>)}</tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {rows.map((r, i) => (
                     <tr key={i} className="hover:bg-slate-50">
+                      {tab === "events" && <td className="whitespace-nowrap px-3 py-2">{modCell(r)}</td>}
                       {cols.map((c) => <td key={c} className="max-w-[18rem] truncate whitespace-nowrap px-3 py-2 text-slate-700" title={cell(r[c])}>{cell(r[c])}</td>)}
                     </tr>
                   ))}

@@ -139,6 +139,19 @@ export const moderationKeyboard = (ref, status = "pending", note = "") => ({
   ],
 });
 
+// After a decision (from Telegram or the /admin page): every admin chat's copy of the application shows it.
+export const syncModerationButtons = async (token, rec, status, note, skip = null) => {
+  if (!token || !rec) return;
+  const msgs = Array.isArray(rec.kbMsgs) && rec.kbMsgs.length ? rec.kbMsgs : rec.kbMsg ? [{ chat: String(CHAT_ID), msg: rec.kbMsg }] : [];
+  const markup = status === "deleted"
+    ? { inline_keyboard: [[{ text: `🗑 Removed${note ? ` · ${note}` : ""}`, callback_data: `m:i:${rec.ref}` }]] }
+    : moderationKeyboard(rec.ref, status, note);
+  for (const { chat, msg } of msgs) {
+    if (skip && String(skip.chat) === String(chat) && skip.msg === msg) continue;
+    await tg(token, "editMessageReplyMarkup", { chat_id: chat, message_id: msg, reply_markup: markup }).catch(() => {});
+  }
+};
+
 /* ---------------------------- Webhook ----------------------------- */
 // Where Telegram should deliver button clicks: the project's production domain (unprotected), else this host.
 export const webhookUrl = (req) => {
