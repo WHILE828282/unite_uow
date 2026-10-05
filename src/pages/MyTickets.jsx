@@ -1,4 +1,5 @@
 import { EventLogo, Icon } from "../components/ui.jsx";
+import { ComingUp } from "../components/ComingUp.jsx";
 import { fmtDate } from "../lib/format.js";
 
 
@@ -15,25 +16,31 @@ const TicketChip = ({ b }) => {
 };
 
 /* My Tickets tab: tickets, waitlist spots and a pointer to hosting. */
-export function MyTickets({ user, bookings, waitlist, parties, submissions, setModal, changeTab, hostEvent }) {
+export function MyTickets({ user, bookings, waitlist, parties, submissions, setModal, changeTab, hostEvent, upcoming = [] }) {
   return (
     (!user ? (
+      <>
       <div className="rounded-3xl border border-slate-200/50 bg-white shadow-sm px-6 py-14 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200/70"><Icon name="lock" className="h-7 w-7" /></div>
         <h3 className="mt-4 text-lg font-bold">Sign in to see your tickets</h3>
         <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">Your tickets, bookings and event applications live here once you sign in with your email.</p>
         <button onClick={() => setModal({ type: "auth", reason: "Sign in to view your tickets." })} className="u-btn mt-5 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Sign in</button>
       </div>
+      <ComingUp events={upcoming} onOpen={(p) => setModal({ type: "detail", id: p.id })} />
+      </>
     ) : (
       <div className="space-y-8">
         <section>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tickets</h3>
           {bookings.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+            <div>
+              <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="ticket" className="h-6 w-6" /></span>
               <p className="mt-3 font-semibold">No tickets yet</p>
               <p className="text-sm text-slate-500">Grab a spot at an upcoming student event.</p>
               <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse events</button>
+              </div>
+              <ComingUp events={upcoming} onOpen={(p) => setModal({ type: "detail", id: p.id })} title="Pick one" />
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

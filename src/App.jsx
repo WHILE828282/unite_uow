@@ -958,6 +958,7 @@ export default function App() {
             onOpenReview={openOwn}
             onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
             onBrowse={changeTab}
+            suggest={upcoming} onOpenEvent={(p) => setModal({ type: "detail", id: p.id })}
             onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}
           />
         )}
@@ -968,7 +969,7 @@ export default function App() {
 
         {/* My tickets */}
         {tab === "tickets" && (
-          <MyTickets user={user} bookings={bookings} waitlist={waitlist} parties={parties} submissions={submissions}
+          <MyTickets user={user} bookings={bookings} waitlist={waitlist} parties={parties} submissions={submissions} upcoming={upcoming}
             setModal={setModal} changeTab={changeTab} hostEvent={hostEvent} />
         )}
 
