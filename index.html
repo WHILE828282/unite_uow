@@ -27,7 +27,7 @@
       .u-boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; animation: uBoot .3s ease .15s forwards; }
       .u-boot img { width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .45); }
       @keyframes uBoot { to { opacity: 1; } }</style>
-    <script>try { if (localStorage.getItem("unite-theme") === "dark") document.documentElement.classList.add("u-boot-dark"); } catch (e) {}</script>
+    <script>try { if (localStorage.getItem("unite-theme-v2") !== "light") document.documentElement.classList.add("u-boot-dark"); } catch (e) { document.documentElement.classList.add("u-boot-dark"); }</script>
     <title>Unite · UOWD clubs & events</title>
   </head>
   <body>

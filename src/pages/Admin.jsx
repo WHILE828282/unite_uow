@@ -21,7 +21,7 @@ const csv = (rows) => {
 };
 
 export default function AdminPage() {
-  const dark = (() => { try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; } })();
+  const dark = (() => { try { return localStorage.getItem("unite-theme-v2") !== "light"; } catch (e) { return true; } })();
   const [me, setMe] = useState(null);
   const [denied, setDenied] = useState("");
   const [counts, setCounts] = useState({});

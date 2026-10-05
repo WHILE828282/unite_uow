@@ -89,7 +89,8 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState(() => (saved && saved.waitlist) || {});
   const [dark, setDark] = useState(() => {
-    try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; }
+    // Dark the first time; after that whatever this person picked ("v2": the old key was written for everyone).
+    try { return localStorage.getItem("unite-theme-v2") !== "light"; } catch (e) { return true; }
   });
   const toastTimer = useRef(null);
   const studentIdRef = useRef(saved ? saved.sid || "" : "");
@@ -138,7 +139,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem("unite-theme", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
+    try { localStorage.setItem("unite-theme-v2", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
     document.documentElement.classList.toggle("u-boot-dark", dark);
     document.documentElement.style.backgroundColor = dark ? "#0e0f13" : "#eeebe6";
     // Safari tints its bars (and the strip around the keyboard) with theme-color: match the page, not navy.

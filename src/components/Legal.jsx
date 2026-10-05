@@ -41,7 +41,7 @@ function LegalBody({ doc, toc = true }) {
 /* Full page: /terms and /privacy. */
 export function LegalPage({ kind }) {
   const doc = DOCS[kind];
-  const dark = (() => { try { return localStorage.getItem("unite-theme") === "dark"; } catch (e) { return false; } })();
+  const dark = (() => { try { return localStorage.getItem("unite-theme-v2") !== "light"; } catch (e) { return true; } })();
   useEffect(() => { document.title = `${doc.title} · Unite`; }, [doc]);
   const back = () => { if (window.history.length > 1 && document.referrer.startsWith(window.location.origin)) window.history.back(); else window.location.href = "/"; };
   return (
