@@ -49,12 +49,12 @@ function TripStatus({ b, onOpenFile }) {
 
 /* A short burst of confetti over a freshly bought ticket (skipped with reduced motion). */
 const CONFETTI = ["#e9b6bc", "#c45a68", "#fbbf24", "#34d399", "#60a5fa", "#ffffff"];
-function Confetti() {
+export function Confetti({ fixed = false }) {
   const [on, setOn] = useState(() => !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches));
   useEffect(() => { const t = setTimeout(() => setOn(false), 2600); return () => clearTimeout(t); }, []);
   if (!on) return null;
   return (
-    <div className="u-keep pointer-events-none absolute inset-x-0 top-0 z-20 h-72 overflow-hidden" aria-hidden="true">
+    <div className={`u-keep pointer-events-none ${fixed ? "fixed z-[60] h-96" : "absolute z-20 h-72"} inset-x-0 top-0 overflow-hidden`} aria-hidden="true">
       {Array.from({ length: 42 }, (_, i) => (
         <span key={i} className="u-confetti absolute top-0 block rounded-[2px]"
           style={{ left: `${(i * 37) % 100}%`, width: 6 + (i % 3) * 2, height: 10 + (i % 4) * 2, background: CONFETTI[i % CONFETTI.length],

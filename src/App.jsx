@@ -4,7 +4,7 @@ import { Header } from "./components/Header.jsx";
 import { Avatar, ProfileModal } from "./components/modals/ProfileModal.jsx";
 import { PullToRefresh } from "./components/PullToRefresh.jsx";
 import { BottomNav, Tabs } from "./components/Tabs.jsx";
-import { Ticket } from "./components/Ticket.jsx";
+import { Confetti, Ticket } from "./components/Ticket.jsx";
 import { AuthModal } from "./components/modals/AuthModal.jsx";
 import { Checkout } from "./components/modals/Checkout.jsx";
 import { ClubDetail } from "./components/modals/ClubDetail.jsx";
@@ -387,6 +387,7 @@ export default function App() {
     } catch (e) { /* storage full or blocked */ }
   }, [user, submissions]);
 
+  const [celebrate, setCelebrate] = useState(0); // a short confetti burst when you get into a club
   const notify = (m, ms = 2400) => { setToast(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), ms); };
   const closeModal = () => setModal(null);
   const requireAuth = (reason, action) => (user ? action(user) : setModal({ type: "auth", reason, action }));
@@ -460,7 +461,7 @@ export default function App() {
     setJoinedClubs((x) => ({ ...x, [c.id]: { status: pending ? "pending" : "joined", at: Date.now() } }));
     const heads = clash ? ` Heads up: it overlaps with ${clash.club.name}.` : "";
     if (pending) notify(`Form sent for ${c.name}. Student Services usually confirms within 24 hours.${heads}`, 4200);
-    else notify(`You're in ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200);
+    else { notify(`You're in ${c.name}! ${scheduleLabel(c)} added to My Schedule.${heads}`, 4200); setCelebrate(Date.now()); }
   };
   const reviewLeft = (sub) => fmtLeft(Math.min(REVIEW_MS, sub.at + REVIEW_MS - clock));
   // Sends the pitch to the admin moderation chat (via /api/pitch, which holds the bot token), then
@@ -563,7 +564,7 @@ export default function App() {
       if (prev[a.id] === a.status) return;
       const c = clubs.find((x) => x.id === a.clubId);
       if (!c) return;
-      if (a.status === "accepted" && !joinedClubs[c.id]) { registerClub(c); notify({ title: `You're in ${c.name}!`, body: `${scheduleLabel(c)} added to My Schedule.` }, 5000); }
+      if (a.status === "accepted" && !joinedClubs[c.id]) { registerClub(c); setCelebrate(Date.now()); notify({ title: `You're in ${c.name}!`, body: `${scheduleLabel(c)} added to My Schedule.` }, 5000); }
       if (a.status === "declined") notify({ title: c.name, body: "They can't take new members right now. Have a look at the other clubs on Unite." }, 5000);
     });
     // eslint-disable-next-line
@@ -1163,6 +1164,7 @@ export default function App() {
         </div>
       )}
 
+      {celebrate > 0 && <Confetti key={celebrate} fixed />}
       {toast && (
         <div className="u-safe-toast pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4">
           <div key={typeof toast === "string" ? toast : toast.title + toast.body} role="status" className="u-up flex max-w-sm items-start gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-xl" style={glassDark}>

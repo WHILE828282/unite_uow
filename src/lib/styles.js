@@ -33,5 +33,7 @@ export const CSS = `
 .u-ring{stroke-dasharray:151;stroke-dashoffset:151;animation:uDraw .6s ease-out forwards}
 .u-tick{stroke-dasharray:40;stroke-dashoffset:40;animation:uDraw .4s .5s ease-out forwards}
 .u-rise{animation:uUp .45s cubic-bezier(.2,.8,.2,1) backwards}
-.u-tab{animation:uUp .35s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes uTab{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.u-tab{animation:uTab .3s cubic-bezier(.2,.8,.2,1) backwards}
+@media (prefers-reduced-motion:reduce){.u-tab,.u-rise,.u-up{animation:none}}
 `;
