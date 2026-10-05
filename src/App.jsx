@@ -140,10 +140,10 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem("unite-theme-v2", dark ? "dark" : "light"); } catch (e) { /* ignore */ }
     document.documentElement.classList.toggle("u-boot-dark", dark);
-    document.documentElement.style.backgroundColor = dark ? "#0e0f13" : "#eeebe6";
+    document.documentElement.style.backgroundColor = dark ? "#000000" : "#f2f2f7";
     // Safari tints its bars (and the strip around the keyboard) with theme-color: match the page, not navy.
     const tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute("content", dark ? "#0e0f13" : "#eeebe6");
+    if (tc) tc.setAttribute("content", dark ? "#000000" : "#f2f2f7");
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
   }, [dark]);
 
@@ -932,6 +932,8 @@ export default function App() {
         <Tabs tabs={tabs} tab={tab} changeTab={changeTab} user={user} bookings={bookings} myEventItems={myEventItems} sessions={sessions} />
 
         <div key={tab} className="u-tab">
+        {/* Phones: an iOS-style large title on top of each tab (the bottom bar carries the navigation). */}
+        {tab !== "home" && <h1 className="u-large-title sm:hidden">{{ parties: "Events", clubs: "Clubs", schedule: "Schedule", events: "My events", tickets: "Tickets" }[tab]}</h1>}
         {/* Events */}
         {tab === "parties" && (
           <Events filteredParties={filteredParties} upcoming={upcoming} feedLangs={feedLangs} filter={filter} setFilter={setFilter}

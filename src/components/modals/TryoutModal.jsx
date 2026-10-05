@@ -41,7 +41,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
         style={{ colorScheme: "dark" }}>
 
         {/* Header: solid, locked dark */}
-        <div className="u-keep shrink-0 border-b border-white/10 bg-[#0e0f13] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "calc(var(--sat) + 0.75rem)", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
+        <div className="u-keep shrink-0 border-b border-white/10 bg-[#000000] px-4 pb-4 text-white sm:px-6 [@media(max-height:500px)]:pb-2" style={{ paddingTop: "calc(var(--sat) + 0.75rem)", paddingLeft: "max(1rem, var(--sal))", paddingRight: "max(1rem, var(--sar))" }}>
           <div className="flex items-center justify-between gap-2">
             <button onClick={onClose} className="u-keep inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white ring-1 ring-white/10 hover:bg-white/20">
               <Icon name="arrow-left" className="h-4 w-4" /> Back
@@ -97,7 +97,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
         </div>
 
         {/* Footer: locked dark */}
-        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#0e0f13] p-3 sm:flex-row sm:items-center sm:px-6 [@media(max-height:500px)]:py-2" style={{ paddingBottom: "max(0.75rem, var(--sabx))", paddingLeft: "max(0.75rem, var(--sal))", paddingRight: "max(0.75rem, var(--sar))" }}>
+        <div className="u-keep flex shrink-0 flex-col gap-2 border-t border-white/10 bg-[#000000] p-3 sm:flex-row sm:items-center sm:px-6 [@media(max-height:500px)]:py-2" style={{ paddingBottom: "max(0.75rem, var(--sabx))", paddingLeft: "max(0.75rem, var(--sal))", paddingRight: "max(0.75rem, var(--sar))" }}>
           <button onClick={() => { if (sentRef.current) return; sentRef.current = true; onSent(); }} className="u-keep u-btn flex-1 rounded-xl bg-crimson-700 py-3 text-sm font-semibold text-white hover:bg-crimson-600">
             I've sent the form
             <span className="ml-1.5 font-normal text-white/70">· adds {scheduleLabel(c, true)} to My Schedule</span>

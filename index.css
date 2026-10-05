@@ -99,19 +99,19 @@ html.u-typing { scroll-behavior: auto; }
 /*  Anything marked .u-keep (hero, header, ticket stub, map) is left   */
 /*  as designed. :where() keeps specificity low so hover states win.   */
 /* ------------------------------------------------------------------ */
-.u-dark { color-scheme: dark; background-color: #0e0f13; color: #f5f5f7; }
+.u-dark { color-scheme: dark; background-color: #000000; color: #f5f5f7; }
 /* Strip behind the sticky section tabs: exactly the page background in both themes. */
 .u-tabbar { background-color: #f8fafc; }
-.u-dark .u-tabbar { background-color: #0e0f13; }
-.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #15161b; color: #f5f5f7; }
+.u-dark .u-tabbar { background-color: #000000; }
+.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #121214; color: #f5f5f7; }
 .u-dark :where(input)::placeholder { color: #64748b; }
 
 /* Surfaces */
-.u-dark :where(.bg-white:not(.u-keep)) { background-color: #1b1c22; }
-.u-dark :where(.bg-slate-50:not(.u-keep)) { background-color: #15161b; }
-.u-dark :where(.bg-slate-100:not(.u-keep)) { background-color: #24252c; }
-.u-dark :where(.bg-slate-200:not(.u-keep)) { background-color: #2e2f37; }
-.u-dark :where(.bg-slate-900:not(.u-keep)) { background-color: #f5f5f7; color: #0e0f13; }
+.u-dark :where(.bg-white:not(.u-keep)) { background-color: #1c1c1e; }
+.u-dark :where(.bg-slate-50:not(.u-keep)) { background-color: #121214; }
+.u-dark :where(.bg-slate-100:not(.u-keep)) { background-color: #2c2c2e; }
+.u-dark :where(.bg-slate-200:not(.u-keep)) { background-color: #3a3a3c; }
+.u-dark :where(.bg-slate-900:not(.u-keep)) { background-color: #f5f5f7; color: #000000; }
 .u-dark :where(.bg-indigo-50:not(.u-keep)) { background-color: rgba(196, 90, 104, 0.16); }
 .u-dark :where(.bg-emerald-50:not(.u-keep)) { background-color: rgba(16, 185, 129, 0.12); }
 .u-dark :where(.bg-emerald-100:not(.u-keep)) { background-color: rgba(16, 185, 129, 0.2); }
@@ -184,7 +184,7 @@ html.u-typing { scroll-behavior: auto; }
 .u-dark :where(.ring-crimson-100:not(.u-keep)) { --tw-ring-color: rgba(196, 90, 104, 0.4); }
 
 /* Segmented control: the selected option sits above the track */
-.u-dark .u-seg-on { background-color: #2e2f37; }
+.u-dark .u-seg-on { background-color: #3a3a3c; }
 
 /* Cards */
 
@@ -257,7 +257,7 @@ html.u-typing { --nav: 0px; }
 
 /* Host form in light mode. The form is built dark (u-keep); in light mode .u-host-light flips its colours here.
    The phone preview (.u-host-keep) already shows the light event page and is left alone. */
-.u-host-light.u-host-light { background-color: #f4f1ec; color: #1d2230; --tw-ring-color: rgba(15, 23, 42, 0.08); }
+.u-host-light.u-host-light { background-color: #f2f2f7; color: #1d2230; --tw-ring-color: rgba(15, 23, 42, 0.08); }
 .u-host-light :is(.text-white, .text-slate-100, .text-slate-200):not([class*="bg-crimson"], [class*="bg-rose-5"], [class*="bg-black"], .bg-slate-900, .u-host-keep *) { color: #0f172a; }
 .u-host-light .text-slate-300:not(.u-host-keep *) { color: #475569; }
 .u-host-light .text-slate-400:not(.u-host-keep *) { color: #64748b; }
@@ -265,10 +265,10 @@ html.u-typing { --nav: 0px; }
 .u-host-light :is(.text-rose-200, .text-rose-300):not(.u-host-keep *) { color: #e11d48; }
 .u-host-light .text-emerald-400:not(.u-host-keep *) { color: #059669; }
 .u-host-light [class*="bg-white/"]:not(.u-host-keep *) { background-color: rgba(15, 23, 42, 0.04); }
-.u-host-light :is(.bg-\[\#0e0f13\], .bg-\[\#15161b\], .bg-\[\#1b1c22\]):not(.u-host-keep, .u-host-keep *) { background-color: #fbfaf8; }
+.u-host-light :is(.bg-\[\#000000\], .bg-\[\#121214\], .bg-\[\#1c1c1e\]):not(.u-host-keep, .u-host-keep *) { background-color: #ffffff; }
 .u-host-light [class*="ring-white/"]:not(.u-host-keep, .u-host-keep *) { --tw-ring-color: rgba(15, 23, 42, 0.1); }
 .u-host-light :is([class*="border-white/"], [class*="divide-white/"] > *):not(.u-host-keep *) { border-color: rgba(15, 23, 42, 0.1); }
-.u-host-light :is(input, textarea, select):not(.u-host-keep *) { background-color: #fbfaf8; color: #1d2230; }
+.u-host-light :is(input, textarea, select):not(.u-host-keep *) { background-color: #f2f2f7; color: #1d2230; }
 .u-host-light :is(input, textarea):not(.u-host-keep *)::placeholder { color: #94a3b8; }
 .u-host-light option { background-color: #ffffff; color: #0f172a; }
 @media (hover: hover) and (pointer: fine) {
@@ -288,13 +288,13 @@ html.u-typing { --nav: 0px; }
 /* ---- Light theme: soft "paper" palette instead of pure white, so it's easy on the eyes ----
    Page a warm light grey, cards a shade lighter, text a deep navy-grey instead of near-black, softer borders.
    .u-light.u-light raises specificity above Tailwind's own classes (which load later). */
-.u-light.u-page { background-color: #eeebe6; color: #1d2230; }
-.u-light .u-tabbar { background-color: #eeebe6; }
-.u-light.u-light :where(.bg-white:not(.u-keep)) { background-color: #fbfaf8; }
-.u-light.u-light :where(.bg-white\/80:not(.u-keep), .bg-white\/90:not(.u-keep)) { background-color: rgba(251, 250, 248, 0.86); }
-.u-light.u-light :where(.bg-slate-50:not(.u-keep)) { background-color: #f4f1ec; }
-.u-light.u-light :where(.bg-slate-100:not(.u-keep)) { background-color: #ebe7e1; }
-.u-light.u-light :where(.bg-slate-200:not(.u-keep)) { background-color: #e0dbd3; }
+.u-light.u-page { background-color: #f2f2f7; color: #1d2230; }
+.u-light .u-tabbar { background-color: #f2f2f7; }
+.u-light.u-light :where(.bg-white:not(.u-keep)) { background-color: #ffffff; }
+.u-light.u-light :where(.bg-white\/80:not(.u-keep), .bg-white\/90:not(.u-keep)) { background-color: rgba(255, 255, 255, 0.82); }
+.u-light.u-light :where(.bg-slate-50:not(.u-keep)) { background-color: #f2f2f7; }
+.u-light.u-light :where(.bg-slate-100:not(.u-keep)) { background-color: #e9e9ee; }
+.u-light.u-light :where(.bg-slate-200:not(.u-keep)) { background-color: #dcdce2; }
 .u-light.u-light :where(.border-slate-100:not(.u-keep), .divide-slate-100:not(.u-keep) > *) { border-color: rgba(110, 90, 70, 0.1); }
 .u-light.u-light :where(.border-slate-200:not(.u-keep), .border-slate-200\/50:not(.u-keep), .border-slate-200\/60:not(.u-keep), .border-slate-200\/70:not(.u-keep), .border-slate-200\/80:not(.u-keep)) { border-color: rgba(110, 90, 70, 0.16); }
 .u-light.u-light :where(.ring-slate-200:not(.u-keep), .ring-slate-200\/50:not(.u-keep), .ring-slate-200\/60:not(.u-keep), .ring-slate-200\/70:not(.u-keep), .ring-slate-200\/80:not(.u-keep)) { --tw-ring-color: rgba(110, 90, 70, 0.16); }
@@ -308,7 +308,7 @@ html.u-typing { --nav: 0px; }
 @media (hover: hover) and (pointer: fine) {
   .u-light.u-light :where(.hover\:bg-slate-50:not(.u-keep)):hover { background-color: #f1eee9; }
   .u-light.u-light :where(.hover\:bg-slate-100:not(.u-keep)):hover { background-color: #e8e4dd; }
-  .u-light.u-light :where(.hover\:bg-white:not(.u-keep)):hover { background-color: #fbfaf8; }
+  .u-light.u-light :where(.hover\:bg-white:not(.u-keep)):hover { background-color: #ffffff; }
 }
 .u-light .u-glass-bar, .u-light .u-glass-round { background: rgba(251, 250, 248, 0.9); }
 .u-light .u-banner { background: rgba(251, 250, 248, 0.94); }
@@ -337,11 +337,27 @@ html.u-typing { --nav: 0px; }
   @keyframes uSide { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
 }
 
-/* Headings: an expressive display face for page and section titles; text stays in Plus Jakarta Sans. */
-:is(h1, h2, .font-display) { font-family: "Bricolage Grotesque", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.015em; }
+/* iOS-native type: SF Pro on Apple devices (Roboto / Segoe elsewhere); headings tight and heavy like iOS large titles. */
+:is(h1, h2, .font-display) { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; letter-spacing: -0.022em; }
 
 /* Portals-style touch feel: cards give way under the finger, sheets don't bounce the page behind them. */
 .u-card { transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s; }
 @media (hover: none) { .u-card:active { transform: scale(0.97); } }
 .u-sheet-h { overscroll-behavior: contain; }
 .u-tile button { font-size: 14px; }
+
+/* ---- iOS / Portals pass: true-black dark theme, grouped light theme, borderless cards defined by fill ---- */
+.u-large-title { margin: 0.25rem 0 0.9rem; font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -0.03em; }
+.u-dark .u-large-title { color: #fff; }
+.u-light .u-large-title { color: #000; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.u-dark.u-dark .u-card:not(.u-keep), .u-light.u-light .u-card:not(.u-keep) { border-color: transparent; --tw-ring-color: transparent; }
+.u-light.u-light .u-card:not(.u-keep) { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+.u-dark.u-dark .u-card:hover, .u-light.u-light .u-card:hover { border-color: transparent; }
+.u-dark .u-tabbar { background-color: #000; }
+.u-light .u-tabbar { background-color: #f2f2f7; }
+/* Inputs and selects: filled, borderless, like iOS search fields. */
+.u-dark.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #1c1c1e; }
+.u-light.u-light :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #e3e3e8; }
+/* Accent buttons: one confident crimson, slightly brighter on black. */
+.u-dark .bg-crimson-600:not(.u-keep) { background-color: #c0263f; }

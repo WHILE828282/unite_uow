@@ -126,7 +126,7 @@ export function PhotoDrop({ kind, value, onChange, error }) {
             </span>
           </span>
         )}
-        {busy && <span className="absolute inset-0 flex items-center justify-center bg-[#0e0f13]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
+        {busy && <span className="absolute inset-0 flex items-center justify-center bg-[#000000]/70"><span className="u-spin h-7 w-7 rounded-full border-2 border-crimson-400 border-t-transparent" /></span>}
       </div>
       <input ref={inputRef} type="file" accept={IMAGE_TYPES.join(",")} className="hidden" aria-hidden="true" tabIndex={-1}
         onChange={(e) => { take(e.target.files && e.target.files[0]); e.target.value = ""; }} />
@@ -204,7 +204,7 @@ export function DkDatePicker({ id, value, min, onChange, bad }) {
         {label}<Icon name="calendar" className="h-4 w-4 text-slate-400" />
       </button>
       {open && (
-        <div role="dialog" aria-label="Choose a date" className="u-keep u-fade mt-2 rounded-2xl border border-white/10 bg-[#15161b] p-3">
+        <div role="dialog" aria-label="Choose a date" className="u-keep u-fade mt-2 rounded-2xl border border-white/10 bg-[#121214] p-3">
           <div className="flex items-center justify-between px-1">
             <button type="button" onClick={() => shift(-1)} disabled={month <= minMonth} aria-label="Previous month" className="u-keep flex h-9 w-9 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30"><Icon name="chevron" className="h-4 w-4 rotate-90" /></button>
             <span className="text-sm font-semibold text-white">{month.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</span>
@@ -490,7 +490,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
           resize under the finger. */}
       <div role="dialog" aria-modal="true" aria-labelledby="host-title"
         onMouseDown={(e) => { if (e.target.closest("button") && document.activeElement && document.activeElement.matches("input, textarea")) e.preventDefault(); }}
-        className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#0e0f13] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${dark ? "" : "u-host-light"} ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
+        className={`u-keep u-up u-full-h relative flex w-full flex-col overflow-hidden bg-[#000000] text-white shadow-2xl ring-1 ring-white/10 transition-[max-width] duration-300 sm:rounded-3xl ${dark ? "" : "u-host-light"} ${preview ? "sm:max-w-2xl lg:max-w-5xl" : "sm:max-w-2xl"}`}
         style={{ colorScheme: dark ? "dark" : "light" }}>
         {/* Header */}
         <div className="u-keep u-short-tight shrink-0 border-b border-white/[0.06] px-6 pb-6 sm:px-10" style={{ paddingTop: "max(2rem, calc(var(--sat) + 1rem))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
@@ -558,7 +558,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
                 <label className={DK.label} htmlFor="c-lang">Language spoken</label>
                 <div className="relative">
                   <select id="c-lang" value={f.lang} onChange={set("lang")} className={`${DK.input(false)} appearance-none pr-10`}>
-                    {LANGUAGES.map((l) => <option key={l} value={l} className="bg-[#0e0f13]">{l}</option>)}
+                    {LANGUAGES.map((l) => <option key={l} value={l} className="bg-[#000000]">{l}</option>)}
                   </select>
                   <span className="pointer-events-none absolute inset-y-0 right-4 mt-2 flex items-center text-slate-400"><Icon name="chevron" className="h-4 w-4" /></span>
                 </div>
@@ -706,7 +706,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
         </div>
 
         {/* Footer */}
-        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#0e0f13] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sabx))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
+        <div className="u-keep shrink-0 border-t border-white/[0.06] bg-[#000000] px-6 py-4 sm:px-10" style={{ paddingBottom: "max(1rem, var(--sabx))", paddingLeft: "max(1.5rem, var(--sal))", paddingRight: "max(1.5rem, var(--sar))" }}>
           {sendError && !confirm && <p role="alert" className="mb-3 rounded-xl bg-rose-500/10 px-4 py-3 text-sm text-rose-200 ring-1 ring-inset ring-rose-400/30">{sendError}</p>}
           {step === "form" && Object.values(errors).some(Boolean) && <p className="mb-3 text-sm text-rose-300">A few details need your attention above.</p>}
           {typeStep ? (
@@ -733,7 +733,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
           <div className="u-keep u-fade absolute inset-0 z-20 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
             onMouseDown={(e) => e.target === e.currentTarget && !submitting && setConfirm(false)}>
             <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text"
-              className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#15161b] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sabx)" }}>
+              className="u-up u-sheet-h w-full max-w-sm overflow-y-auto rounded-3xl bg-[#121214] p-6 text-center shadow-2xl ring-1 ring-white/10" style={{ marginBottom: "var(--sabx)" }}>
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-crimson-700/25 text-crimson-200 ring-1 ring-inset ring-crimson-400/30" aria-hidden="true"><Icon name="mail" className="h-5 w-5" /></span>
               <h3 id="confirm-title" className="mt-4 text-lg font-semibold text-white">Submit for review?</h3>
               <p id="confirm-text" className="mt-2 text-sm leading-relaxed text-slate-300">Your event will be sent to the Unite team for review. You can still edit it while it's pending.</p>

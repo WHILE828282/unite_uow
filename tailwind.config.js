@@ -20,7 +20,7 @@ export default {
   content: ["./index.html", "./*.{js,jsx}", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
-      fontFamily: { sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans] },
+      fontFamily: { sans: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', '"Segoe UI"', "Roboto", '"Helvetica Neue"', "Arial", "sans-serif"] },
       colors: {
         navy, crimson, indigo: navy,
         // No yellow in the brand: warning/pending states use the crimson family too.
