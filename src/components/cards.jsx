@@ -45,6 +45,31 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
   );
 }
 
+/* Portals-style tile for the 2-column feed: big square picture, a two-line title, one meta line and the price
+   as a full-width pill. The whole tile opens the event; the pill buys or reserves. */
+export function PartyTile({ p, i = 0, open = {}, action }) {
+  const left = p.spots - p.taken;
+  const pic = p.cover || p.logo;
+  return (
+    <article id={"event-" + p.id} {...open}
+      className="u-tile u-card u-rise group flex cursor-pointer flex-col overflow-hidden rounded-[22px] bg-white p-1.5 ring-1 ring-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
+      style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}>
+      <div className="u-keep relative aspect-square overflow-hidden rounded-[17px] bg-slate-900">
+        {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+          : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
+        <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">{dayTag(p.date) || fmtDate(p.date)}</span>
+        {left <= 0 ? <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">Full</span>
+          : left <= 5 ? <span className="absolute right-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">{left} left</span> : null}
+      </div>
+      <div className="flex flex-1 flex-col px-1.5 pb-1 pt-2.5">
+        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-slate-900">{p.title}</h3>
+        <p className="mt-0.5 truncate text-xs text-slate-500">{p.time} · {shortVenue(p.where)}</p>
+        <div className="mt-auto pt-2.5">{action}</div>
+      </div>
+    </article>
+  );
+}
+
 // False only if the photo fails to load: cards show the photo layout straight away (no flash of the
 // emoji layout while it downloads) and fall back to the plain card on a broken image.
 export function usePhotoOk(src) {
@@ -124,10 +149,14 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
   const parts = [["days", Math.floor(ms / 864e5)], ["hrs", Math.floor(ms / 36e5) % 24], ["min", Math.floor(ms / 6e4) % 60], ["sec", Math.floor(ms / 1e3) % 60]];
   return (
     <article id={"event-" + p.id} {...open}
-      className="u-keep u-featured u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7"
+      className={`u-keep ${p.cover ? "" : "u-featured"} u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7`}
       style={{ background: "radial-gradient(120% 90% at 100% 0%, rgba(196,90,104,.55), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(116,22,41,.6), transparent 60%), linear-gradient(160deg, #111827 0%, #0a0f1d 100%)" }}>
-      <span className="u-featured-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true"
-        style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+      {p.cover && <>
+        <img src={p.cover} alt="" decoding="async" draggable={false} className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.03]" />
+        <span className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-[#0a0f1d] from-25% via-[#0a0f1d]/75 to-[#0a0f1d]/10" aria-hidden="true" />
+      </>}
+      {!p.cover && <span className="u-featured-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true"
+        style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />}
       <div className="flex items-start justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-crimson-200 ring-1 ring-inset ring-white/15">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-crimson-400" /> Featured<span className="hidden sm:inline"> · Grand launch</span>

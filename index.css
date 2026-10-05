@@ -339,3 +339,9 @@ html.u-typing { --nav: 0px; }
 
 /* Headings: an expressive display face for page and section titles; text stays in Plus Jakarta Sans. */
 :is(h1, h2, .font-display) { font-family: "Bricolage Grotesque", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.015em; }
+
+/* Portals-style touch feel: cards give way under the finger, sheets don't bounce the page behind them. */
+.u-card { transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .2s, border-color .2s; }
+@media (hover: none) { .u-card:active { transform: scale(0.97); } }
+.u-sheet-h { overscroll-behavior: contain; }
+.u-tile button { font-size: 14px; }

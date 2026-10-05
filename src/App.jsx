@@ -809,16 +809,17 @@ export default function App() {
 
   // `short`: on cards, where the price is already shown next to the title.
   // quiet: list cards use a tinted button, so solid crimson stays for the main action on a page (detail, featured).
-  const partyBtn = (p, extra = "w-full", short = false, quiet = false) => {
+  const partyBtn = (p, extra = "w-full", short = false, quiet = false, price = false) => {
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
-    if (mine) { label = "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
-    else if (tripClosed(p, clock)) return <button disabled className={`u-btn ${extra} rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-500`}>Payments closed</button>;
+    if (mine) { label = price ? "Your ticket" : "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
+    else if (tripClosed(p, clock)) return <button disabled className={`u-btn ${extra} rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-500`}>{price ? "Closed" : "Payments closed"}</button>;
     else if (p.spots - p.taken <= 0) {
-      label = wl ? `Waitlisted · #${wl}` : "Join waitlist";
+      label = wl ? `${price ? "" : "Waitlisted · "}#${wl}${price ? " in line" : ""}` : price ? "Waitlist" : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
-    } else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
+    } else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
+    else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
     return <button onClick={() => onParty(p)} className={`u-btn ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 

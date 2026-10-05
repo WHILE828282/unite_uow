@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FeaturedCard, PartyCard } from "../components/cards.jsx";
+import { FeaturedCard, PartyTile } from "../components/cards.jsx";
 import { Icon } from "../components/ui.jsx";
 import SearchField, { matches } from "../components/SearchField.jsx";
 import { dubaiDay, isoDay, weekdayIdx } from "../lib/format.js";
@@ -20,9 +20,19 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
   list.forEach((p) => { const s = p.pinned ? "Featured" : sectionOf(p.date); const g = groups.find((x) => x.s === s); g ? g.items.push(p) : groups.push({ s, items: [p] }); });
   const clear = () => { setQ(""); setFilter("All"); setLangFilter("All"); };
   let n = 0;
+  // Category chips: only the types that have upcoming events.
+  const types = ["All", ...[...new Set(upcoming.map((p) => p.category))]];
   return (
     <>
       <SearchField value={q} onChange={setQ} placeholder="Search events or places" />
+      {types.length > 2 && (
+        <div className="u-chips -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          {types.map((t) => (
+            <button key={t} onClick={() => setFilter(t)} aria-pressed={filter === t}
+              className={`u-btn shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${filter === t ? "bg-slate-900 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{t}</button>
+          ))}
+        </div>
+      )}
       <div className="mb-5 mt-3 flex items-center justify-between gap-3 text-sm text-slate-500">
         <span className="hidden whitespace-nowrap min-[360px]:inline">{list.length} {list.length === 1 ? "event" : "events"}</span>
         <div className="ml-auto flex min-w-0 items-center gap-2">
@@ -62,10 +72,10 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
               </div>
             ) : (<>
             <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-slate-900">{g.s}<span className="font-normal text-slate-400">{g.items.length}</span></h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {g.items.map((p, k) => (
-                <PartyCard key={p.id} p={p} i={n++} wide={g.items.length % 2 === 1 && k === g.items.length - 1} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
-                  actions={partyBtn(p, "shrink-0 px-4", true, true)} />
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3">
+              {g.items.map((p) => (
+                <PartyTile key={p.id} p={p} i={n++} open={cardOpen(() => setModal({ type: "detail", id: p.id }))}
+                  action={partyBtn(p, "w-full !rounded-full !py-2", true, false, true)} />
               ))}
             </div>
             </>)}
