@@ -179,3 +179,9 @@ createRoot(document.getElementById("root")).render(
     )}
   </StrictMode>
 );
+
+// A light haptic tick on key taps (bottom bar, buy/reserve). Android only: iOS Safari has no vibration API.
+document.addEventListener("click", (e) => {
+  const t = e.target && e.target.closest && e.target.closest(".u-haptic");
+  if (t && navigator.vibrate) { try { navigator.vibrate(8); } catch (err) { /* ignore */ } }
+}, true);

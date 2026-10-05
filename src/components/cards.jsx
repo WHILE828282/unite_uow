@@ -54,7 +54,7 @@ export function PartyTile({ p, i = 0, open = {}, action }) {
     <article id={"event-" + p.id} {...open}
       className="u-tile u-card u-rise group flex cursor-pointer flex-col overflow-hidden rounded-[22px] bg-white p-1.5 ring-1 ring-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
       style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}>
-      <div className="u-keep relative aspect-square overflow-hidden rounded-[17px] bg-slate-900">
+      <div className="u-keep u-shimmer relative aspect-square overflow-hidden rounded-[17px]">
         {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
           : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
         <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">{dayTag(p.date) || fmtDate(p.date)}</span>

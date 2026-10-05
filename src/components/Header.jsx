@@ -25,14 +25,16 @@ export function ThemeToggle({ dark, onToggle, tone = dark }) {
 /* Dark glass header: it runs up under the status bar as one see-through surface (the white status text reads on it).
    Light header: a graphite strip behind the status bar keeps the white text readable. */
 /* `overHero`: light theme at the top of Home, where the bar sits on the dark hero and turns dark glass to match it. */
-export function Header({ dark: theme, overHero = false, user, name, photo, onHome, onToggleTheme, onProfile, onSignIn }) {
+export function Header({ dark: theme, overHero = false, title = "", user, name, photo, onHome, onToggleTheme, onProfile, onSignIn }) {
   const dark = theme || overHero;
   return (
     <header className={`u-keep u-safe-top sticky top-0 z-30 border-b transition-colors duration-300 ${dark ? "border-white/10" : "border-[rgba(110,90,70,0.14)] bg-[rgba(251,250,248,0.86)]"}`} style={{ backgroundColor: theme ? glassDark.background : overHero ? "#0b0b0e" : undefined, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", ...(dark ? {} : STATUS_BAR_STRIP) }}>
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+      <div className="relative mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        {/* Phones: the tab's large title, small and centred, once it has scrolled away. */}
+        <span aria-hidden={!title} className={`pointer-events-none absolute inset-x-24 top-1/2 -translate-y-1/2 truncate text-center text-[17px] font-semibold transition-all duration-200 sm:hidden ${dark ? "text-white" : "text-black"} ${title ? "opacity-100" : "opacity-0"}`}>{title}</span>
         <button onClick={onHome} aria-label="Unite home" className="u-keep flex items-center gap-2.5 rounded-lg">
           <UniteIcon className="h-10 w-10" />
-          <span className={`text-xl font-extrabold tracking-tight ${dark ? "text-white" : "text-[#0f172a]"}`}>unite</span>
+          <span className={`text-xl font-extrabold tracking-tight transition-opacity duration-200 ${dark ? "text-white" : "text-[#0f172a]"} ${title ? "max-sm:opacity-0" : ""}`}>unite</span>
           <span className={`hidden border-l pl-2.5 text-xs font-medium sm:inline ${dark ? "border-white/15 text-slate-400" : "border-slate-200 text-slate-500"}`}>for UOWD students</span>
         </button>
         <div className="flex items-center gap-2">

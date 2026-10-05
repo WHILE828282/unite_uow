@@ -34,7 +34,7 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
           const badge = k === "tickets" && user && bookings.length ? bookings.length : 0;
           return (
             <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
-              className={`u-keep relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[9.5px] font-semibold leading-none tracking-tight min-[390px]:text-[10.5px] transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
+              className={`u-keep u-haptic relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[9.5px] font-semibold leading-none tracking-tight min-[390px]:text-[10.5px] transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
               style={on ? { color: "var(--nav-on)" } : { color: "var(--nav-off)", "--icon-accent": "var(--nav-off)" }}>
               <span className="relative">
                 <Icon name={NAV_ICON[k] || "home"} className="h-[22px] w-[22px] min-[390px]:h-6 min-[390px]:w-6" />

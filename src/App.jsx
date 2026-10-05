@@ -49,6 +49,8 @@ const loadSession = () => {
   try { const s = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); return s && s.user ? s : null; } catch (e) { return null; }
 };
 
+const TAB_TITLE = { parties: "Events", clubs: "Clubs", schedule: "Schedule", events: "My events", tickets: "Tickets" };
+
 export default function App() {
   const [saved] = useState(loadSession);
   const [user, setUser] = useState(() => (saved ? saved.user : null));
@@ -87,6 +89,17 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState(() => (saved && saved.waitlist) || {});
+  // iOS large title: once it scrolls under the header, the header shows the tab name small and centred.
+  const titleRef = useRef(null);
+  const [titleGone, setTitleGone] = useState(false);
+  useEffect(() => {
+    setTitleGone(false);
+    const el = titleRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setTitleGone(!e.isIntersecting && e.boundingClientRect.top < 80), { rootMargin: "-64px 0px 0px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [tab]);
   const [dark, setDark] = useState(() => {
     // Dark the first time; after that whatever this person picked ("v2": the old key was written for everyone).
     try { return localStorage.getItem("unite-theme-v2") !== "light"; } catch (e) { return true; }
@@ -820,7 +833,7 @@ export default function App() {
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
     } else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
     else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
-    return <button onClick={() => onParty(p)} className={`u-btn ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
+    return <button onClick={() => onParty(p)} className={`u-btn u-haptic ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 
   const hostEvent = () => requireAuth("Sign in to host a student event", (email) => setModal({ type: "create", email }));
@@ -901,7 +914,7 @@ export default function App() {
       <style>{CSS}</style>
 
       {/* Nav */}
-      <Header dark={dark} overHero={overHero} user={user} name={name} photo={extra.photo}
+      <Header dark={dark} overHero={overHero} title={titleGone ? TAB_TITLE[tab] : ""} user={user} name={name} photo={extra.photo}
         onHome={goHome} onToggleTheme={() => setDark((d) => !d)}
         onProfile={openProfile}
         onSignIn={() => setModal({ type: "auth", reason: "Sign in with your email to join clubs and get tickets." })} />
@@ -933,7 +946,7 @@ export default function App() {
 
         <div key={tab} className="u-tab">
         {/* Phones: an iOS-style large title on top of each tab (the bottom bar carries the navigation). */}
-        {tab !== "home" && <h1 className="u-large-title sm:hidden">{{ parties: "Events", clubs: "Clubs", schedule: "Schedule", events: "My events", tickets: "Tickets" }[tab]}</h1>}
+        {tab !== "home" && <h1 ref={titleRef} className="u-large-title sm:hidden">{TAB_TITLE[tab]}</h1>}
         {/* Events */}
         {tab === "parties" && (
           <Events filteredParties={filteredParties} upcoming={upcoming} feedLangs={feedLangs} filter={filter} setFilter={setFilter}
@@ -982,13 +995,13 @@ export default function App() {
 
         </div>
 
-        <footer className="mt-16 border-t border-slate-200 pt-8 text-sm text-slate-500">
+        <footer className="mt-12 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:mt-16 sm:pt-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="flex items-center gap-2 font-extrabold tracking-tight text-slate-900"><UniteIcon className="h-6 w-6" /> unite</p>
-              <p className="mt-1.5 max-w-xs">A student-built platform for UOWD clubs, teams and events.</p>
+              <p className="mt-1.5 hidden max-w-xs sm:block">A student-built platform for UOWD clubs, teams and events.</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3 sm:gap-8">
+            <div className="hidden gap-4 sm:grid sm:grid-cols-3 sm:gap-8">
               {EMAILS.map((e) => (
                 <div key={e.email}>
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{e.label}</p>
@@ -997,7 +1010,8 @@ export default function App() {
               ))}
             </div>
           </div>
-          <nav aria-label="Legal" className="mt-6 flex gap-5 text-sm font-medium">
+          <nav aria-label="Legal" className="mt-3 flex gap-5 text-sm font-medium sm:mt-6">
+            <a href="mailto:support@uniteuow.com" className="hover:text-slate-900 sm:hidden">Help</a>
             <a href="/terms" className="hover:text-slate-900">Terms of Use</a>
             <a href="/privacy" className="hover:text-slate-900">Privacy Policy</a>
           </nav>
@@ -1051,7 +1065,7 @@ export default function App() {
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (
         <EventDetail
           party={parties.find((x) => x.id === modal.id)}
-          action={partyBtn(parties.find((x) => x.id === modal.id), "w-full")}
+          action={partyBtn(parties.find((x) => x.id === modal.id), "w-full !py-3.5 !rounded-2xl text-[15px]", true)}
           groupLink={(() => { const p = parties.find((x) => x.id === modal.id), b = p && bookingFor(p.id); return p && p.own ? p.groupLink : b && b.qr && !b.refunded ? b.groupLink : ""; })()}
           onShare={shareEvent}
           onClose={closeModal}

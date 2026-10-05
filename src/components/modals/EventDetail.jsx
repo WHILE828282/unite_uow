@@ -12,8 +12,25 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
   const mapsUrl = partyMapsUrl(p);
   return (
     <>
-      {p.cover && <img src={p.cover} alt="" decoding="async" draggable={false} className="aspect-[16/9] w-full object-cover" />}
-      <div className={`border-b border-slate-200 px-5 pb-5 ${p.cover ? "pt-5" : "pt-12"}`}>
+      {/* With a photo: the title sits on it (immersive header). Without one: the classic header below. */}
+      {p.cover && (
+        <div className="u-keep u-shimmer relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9]">
+          <img src={p.cover} alt="" decoding="async" draggable={false} className="h-full w-full object-cover" />
+          <span className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" aria-hidden="true" />
+          <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-5">
+            {p.logo && <EventLogo p={p} className="h-14 w-14 ring-2 ring-white/20" />}
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/75">
+                {p.category} · {p.lang}{p.kind === "trip" && <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white backdrop-blur">🚌 Group trip</span>}
+              </p>
+              <h2 className="mt-1 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{p.title}</h2>
+              <p className="mt-0.5 text-sm text-white/70">Hosted by {p.host}</p>
+            </div>
+          </div>
+          <div className="absolute right-14 top-3 z-10"><ShareBtn onClick={() => onShare(p)} /></div>
+        </div>
+      )}
+      {!p.cover && <div className="border-b border-slate-200 px-5 pb-5 pt-12">
         <div className="flex items-start gap-4">
           {p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
           <div className="min-w-0 flex-1">
@@ -24,9 +41,18 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
           </div>
         </div>
         <div className="absolute right-14 top-3 z-10"><ShareBtn light onClick={() => onShare(p)} /></div>
-      </div>
+      </div>}
 
       <div className="space-y-5 p-5">
+        {/* Key facts at a glance, as tiles. */}
+        <div className="grid grid-cols-3 gap-2">
+          {[["Date", fmtDate(p.date)], ["Time", p.time], ["Price", p.price > 0 ? `${p.price} AED` : "Free"]].map(([k, v]) => (
+            <div key={k} className="rounded-2xl bg-slate-100 px-3 py-2.5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{k}</p>
+              <p className="mt-0.5 truncate text-[15px] font-semibold text-slate-900">{v}</p>
+            </div>
+          ))}
+        </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 flex items-center justify-between text-sm">
@@ -94,7 +120,13 @@ export function EventDetail({ party: p, action, groupLink, onShare, onClose }) {
   return (
     <Modal onClose={onClose} size="lg" side>
       <EventDetailBody p={p} onShare={onShare} groupLink={groupLink} />
-      <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
+      <div className="u-safe-bar sticky bottom-0 flex items-center gap-4 border-t border-slate-200/50 bg-white p-4 shadow-sm">
+        <div className="shrink-0">
+          <p className="text-lg font-bold leading-tight text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</p>
+          <p className={`text-xs ${p.spots - p.taken <= 5 ? "font-semibold text-crimson-600" : "text-slate-500"}`}>{p.spots - p.taken > 0 ? `${p.spots - p.taken} left` : "Fully booked"}</p>
+        </div>
+        <div className="min-w-0 flex-1">{action}</div>
+      </div>
     </Modal>
   );
 }

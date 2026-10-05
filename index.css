@@ -361,3 +361,10 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-light.u-light :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #e3e3e8; }
 /* Accent buttons: one confident crimson, slightly brighter on black. */
 .u-dark .bg-crimson-600:not(.u-keep) { background-color: #c0263f; }
+/* Picture placeholders shimmer until the photo arrives (the photo covers it). */
+.u-shimmer { background: linear-gradient(100deg, #17171a 30%, #26262b 50%, #17171a 70%); background-size: 220% 100%; animation: uShimmer 1.4s linear infinite; }
+@keyframes uShimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@media (prefers-reduced-motion: reduce) { .u-shimmer { animation: none; } }
+/* Feed photos fade in instead of popping. */
+.u-tile img, .u-shimmer > img { animation: uImgIn 0.5s ease both; }
+@keyframes uImgIn { from { opacity: 0; } to { opacity: 1; } }
