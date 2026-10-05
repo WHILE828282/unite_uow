@@ -8,7 +8,7 @@ import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
 const PUBLIC = ["ref", "taken", "title", "category", "lang", "date", "start", "end", "spots", "price", "venueName", "room", "mapsUrl", "whatsapp", "telegram", "dress", "reqs", "pitch", "at", "hasCover", "hasLogo",
-  "kind", "extName", "seller", "minGroup", "collectUntil", "groupLink"];
+  "kind", "extName", "seller", "minGroup", "collectUntil"]; // the group chat link goes to ticket holders only (/api/tickets, /api/apps)
 const pick = (rec) => Object.fromEntries(PUBLIC.map((k) => [k, rec[k]]));
 
 export default async function handler(req, res) {

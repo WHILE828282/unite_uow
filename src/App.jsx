@@ -321,8 +321,8 @@ export default function App() {
         const next = bs.map((b) => {
           const t = d.tickets.find((x) => x.id === b.id);
           if (!t) return b;
-          const upd = { ...b, state: t.state, checkedIn: t.checkedIn, delivery: t.delivery };
-          if (JSON.stringify([b.state, b.checkedIn, b.delivery]) === JSON.stringify([upd.state, upd.checkedIn, upd.delivery])) return b;
+          const upd = { ...b, state: t.state, checkedIn: t.checkedIn, delivery: t.delivery, groupLink: t.groupLink || "" };
+          if (JSON.stringify([b.state, b.checkedIn, b.delivery, b.groupLink || ""]) === JSON.stringify([upd.state, upd.checkedIn, upd.delivery, upd.groupLink])) return b;
           changed = true;
           if (b.state && b.state !== t.state) news.push([b, t.state]);
           return upd;
@@ -613,7 +613,7 @@ export default function App() {
             id: t.id, partyId: p.id != null ? p.id : t.demoId || t.partyAt, title: p.title || t.title, emoji: p.emoji, logo: p.logo || t.logo,
             date: p.date || t.date, time: p.time || t.time || (t.start ? fmtTime(t.start) : ""), where: p.where || t.where, price: t.price, paid: t.price > 0,
             method: t.method, email: user, name: t.name, studentId: t.studentId, ref: t.ref, kind: t.kind, state: t.kind === "trip" ? "waiting" : "valid",
-            qr: t.qr, key: t.key, checkedIn: t.checkedIn, ...(t.kind === "trip" ? { extName: t.extName, collectUntil: t.collectUntil } : {}),
+            qr: t.qr, key: t.key, checkedIn: t.checkedIn, groupLink: t.groupLink || "", ...(t.kind === "trip" ? { extName: t.extName, collectUntil: t.collectUntil } : {}),
           };
         });
         return added.length ? [...added, ...bs] : bs;
@@ -710,7 +710,7 @@ export default function App() {
       (async () => {
         let d = await issueTicket(b, p.ref);
         for (let i = 0; i < 2 && d.offline; i++) { await new Promise((r) => setTimeout(r, 3000)); d = await issueTicket(b, p.ref); }
-        if (d.ok) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: d.code, key: d.key, state: d.ticket ? d.ticket.state : x.state } : x)));
+        if (d.ok) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: d.code, key: d.key, state: d.ticket ? d.ticket.state : x.state, groupLink: (d.ticket && d.ticket.groupLink) || "" } : x)));
         // No database, or (built-in events only) the server couldn't be reached at all: keep it as a demo ticket.
         if (d.store === false || (/^DEMO-/.test(p.ref) && (d.offline || d.unreachable))) return setBookings((bs) => bs.map((x) => (x.id === b.id ? { ...x, qr: x.id } : x)));
         setBookings((bs) => bs.filter((x) => x.id !== b.id));
@@ -1048,6 +1048,7 @@ export default function App() {
         <EventDetail
           party={parties.find((x) => x.id === modal.id)}
           action={partyBtn(parties.find((x) => x.id === modal.id), "w-full")}
+          groupLink={(() => { const p = parties.find((x) => x.id === modal.id), b = p && bookingFor(p.id); return p && p.own ? p.groupLink : b && b.qr && !b.refunded ? b.groupLink : ""; })()}
           onShare={shareEvent}
           onClose={closeModal}
         />

@@ -130,6 +130,7 @@ export default async function handler(req, res) {
           method: t.method || "", price: Number(t.price) || 0, refunded: t.status === "refunded", checkedIn: t.checkedInAt ? new Date(t.checkedInAt).getTime() : null,
           title: t.title, kind: t.kind || "own", date: t.date, start: t.start, time: d.time || "", where: d.where || (d.room ? `${t.venue}, ${d.room}` : t.venue) || "",
           partyAt: d.at || null, demoId: d.demoId || null, logo: t.hasLogo ? `/api/events?img=${t.ref}&kind=logo` : d.logoUrl || null,
+          groupLink: t.status === "refunded" ? "" : d.groupLink || "",
           ...(t.kind === "trip" ? { extName: d.extName, collectUntil: d.collectUntil } : {}) };
       });
       return res.status(200).json({ ok: true, tickets });

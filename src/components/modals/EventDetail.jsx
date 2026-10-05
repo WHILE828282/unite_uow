@@ -7,7 +7,7 @@ import { fmtDate, shortVenue } from "../../lib/format.js";
 
 
 /* The event page content: shared by the event details modal and the host's preview. */
-export function EventDetailBody({ p, onShare }) {
+export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : "" }) {
   const left = p.spots - p.taken;
   const mapsUrl = partyMapsUrl(p);
   return (
@@ -77,9 +77,9 @@ export function EventDetailBody({ p, onShare }) {
               <p className="font-semibold text-slate-900">{p.contact.name} <span className="font-normal text-slate-500">· {p.contact.role}</span></p>
               <p className="mb-2 mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><Check className="h-3 w-3" /> Verified organizer contacts</p>
               <ContactButtons contact={p.contact} subject={p.title} />
-              {p.groupLink && (
-                <a href={p.groupLink} target="_blank" rel="noopener noreferrer" className="u-btn mt-2 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
-                  <Icon name="users" className="h-4 w-4" />Join the {/whatsapp/i.test(p.groupLink) ? "WhatsApp" : "Telegram"} group ↗
+              {groupLink && (
+                <a href={groupLink} target="_blank" rel="noopener noreferrer" className="u-btn mt-2 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+                  <Icon name="users" className="h-4 w-4" />Join the {/whatsapp/i.test(groupLink) ? "WhatsApp" : "Telegram"} group ↗
                 </a>
               )}
             </div>
@@ -90,10 +90,10 @@ export function EventDetailBody({ p, onShare }) {
   );
 }
 
-export function EventDetail({ party: p, action, onShare, onClose }) {
+export function EventDetail({ party: p, action, groupLink, onShare, onClose }) {
   return (
     <Modal onClose={onClose} size="lg" side>
-      <EventDetailBody p={p} onShare={onShare} />
+      <EventDetailBody p={p} onShare={onShare} groupLink={groupLink} />
       <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
   );

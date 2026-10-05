@@ -27,6 +27,8 @@ const holderView = (t, rec) => ({
   state: !rec ? "missing" : t.refunded || (isTrip(rec) && tripState(rec) === "cancelled") ? "cancelled"
     : !isTrip(rec) ? "valid" : t.delivery ? "ready" : tripState(rec) === "confirmed" ? "preparing" : "waiting",
   delivery: t.delivery ? { mode: t.delivery.mode, note: t.delivery.note || "", at: t.delivery.at, hasFile: t.delivery.mode === "file" } : null,
+  // The host's guest group chat: only for a live ticket.
+  groupLink: rec && rec.groupLink && !t.refunded && !(isTrip(rec) && tripState(rec) === "cancelled") ? rec.groupLink : "",
 });
 // What the host sees about each attendee.
 const hostView = (t) => ({

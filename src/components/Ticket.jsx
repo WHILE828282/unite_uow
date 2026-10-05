@@ -140,6 +140,11 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
           Download ticket
         </button>}
+        {b.groupLink && b.qr && (
+          <a href={b.groupLink} target="_blank" rel="noopener noreferrer" className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">
+            <Icon name="users" className="h-4 w-4" /> Join the {/whatsapp/i.test(b.groupLink) ? "WhatsApp" : "Telegram"} group ↗
+          </a>
+        )}
         <button onClick={() => downloadCalendar([], [b], `${b.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`)}
           className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-white">
           <Icon name="download" className="h-4 w-4" /> Add to calendar
