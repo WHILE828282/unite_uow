@@ -30,7 +30,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare, verified
   const mapsUrl = mapsLink(UOWD_MAPS);
   const art = HERO_PHOTOS[c.id];
   return (
-    <Modal onClose={onClose} size="lg">
+    <Modal onClose={onClose} size="lg" side>
       <div className={`relative overflow-hidden px-6 pb-6 text-white ${art ? "u-keep flex min-h-[15rem] flex-col justify-end bg-slate-950 pt-24 sm:min-h-[17rem]" : `bg-gradient-to-br pt-7 ${GRADIENTS[c.category]}`}`}>
         {art && (<>
           <span className="u-fade absolute inset-0" style={{ background: heroBackground(art) }} aria-hidden="true" />

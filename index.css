@@ -329,3 +329,10 @@ html.u-typing { --nav: 0px; }
 @media (hover: hover) and (pointer: fine) { .u-light .u-featured button.hover\:bg-white\/10:hover { background-color: rgba(116, 22, 41, 0.06); } }
 .u-light .u-featured button.bg-white { background-color: #741629; color: #fff; }
 @media (hover: hover) and (pointer: fine) { .u-light .u-featured button.bg-white:hover { background-color: #8c1d32; } }
+
+/* Detail panels on large screens: full height on the right, sliding in from the side; the page dims less. */
+@media (min-width: 1024px) {
+  .lg\:u-side { height: 100%; max-height: none !important; animation: uSide .32s cubic-bezier(.2,.8,.2,1) both !important; }
+  .lg\:u-side-dim { background: rgba(0, 0, 0, 0.28) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  @keyframes uSide { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
+}

@@ -87,7 +87,7 @@ export function EventDetailBody({ p, onShare }) {
 
 export function EventDetail({ party: p, action, onShare, onClose }) {
   return (
-    <Modal onClose={onClose} size="lg">
+    <Modal onClose={onClose} size="lg" side>
       <EventDetailBody p={p} onShare={onShare} />
       <div className="u-safe-bar sticky bottom-0 border-t border-slate-200/50 bg-white shadow-sm p-4">{action}</div>
     </Modal>
