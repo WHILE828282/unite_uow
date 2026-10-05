@@ -74,7 +74,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
               </div>
             ) : (<>
             <h2 className="mb-3 flex items-baseline gap-2 text-sm font-semibold text-slate-900">{g.s}<span className="font-normal text-slate-400">{g.items.length}</span></h2>
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
               {g.items.map((p) => (
                 <PartyTile key={p.id} p={p} i={n++} open={cardOpen(() => setModal({ type: "detail", id: p.id }))}
                   action={partyBtn(p, "w-full !rounded-full !py-2", true, false, true)} />
