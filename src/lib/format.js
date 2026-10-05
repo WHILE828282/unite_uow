@@ -9,6 +9,12 @@ export const fmtDate = (iso) =>
 export const dayTag = (iso) => {
   if (iso === dubaiDay()) return "Today";
   if (iso === dubaiDay(Date.now(), 1)) return "Tomorrow";
+  // Saturday or Sunday within the next six days (the UAE weekend).
+  for (let k = 2; k <= 6; k++) {
+    if (iso !== dubaiDay(Date.now(), k)) continue;
+    const wd = new Date(iso + "T12:00:00Z").getUTCDay();
+    return wd === 6 || wd === 0 ? "This weekend" : null;
+  }
   return null;
 };
 // "ilyas.gasanov.2020@gmail.com" -> "Ilyas"

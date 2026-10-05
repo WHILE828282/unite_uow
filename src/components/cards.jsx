@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { DateBlock, DayTag, EventLogo, Icon, ShareBtn, Spots, VenueChip } from "./ui.jsx";
-import { clubDays, fmtDate, shortVenue } from "../lib/format.js";
+import { clubDays, dayTag, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 import { roomLabel } from "../data/clubs.js";
 
@@ -10,16 +10,28 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
   return (
     <article id={"event-" + p.id} {...open}
       className={`group u-card u-rise flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ${wide ? "md:col-span-2" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400`} style={{ animationDelay: `${i * 60}ms` }}>
+      {/* The event's own photo up top (when it has one): date, day tag and price sit on it. */}
+      {p.cover && (
+        <div className="u-keep relative h-40 overflow-hidden bg-slate-900 sm:h-44">
+          <img src={p.cover} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+          <span className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" />
+          <span className="absolute left-3 top-3 flex gap-1.5">
+            <span className="rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">{fmtDate(p.date)}</span>
+            {dayTag(p.date) && <span className="rounded-full bg-crimson-600 px-2.5 py-1 text-[11px] font-semibold text-white">{dayTag(p.date)}</span>}
+          </span>
+          <span className="u-keep absolute right-3 top-3 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+        </div>
+      )}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex gap-3.5">
-          {p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
+          {!p.cover && (p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />)}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <h3 className="font-semibold leading-snug text-slate-900">{p.title}</h3>
-              <span className="shrink-0 text-sm font-semibold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+              {!p.cover && <span className="shrink-0 text-sm font-semibold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>}
             </div>
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-slate-500">
-              {p.logo ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} <DayTag iso={p.date} />
+              {p.logo && !p.cover ? <>{fmtDate(p.date)} · </> : null}{p.time} · {shortVenue(p.where)} {!p.cover && <DayTag iso={p.date} />}
             </p>
             <p className="mt-0.5 truncate text-sm text-slate-500">{p.category} · {p.lang} · by {p.host}</p>
           </div>
