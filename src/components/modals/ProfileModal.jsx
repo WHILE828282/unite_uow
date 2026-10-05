@@ -96,7 +96,7 @@ function PasswordRow({ session, field }) {
 }
 
 /* Profile & settings: the only place to edit your details, change email and sign out. */
-export function ProfileModal({ email, profile, session, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram, legal }) {
+export function ProfileModal({ email, profile, session, isAdmin = false, onSave, onChangeEmail, onSignOut, onMyEvents, onClose, myClubs = [], myApps = [], onOpenClub, onConnectTelegram, legal }) {
   const [f, setF] = useState({ name: profile.name || "", sid: profile.sid || "", photo: profile.photo || "", telegram: profile.telegram || "", whatsapp: profile.whatsapp || "" });
   const [errors, setErrors] = useState({});
   const fileRef = useRef(null);
@@ -147,6 +147,17 @@ export function ProfileModal({ email, profile, session, onSave, onChangeEmail, o
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={pick} tabIndex={-1} aria-hidden="true" />
         </div>
         <Err k="photo" />
+
+        {isAdmin && (
+          <a href="/admin" className="u-btn mt-5 flex items-center gap-3 rounded-xl bg-slate-900 px-3.5 py-3 text-white hover:bg-slate-800">
+            <Icon name="shield" className="h-5 w-5" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">Admin panel</span>
+              <span className="block text-xs opacity-75">Users, tickets, events and applications</span>
+            </span>
+            <Icon name="chevron-right" className="h-4 w-4 opacity-75" />
+          </a>
+        )}
 
         <Section title="Account">
           <label className="block text-sm font-medium text-slate-700" htmlFor="p-name">Name</label>

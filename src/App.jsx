@@ -386,6 +386,7 @@ export default function App() {
     } catch (e) { /* storage full or blocked */ }
   }, [user, submissions]);
 
+  const [isAdmin, setIsAdmin] = useState(false); // the server says this account is in ADMIN_EMAILS (shows Admin panel in Profile)
   const [celebrate, setCelebrate] = useState(0); // a short confetti burst when you get into a club
   const notify = (m, ms = 2400) => { setToast(m); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), ms); };
   const closeModal = () => setModal(null);
@@ -657,6 +658,7 @@ export default function App() {
         // First run on this device: bring in clubs saved from elsewhere before sending ours (nothing is dropped).
         pulledMemberships.current = true;
         const r = await appsApi({ a: "sync", s: tokenRef.current });
+        if (r.ok) setIsAdmin(!!r.admin);
         const missing = r.ok ? r.memberships.filter((m) => !joinedClubs[m.clubId] && clubs.some((c) => c.id === m.clubId)) : [];
         // Waitlist spots saved from another device (by event ref).
         const waits = r.ok && Array.isArray(r.waitlist) ? r.waitlist.map((ref) => parties.find((p) => p.ref === ref)).filter((p) => p && !waitlist[p.id]) : [];
@@ -853,7 +855,7 @@ export default function App() {
   const signOut = () => setModal({
     type: "confirm", title: "Sign out of Unite?", body: "You'll need to sign in again to see your tickets and teams.",
     confirmLabel: "Sign out", danger: true,
-    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); tokenRef.current = ""; setLegal(null); setMyApps([]); setManaged([]); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
+    onConfirm: () => { setModal(null); setUser(null); setName(""); setExtra({ photo: "", telegram: "", whatsapp: "" }); tokenRef.current = ""; setIsAdmin(false); setLegal(null); setMyApps([]); setManaged([]); setSubmissions([]); seenRef.current = {}; setTab("home"); notify("Signed out"); },
   });
 
   // Light theme, top of Home: the header sits on the dark hero, so it turns dark glass until the hero scrolls away.
@@ -1016,7 +1018,7 @@ export default function App() {
 
       {/* Modals */}
       {modal && modal.type === "profile" && user && (
-        <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }} session={!isDemo ? tokenRef.current : ""}
+        <ProfileModal email={user} profile={{ name, sid: studentIdRef.current, ...extra }} session={!isDemo ? tokenRef.current : ""} isAdmin={isAdmin}
           onSave={(p) => {
             setName(p.name); studentIdRef.current = p.sid; setExtra({ photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp }); setModal(null); notify("Profile saved");
             if (!isDemo && tokenRef.current) appsApi({ a: "profile", s: tokenRef.current, name: p.name, studentId: p.sid, photo: p.photo, telegram: p.telegram, whatsapp: p.whatsapp });
