@@ -24,27 +24,29 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
   const types = ["All", ...[...new Set(upcoming.map((p) => p.category))]];
   return (
     <>
-      <SearchField value={q} onChange={setQ} placeholder="Search events or places" />
-      {types.length > 2 && (
-        <div className="u-chips -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-          {types.map((t) => (
-            <button key={t} onClick={() => setFilter(t)} aria-pressed={filter === t}
-              className={`u-btn shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${filter === t ? "bg-slate-900 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{t}</button>
-          ))}
-        </div>
-      )}
-      <div className="mb-5 mt-3 flex items-center justify-between gap-3 text-sm text-slate-500">
-        <span className="hidden whitespace-nowrap min-[360px]:inline">{list.length} {list.length === 1 ? "event" : "events"}</span>
-        <div className="ml-auto flex min-w-0 items-center gap-2">
-          <label className="inline-flex items-center gap-2">
+      {/* Search with the Host button beside it, then one scrollable row of filters (language first, then types). */}
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1"><SearchField value={q} onChange={setQ} placeholder="Search events or places" /></div>
+        <button onClick={hostEvent} aria-label="Host an event" title="Host an event"
+          className="u-btn u-haptic flex h-12 shrink-0 items-center gap-1.5 rounded-2xl bg-crimson-600 px-4 text-sm font-semibold text-white hover:bg-crimson-500">
+          <Icon name="plus" className="h-4 w-4" /><span>Host</span>
+        </button>
+      </div>
+      <div className="u-chips -mx-4 mb-5 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+        {feedLangs.length > 1 && (
+          <label className="relative shrink-0">
             <span className="sr-only">Language</span>
-            <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language"
-              className="w-[9rem] shrink-0 rounded-xl border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-slate-400 focus:outline-none">
-              {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "Language" : `${l} (${upcoming.filter((p) => p.lang === l).length})`}</option>)}
+            <select value={langFilter} onChange={(e) => setLangFilter(e.target.value)} aria-label="Filter by event language" style={{ minHeight: 38 }}
+              className={`h-[38px] appearance-none rounded-full py-0 pl-4 pr-8 text-sm font-semibold leading-[38px] focus:outline-none ${langFilter !== "All" ? "u-keep bg-crimson-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200"}`}>
+              {["All", ...feedLangs].map((l) => <option key={l} value={l}>{l === "All" ? "Any language" : l}</option>)}
             </select>
+            <span className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] ${langFilter !== "All" ? "text-white" : "text-slate-400"}`}>▼</span>
           </label>
-          <button onClick={hostEvent} className="u-btn shrink-0 whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">+ Host</button>
-        </div>
+        )}
+        {types.length > 2 && types.map((t) => (
+          <button key={t} onClick={() => setFilter(t)} aria-pressed={filter === t}
+            className={`u-btn shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${filter === t ? "bg-slate-900 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}>{t}</button>
+        ))}
       </div>
 
       {list.length === 0 && (

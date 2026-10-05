@@ -31,7 +31,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
     ) : (
       <div className="space-y-8">
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Tickets</h3>
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 max-sm:hidden">Tickets</h3>
           {bookings.length === 0 ? (
             <div>
               <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
@@ -44,7 +44,28 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {bookings.map((b) => (
+              {bookings.map((b) => {
+                // Wallet pass: the event's photo behind the ticket (cancelled tickets stay plain).
+                const ev = parties.find((p) => p.id === b.partyId) || {};
+                if (ev.cover && b.state !== "cancelled") return (
+                  <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })}
+                    className="u-keep u-card u-shimmer relative isolate flex h-40 flex-col justify-between overflow-hidden rounded-3xl p-4 text-left text-white shadow-lg">
+                    <img src={ev.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 -z-10 h-full w-full object-cover" />
+                    <span className="absolute inset-0 -z-10 bg-gradient-to-r from-black/85 via-black/55 to-black/10" aria-hidden="true" />
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/70">{fmtDate(b.date)} · {b.time}</span>
+                        <span className="mt-1 line-clamp-2 block text-xl font-bold leading-tight">{b.title}</span>
+                      </span>
+                      <span className="u-keep flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-900 shadow"><Icon name="qr" className="h-6 w-6" /></span>
+                    </span>
+                    <span className="flex items-end justify-between gap-3">
+                      <span className="font-mono text-xs text-white/70">{b.id}</span>
+                      <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">{b.kind === "trip" ? (CHIP[b.state] || CHIP.waiting)[0] : b.checkedIn ? "Checked in" : b.paid ? "Paid" : "Free"}</span>
+                    </span>
+                  </button>
+                );
+                return (
                 <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
                   {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo, id: b.id, key: b.key, emoji: b.emoji }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
                   <div className="min-w-0 flex-1">
@@ -54,7 +75,8 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                   </div>
                   <TicketChip b={b} />
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
