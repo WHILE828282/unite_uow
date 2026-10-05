@@ -2,7 +2,7 @@
    ✅ Approve → "approved" (goes live in Events), 🔍 Additional Check → "under_review", ❌ Reject → "rejected".
    Only accepts calls carrying the secret Telegram was given at registration, and only clicks made in the admin chat. */
 import { CHAT_ID, ADMIN_CHATS, readToken, tg, kv, storeConfigured, isRef, getPitch, savePitch, statusFromCode, moderationKeyboard, webhookSecret } from "./_lib.js";
-import { dbConfigured, emailByTelegramChat } from "./_store.js";
+import { dbConfigured, emailByTelegramChat, takeCode } from "./_store.js";
 import { A, saveProfile, setStatus, tgCard } from "./_apps.js";
 
 const TOAST = { approved: "✅ Approved: it's live on Unite now.", under_review: "🔍 Marked for an additional check.", rejected: "❌ Rejected: it won't be published." };
@@ -19,10 +19,10 @@ export default async function handler(req, res) {
   if (msg && msg.chat && msg.chat.type === "private") {
     const m = /^\/start\s+([A-Za-z0-9_-]{8,64})$/.exec(String(msg.text || "").trim());
     const say = (text) => tg(token, "sendMessage", { chat_id: msg.chat.id, text }).catch(() => {});
-    if (m && storeConfigured() && dbConfigured()) {
-      const email = await kv("GET", A.tgLink(m[1])).catch(() => null);
+    if (m && dbConfigured()) {
+      const email = storeConfigured() ? await kv("GET", A.tgLink(m[1])).catch(() => null) : await takeCode(`tg:${m[1]}`).catch(() => null);
       if (email) {
-        await kv("DEL", A.tgLink(m[1])).catch(() => {});
+        if (storeConfigured()) await kv("DEL", A.tgLink(m[1])).catch(() => {});
         await saveProfile(email, { tgChat: String(msg.chat.id) });
         await say(`✅ Connected to Unite as ${email}. Club applications and decisions will arrive here.`);
       } else await say("This link has expired. Open your Unite profile and tap Get notifications in Telegram again.");

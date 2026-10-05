@@ -4,7 +4,7 @@
    decision. Redis keeps only short-lived things here: Telegram connect codes, the reminder lock, the bot name cache. */
 import crypto from "node:crypto";
 import { CLUBS } from "../src/data/clubs.js";
-import { kv, tg, readToken, sendEmail, storeConfigured } from "./_lib.js";
+import { kv, tg, readToken, sendEmail, storeConfigured, acquireLock } from "./_lib.js";
 import * as store from "./_store.js";
 
 export const SITE = "https://uniteuow.com";
@@ -132,7 +132,7 @@ export const setStatus = async (id, status, by) => {
 // Piggybacks on app traffic (the events feed and these API calls), at most every 10 minutes.
 export const sweepApps = async () => {
   if (!store.dbConfigured()) return;
-  if (storeConfigured()) { try { if ((await kv("SET", A.sweep, "1", "NX", "EX", "600")) !== "OK") return; } catch (e) { return; } }
+  if (!(await acquireLock(A.sweep, 600))) return;
   for (const a of await store.appsDueReminder()) {
     await store.updateApp(a.id, { remindedAt: Date.now() });
     await notifyTeam(a, true).catch((e) => console.error("Application reminder failed:", e && e.message));
@@ -142,11 +142,11 @@ export const sweepApps = async () => {
 
 /* ---------------------------- Telegram connect -------------------- */
 export const botUsername = async () => {
-  try { const v = await kv("GET", A.bot); if (v) return v; } catch (e) { /* ask Telegram */ }
+  if (storeConfigured()) { try { const v = await kv("GET", A.bot); if (v) return v; } catch (e) { /* ask Telegram */ } }
   const token = readToken();
   if (!token) return "";
   const r = await tg(token, "getMe", {}).catch(() => ({ ok: false }));
   const u = r.ok && r.data.result && r.data.result.username;
-  if (u) await kv("SET", A.bot, u, "EX", "86400").catch(() => {});
+  if (u && storeConfigured()) await kv("SET", A.bot, u, "EX", "86400").catch(() => {});
   return u || "";
 };

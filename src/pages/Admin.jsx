@@ -25,19 +25,17 @@ export default function AdminPage() {
   const [me, setMe] = useState(null);
   const [denied, setDenied] = useState("");
   const [counts, setCounts] = useState({});
-  const [copyInfo, setCopyInfo] = useState(null);
   const [tab, setTab] = useState("users");
   const [q, setQ] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState("");
-  const [report, setReport] = useState(null);
 
   useEffect(() => { document.title = "Admin · Unite"; }, []);
   const overview = async () => {
     const r = await api({ a: "overview" });
     if (!r.ok) return setDenied(r.code === "session" ? "Sign in on Unite with your admin email first, then come back to this page." : r.error);
-    setMe(r.me); setCounts(r.counts || {}); setCopyInfo(r.redisCopy);
+    setMe(r.me); setCounts(r.counts || {});
   };
   useEffect(() => { overview(); }, []);
   useEffect(() => {
@@ -62,12 +60,6 @@ export default function AdminPage() {
     a.download = `unite-${tab}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
-  const copy = async (dryRun) => {
-    setBusy(dryRun ? "dry" : "copy");
-    const r = await api({ a: "copy", dryRun });
-    setBusy(""); setReport(r);
-    if (!dryRun) overview();
   };
   const cols = useMemo(() => (rows[0] ? Object.keys(rows[0]) : []), [rows]);
   const tableCounts = { users: counts.users, clubs: counts.clubs, applications: counts.club_applications, events: counts.events, tickets: counts.tickets };
@@ -121,18 +113,6 @@ export default function AdminPage() {
             </div>
             <p className="mt-2 text-xs text-slate-400">Showing up to 500 rows. CSV export includes up to 5,000.</p>
 
-            <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5">
-              <h2 className="font-bold">Database</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                {copyInfo ? `Data was copied from Redis on ${new Date(copyInfo.at).toLocaleString("en-GB")}.` : "Data hasn't been copied from Redis yet."} Copying again only adds what's missing; it never overwrites.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button onClick={() => copy(true)} disabled={!!busy} className="u-btn rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-50">{busy === "dry" ? "Checking…" : "Check what would be copied"}</button>
-                <button onClick={() => copy(false)} disabled={!!busy} className="u-btn rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{busy === "copy" ? "Copying…" : "Copy from Redis again"}</button>
-              </div>
-              {report && <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-50 p-3 text-xs text-slate-700">{JSON.stringify(report.report || report, null, 2)}</pre>}
-              <p className="mt-4 text-xs text-slate-500">Rows: {Object.entries(counts).map(([k, v]) => `${k} ${v ?? "?"}`).join(" · ")}</p>
-            </section>
           </>
         )}
       </main>

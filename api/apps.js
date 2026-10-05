@@ -154,11 +154,12 @@ export default async function handler(req, res) {
     }
 
     if (b.a === "tglink") {
-      if (!storeConfigured()) return res.status(503).json({ ok: false, error: "Telegram connect isn't available right now." });
+
       const bot = await botUsername();
       if (!bot) return res.status(503).json({ ok: false, error: "Telegram isn't set up yet." });
       const code = crypto.randomBytes(12).toString("base64url");
-      await kv("SET", A.tgLink(code), me, "EX", "900");
+      if (storeConfigured()) await kv("SET", A.tgLink(code), me, "EX", "900");
+      else await store.putCode(`tg:${code}`, me, 900); // no Redis: the one-time code lives in the database for 15 minutes
       return res.status(200).json({ ok: true, url: `https://t.me/${bot}?start=${code}`, linked: !!(await getProfile(me)).tgChat });
     }
 

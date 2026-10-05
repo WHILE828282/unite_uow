@@ -150,10 +150,13 @@ export const ensureWebhook = async (token, req, force = false) => {
   const url = webhookUrl(req);
   if (!url) return { ok: false, error: "Unknown site address." };
   const mark = `${url}|v2`; // v2: also receives messages (Telegram connect links)
-  if (!force && storeConfigured()) { try { if ((await kv("GET", K.webhook)) === mark) return { ok: true, url, cached: true }; } catch (e) { /* re-register */ } }
+  if (!force) {
+    try { if ((storeConfigured() ? await kv("GET", K.webhook) : store.dbConfigured() ? await store.getMeta("webhook") : null) === mark) return { ok: true, url, cached: true }; }
+    catch (e) { /* re-register */ }
+  }
   const r = await tg(token, "setWebhook", { url, secret_token: webhookSecret(token), allowed_updates: ["callback_query", "message"] });
   if (!r.ok) { console.error("Telegram setWebhook rejected:", JSON.stringify(r.data)); return { ok: false, url, error: explain(r.data, token) }; }
-  if (storeConfigured()) { try { await kv("SET", K.webhook, mark); } catch (e) { /* not critical */ } }
+  try { if (storeConfigured()) await kv("SET", K.webhook, mark); else if (store.dbConfigured()) await store.setMeta("webhook", mark); } catch (e) { /* not critical */ }
   return { ok: true, url };
 };
 
@@ -192,16 +195,26 @@ export const sendEmail = async (to, subject, text, html, meta = {}) => {
 // Runs at most every 2 minutes, piggybacking on the campus feed requests (no cron needed):
 // at the payment deadline a trip is confirmed or cancelled with automatic (demo) refunds; before the event the
 // host is reminded 48 h and 24 h ahead about undelivered tickets, and at 24 h missing tickets are flagged to the admin.
+// A lock so only one request runs a sweep at a time: Redis when connected, otherwise the database.
+export const acquireLock = async (name, seconds) => {
+  if (storeConfigured()) { try { return (await kv("SET", name, "1", "NX", "EX", String(seconds))) === "OK"; } catch (e) { return false; } }
+  if (store.dbConfigured()) { try { return await store.tryLock(name, seconds); } catch (e) { return false; } }
+  return true;
+};
+export const releaseLock = async (name) => {
+  if (storeConfigured()) await kv("DEL", name).catch(() => {});
+  else if (store.dbConfigured()) await store.unlock(name).catch(() => {});
+};
 export const sweepTrips = async () => {
   if (!store.dbConfigured()) return;
-  if (storeConfigured()) { try { if ((await kv("SET", K.sweep, "1", "NX", "EX", "120")) !== "OK") return; } catch (e) { return; } }
+  if (!(await acquireLock(K.sweep, 120))) return;
   const now = Date.now();
   for (const rec of await store.listActiveTrips()) if (now <= startMs(rec) + 864e5) await sweepTrip(rec.ref);
 };
 // One trip's deadline, reminders and admin flag. A short per-trip lock stops two requests acting twice.
 export const sweepTrip = async (ref) => {
   const token = readToken(), now = Date.now();
-  if (storeConfigured()) { try { if ((await kv("SET", `${K.sweep}:${ref}`, "1", "NX", "EX", "30")) !== "OK") return; } catch (e) { return; } }
+  if (!(await acquireLock(`${K.sweep}:${ref}`, 30))) return;
   {
     try {
       const rec = await getPitch(ref);
@@ -238,6 +251,6 @@ export const sweepTrip = async (ref) => {
       }
       if (next !== rec) await savePitch({ ...next, updatedAt: now });
     } catch (e) { console.error(`Trip sweep failed for ${ref}:`, e && e.message); }
-    finally { if (storeConfigured()) await kv("DEL", `${K.sweep}:${ref}`).catch(() => {}); }
+    finally { await releaseLock(`${K.sweep}:${ref}`); }
   }
 };

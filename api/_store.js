@@ -1,6 +1,6 @@
 /* Data access for the API routes: every read and write of permanent data goes through here, on Postgres via
    Drizzle (parameterised queries only). Records keep the shapes the routes already used, so the routes stay simple.
-   Short-lived things (login/Telegram link codes, locks, caches) stay in Redis via kv() in _lib.js. */
+   Short-lived things (Telegram link codes, locks) use Redis when it is connected, otherwise the app_meta table here. */
 import { and, asc, desc, eq, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { db, dbConfigured, schema as S } from "../db/client.js";
 import { CLUBS } from "../src/data/clubs.js";
@@ -264,6 +264,19 @@ export const logNotification = (entry) => db().insert(S.notificationsLog).values
 }).catch(() => {});
 
 /* ---------------------------- Meta -------------------------------- */
+// Short-lived values when Redis isn't connected: locks (one sweep at a time) and one-time codes (Telegram connect).
+export const tryLock = async (name, seconds) => {
+  const r = await db().execute(sql`insert into app_meta (key, value, updated_at) values (${"lock:" + name}, '{}'::jsonb, now())
+    on conflict (key) do update set updated_at = now() where app_meta.updated_at < now() - make_interval(secs => ${Number(seconds)}) returning key`);
+  return (r.rows || r).length > 0;
+};
+export const unlock = (name) => db().delete(S.appMeta).where(eq(S.appMeta.key, "lock:" + name));
+export const putCode = (code, email, seconds) => setMeta("code:" + code, { email, exp: Date.now() + seconds * 1000 });
+export const takeCode = async (code) => {
+  const v = await getMeta("code:" + code);
+  if (v) await db().delete(S.appMeta).where(eq(S.appMeta.key, "code:" + code));
+  return v && v.exp > Date.now() ? v.email : null;
+};
 export const getMeta = async (key) => { const [r] = await db().select().from(S.appMeta).where(eq(S.appMeta.key, key)).limit(1); return r ? r.value : null; };
 export const setMeta = (key, value) => db().insert(S.appMeta).values({ key, value }).onConflictDoUpdate({ target: S.appMeta.key, set: { value, updatedAt: new Date() } });
 
