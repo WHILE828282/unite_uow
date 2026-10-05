@@ -7,7 +7,9 @@ import { fmtDate } from "../lib/format.js";
    Every tile on this page shares one style: full-bleed picture or colour, white text at the bottom. */
 
 // Hero backdrop: 18 small square crops (public/collage) of club, team and event photos, faces kept in frame.
-const COLLAGE = Array.from({ length: 18 }, (_, i) => `/collage/${String(i + 1).padStart(2, "0")}.webp`);
+// Bump COLLAGE_V whenever a photo is swapped, so phones load the new one instead of a saved copy.
+const COLLAGE_V = "?v=2";
+const COLLAGE = Array.from({ length: 18 }, (_, i) => `/collage/${String(i + 1).padStart(2, "0")}.webp${COLLAGE_V}`);
 const greeting = () => { const h = new Date().getHours(); return h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
 export const ROOM_BG = {
   Tech: "linear-gradient(140deg, #0ea5e9 0%, #1e3a8a 100%)",
