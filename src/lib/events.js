@@ -13,7 +13,7 @@ export const submissionToParty = (sub) => ({
   contact: { name: "You", role: "Organizer", email: sub.email, whatsapp: sub.whatsapp, telegram: sub.telegram },
   desc: sub.pitch || `A student-hosted ${sub.category.toLowerCase()} at ${sub.venueName}.`,
   perks: [sub.dress && `Dress code: ${sub.dress}`, sub.reqs && `Bring: ${sub.reqs}`].filter(Boolean),
-  kind: sub.kind === "trip" ? "trip" : "own",
+  kind: sub.kind === "trip" ? "trip" : "own", groupLink: sub.groupLink || "",
   ...(sub.kind === "trip" ? { extName: sub.extName, seller: sub.seller, minGroup: sub.minGroup, collectUntil: sub.collectUntil } : {}),
 });
 /* An approved event from another student, loaded from the moderation database (no email exposed). */

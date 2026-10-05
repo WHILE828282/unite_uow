@@ -1,5 +1,5 @@
 import { Modal } from "./Modal.jsx";
-import { Check, ContactButtons, DateBlock, DayTag, EventLogo, InfoIcon, ShareBtn, Spots } from "../ui.jsx";
+import { Check, ContactButtons, Icon, DateBlock, DayTag, EventLogo, InfoIcon, ShareBtn, Spots } from "../ui.jsx";
 import { partyMapsUrl } from "../../lib/events.js";
 import { TRIP_NOTE } from "../../lib/tripText.js";
 import { fmtDate, shortVenue } from "../../lib/format.js";
@@ -77,6 +77,11 @@ export function EventDetailBody({ p, onShare }) {
               <p className="font-semibold text-slate-900">{p.contact.name} <span className="font-normal text-slate-500">· {p.contact.role}</span></p>
               <p className="mb-2 mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-emerald-700"><Check className="h-3 w-3" /> Verified organizer contacts</p>
               <ContactButtons contact={p.contact} subject={p.title} />
+              {p.groupLink && (
+                <a href={p.groupLink} target="_blank" rel="noopener noreferrer" className="u-btn mt-2 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+                  <Icon name="users" className="h-4 w-4" />Join the {/whatsapp/i.test(p.groupLink) ? "WhatsApp" : "Telegram"} group ↗
+                </a>
+              )}
             </div>
           </div>
         </div>

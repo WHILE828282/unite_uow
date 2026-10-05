@@ -26,6 +26,7 @@ const parseImage = (v) => {
 /* The whole application in one Telegram message: the picture (cover with the logo on it, made by the app), this
    caption and the moderation buttons. Long descriptions are shortened to fit; the full text is in /admin → Events. */
 const plainLen = (html) => html.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").length;
+const GROUP_LINK = /^https:\/\/(t\.me|telegram\.me|chat\.whatsapp\.com)\/[A-Za-z0-9_+\/-]{3,120}$/;
 function buildCaption(p) {
   const make = (pitch) => {
     const price = Number(p.price) > 0 ? `${Number(p.price)} AED` : "Free";
@@ -39,6 +40,7 @@ function buildCaption(p) {
       `📍 ${esc(p.room ? `${p.venueName} (${p.room})` : p.venueName)}${p.mapsUrl ? ` · <a href="${esc(p.mapsUrl)}">map</a>` : ""}`,
       p.kind === "trip" ? `🎫 ${esc(p.extName)} via ${esc(p.seller)} · min ${p.minGroup} · pay by ${esc(p.collectUntil)}` : null,
       `👤 ${p.accountName ? esc(p.accountName) + " · " : ""}${contacts}${p.studentId ? ` · ID ${esc(p.studentId)}` : ""}`,
+      p.groupLink ? `💬 <a href="${esc(p.groupLink)}">Group chat</a>` : null,
       p.dress ? `👔 ${esc(p.dress)}` : null,
       p.reqs ? `⚠️ ${esc(p.reqs)}` : null,
       "",
@@ -90,6 +92,7 @@ function buildParts(p) {
     line("WhatsApp", p.whatsapp) || "<b>WhatsApp:</b> not provided",
     line("Telegram", p.telegram ? `@${p.telegram}` : "") || "<b>Telegram:</b> not provided",
     line("Email", p.email),
+    link("Group Chat", p.groupLink),
     line("Student ID", p.studentId),
     "",
     p.dress || p.reqs ? "" : null,
@@ -199,6 +202,7 @@ export default async function handler(req, res) {
     whatsapp: str(b.whatsapp, 30), telegram: str(b.telegram, 40).replace(/^@/, ""), email: str(b.email, 120),
     studentId: str(b.studentId, 20), account: str(b.account, 120), accountName: str(b.accountName, 80), verified: b.verified === true,
     dress: str(b.dress, 80), reqs: str(b.reqs, 300),
+    groupLink: GROUP_LINK.test(str(b.groupLink, 200)) ? str(b.groupLink, 200) : "",
     pitch: str(b.pitch, 2500),
     kind: b.kind === "trip" ? "trip" : "own",
     extName: str(b.extName, 120), seller: str(b.seller, 120),

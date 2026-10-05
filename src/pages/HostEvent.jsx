@@ -146,7 +146,10 @@ export const REQ_CHIPS = ["Bring your own laptop", "Bring your own racket", "Spo
 
 export const PITCH_MIN_CHARS = 50;
 /* Field order on the page, used to bring the first problem into view on submit. */
-export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "extName", "seller", "minGroup", "collectUntil", "whatsapp", "telegram", "email"];
+// Optional guest group chat: a Telegram or WhatsApp invite link (https:// added if left out).
+const GROUP_LINK = /^https:\/\/(t\.me|telegram\.me|chat\.whatsapp\.com)\/[A-Za-z0-9_+\/-]{3,120}$/;
+const normGroupLink = (v) => { const t = v.trim().replace(/^http:\/\//i, "https://"); return !t ? "" : /^https:\/\//i.test(t) ? t : `https://${t}`; };
+export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "end", "venueName", "mapsUrl", "spots", "price", "extName", "seller", "minGroup", "collectUntil", "whatsapp", "telegram", "email", "groupLink"];
 
 /* The two kinds of event a student can host. */
 export const EVENT_KINDS = [
@@ -287,6 +290,7 @@ export function HostPreview({ sub, onEdit }) {
     ["Type · language", `${sub.category} · ${sub.lang}`, "title"],
     ...(sub.dress || sub.reqs ? [["Dress code · bring", [sub.dress, sub.reqs].filter(Boolean).join(" · "), "reqs"]] : []),
     ["Contacts", [sub.whatsapp && `WhatsApp ${sub.whatsapp}`, sub.telegram && `@${sub.telegram}`, sub.email].filter(Boolean).join(" · "), "whatsapp"],
+    ...(sub.groupLink ? [["Group chat", sub.groupLink, "groupLink"]] : []),
   ];
   return (
     <div className="space-y-10">
@@ -330,7 +334,7 @@ export function HostPreview({ sub, onEdit }) {
 export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSubmitted, dark = true }) {
   const [f, setF] = useState({
     title: "", category: "Party", lang: "English", pitch: "", date: "", time: "20:00", end: "22:00", venueName: "", room: "", mapsUrl: "",
-    spots: 30, price: 0, dress: "", reqs: "", whatsapp: contacts.whatsapp || "", telegram: contacts.telegram || "", email: defaultEmail, logo: null, cover: null, website: "",
+    spots: 30, price: 0, dress: "", reqs: "", whatsapp: contacts.whatsapp || "", telegram: contacts.telegram || "", email: defaultEmail, groupLink: "", logo: null, cover: null, website: "",
     kind: "", extName: "", seller: "", minGroup: 10, collectUntil: "",
   });
   const [agreed, setAgreed] = useState(false);
@@ -425,6 +429,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
     if (f.telegram.trim() && !/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(tg)) e.telegram = "Telegram usernames are 5–32 letters, numbers or underscores.";
     if (!wa && !tg && !e.whatsapp && !e.telegram) e.whatsapp = "Add a WhatsApp number or a Telegram username so guests can reach you.";
     if (!validEmail(f.email.trim())) e.email = "Enter a valid contact email.";
+    if (f.groupLink.trim() && !GROUP_LINK.test(normGroupLink(f.groupLink))) e.groupLink = "Paste an invite link from Telegram (t.me/…) or WhatsApp (chat.whatsapp.com/…).";
     if (f.kind === "trip") {
       if (f.extName.trim().length < 2) e.extName = "Add the name of the external event, e.g. Coldplay at Etihad Park.";
       if (f.seller.trim().length < 2) e.seller = "Add the official ticket seller, e.g. Platinumlist.";
@@ -442,7 +447,7 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
     ref: makeId("REQ", 6), at: Date.now(), title: f.title.trim(), category: f.category, lang: f.lang, pitch: f.pitch.trim(),
     date: f.date, start: f.time, end: f.end, venueName: f.venueName.trim(), room: f.room.trim(), mapsUrl: normalizeMapsUrl(f.mapsUrl),
     spots: Number(f.spots), price: Number(f.price), dress: f.dress.trim(), reqs: f.reqs.trim(),
-    whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(),
+    whatsapp: f.whatsapp.trim(), telegram: tgHandle(f.telegram), email: f.email.trim(), groupLink: normGroupLink(f.groupLink),
     cover: f.cover ? f.cover.src : "", logo: f.logo ? f.logo.src : "",
     kind: f.kind === "trip" ? "trip" : "own",
     ...(f.kind === "trip" ? { extName: f.extName.trim(), seller: f.seller.trim(), minGroup: Number(f.minGroup), collectUntil: f.collectUntil } : {}),
@@ -686,6 +691,12 @@ export function CreateModal({ email: defaultEmail, contacts = {}, onClose, onSub
                 <label className={DK.label} htmlFor="c-email">Contact email</label>
                 <input id="c-email" type="email" value={f.email} onChange={set("email")} className={DK.input(!!errors.email)} />
                 {errors.email ? <E k="email" /> : <p className={DK.hint}>Your approval notification is sent here too.</p>}
+              </div>
+              <div>
+                <label className={DK.label} htmlFor="c-groupLink">Group chat link <span className="font-normal text-slate-500">(optional)</span></label>
+                <input id="c-groupLink" type="url" inputMode="url" value={f.groupLink} onChange={set("groupLink")} placeholder="https://t.me/… or https://chat.whatsapp.com/…"
+                  autoCapitalize="off" autoCorrect="off" spellCheck="false" className={DK.input(!!errors.groupLink)} />
+                {errors.groupLink ? <E k="groupLink" /> : <p className={DK.hint}>A Telegram or WhatsApp group for your guests. Shown on the event page.</p>}
               </div>
             </DkSection>
           </div>
