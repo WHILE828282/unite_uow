@@ -52,14 +52,14 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
   return (
     <section id="home-hero" className="u-keep relative isolate overflow-hidden rounded-b-[28px] bg-[#0b0b0e] text-white shadow-[0_20px_40px_-24px_rgba(0,0,0,.6)] sm:rounded-b-[44px]">
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-60 sm:-inset-x-10 sm:grid-cols-6">
+        <div className="absolute -inset-x-24 -top-16 grid -rotate-6 grid-cols-4 gap-3 opacity-80 sm:-inset-x-10 sm:grid-cols-6">
           {COLLAGE.map((src, i) => (
             <div key={i} className={`aspect-square overflow-hidden rounded-2xl bg-white/5 ${i % 2 ? "translate-y-6" : ""}`}>
               <img src={src} alt="" loading={i < 8 ? "eager" : "lazy"} decoding="async" className="h-full w-full object-cover" />
             </div>
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0e]/45 via-[#0b0b0e]/75 to-[#0b0b0e]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0b0e]/30 via-[#0b0b0e]/65 to-[#0b0b0e]" />
         <div className="u-hero-glow absolute -right-24 -top-24 h-80 w-80 rounded-full" />
         <div className="u-hero-glow absolute -bottom-32 -left-24 h-72 w-72 rounded-full opacity-60" />
       </div>
@@ -112,6 +112,14 @@ export function HomeHero({ user, firstName, cards, stats, spotlight, spotlightBo
   );
 }
 
+// "Mon 5 PM": the club's next weekly session (Dubai week), shown on the popular clubs.
+const DAY3 = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const nextSession = (c) => {
+  const s = (c.slots || [])[0];
+  if (!s) return "";
+  const [h, m] = s.start.split(":").map(Number);
+  return `${DAY3[s.day] || ""} ${((h + 11) % 12) + 1}${m ? `:${String(m).padStart(2, "0")}` : ""} ${h < 12 ? "AM" : "PM"}`;
+};
 const Head = ({ eyebrow, title, onAll }) => (
   <div className="mb-4 flex items-end justify-between gap-3">
     <div className="min-w-0">
@@ -196,7 +204,7 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
               {c.backgroundImage ? <span aria-hidden="true" /> : <span className="text-4xl drop-shadow" aria-hidden="true">{c.emoji}</span>}
               <span>
                 <span className="block text-[15px] font-bold leading-tight [hyphens:auto]" lang="en">{c.name}</span>
-                <span className="mt-0.5 block text-xs text-white/75">{memberCount(c)} members</span>
+                <span className="mt-0.5 block text-xs text-white/75">{memberCount(c)} members{nextSession(c) ? ` · ${nextSession(c)}` : ""}</span>
               </span>
             </Tile>
           ))}

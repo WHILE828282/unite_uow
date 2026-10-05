@@ -910,6 +910,10 @@ export default function App() {
             nextUp ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open } : null,
             myClubs > 0 ? { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") } : null,
             bookings.length ? { k: "Tickets", t: `${bookings.length} ticket${bookings.length > 1 ? "s" : ""} in your wallet`, d: "Show QR at the door →", go: () => jumpTo("tickets"), hot: true } : null,
+            ...manageList.filter((c) => c.apps.some((a) => a.status === "new")).slice(0, 1).map((c) => {
+              const n = c.apps.filter((a) => a.status === "new").length;
+              return { k: "Your club", t: `${n} new application${n > 1 ? "s" : ""}`, d: `${c.club} · Review →`, go: () => setModal({ type: "manage", id: c.clubId }) };
+            }),
           ].filter(Boolean) : []}
           stats={[[clubs.length, "clubs & teams", () => jumpTo("clubs")], [upcoming.length, "events", () => jumpTo("parties")], [totalMembers.toLocaleString("en-US"), "members", () => jumpTo("clubs")]]}
           spotlight={upcoming.find((p) => p.pinned)} spotlightBooked={!!(upcoming.find((p) => p.pinned) && bookingFor(upcoming.find((p) => p.pinned).id))}
