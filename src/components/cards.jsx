@@ -131,9 +131,9 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
   const left = p.spots - p.taken, pct = Math.min(100, Math.round((p.taken / p.spots) * 100));
   return (
     <article id={"event-" + p.id} {...open}
-      className="u-keep u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7"
+      className="u-keep u-featured u-card u-rise group relative isolate cursor-pointer overflow-hidden rounded-3xl p-5 text-white shadow-xl ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 sm:p-7"
       style={{ background: "radial-gradient(120% 90% at 100% 0%, rgba(196,90,104,.55), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(116,22,41,.6), transparent 60%), linear-gradient(160deg, #111827 0%, #0a0f1d 100%)" }}>
-      <span className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true"
+      <span className="u-featured-grid pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true"
         style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
       <div className="flex items-start justify-between gap-3">
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-crimson-200 ring-1 ring-inset ring-white/15">

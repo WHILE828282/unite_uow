@@ -315,3 +315,17 @@ html.u-typing { --nav: 0px; }
 
 /* Overlays rendered outside the app (portals) carry the theme class for their contents; keep the dimmed backdrop. */
 .u-portal.u-dark, .u-portal.u-light { background-color: rgba(2, 6, 23, 0.5); }
+
+/* Featured event card, light theme: a warm light version instead of a dark slab on the paper background. */
+.u-light .u-featured { background: radial-gradient(120% 90% at 100% 0%, rgba(196, 90, 104, 0.22), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(233, 182, 188, 0.35), transparent 60%), linear-gradient(160deg, #fffaf9 0%, #f6ecea 100%) !important; color: #1f1416; box-shadow: 0 18px 40px -22px rgba(116, 22, 41, 0.35); --tw-ring-color: rgba(116, 22, 41, 0.12); }
+.u-light .u-featured .u-featured-grid { filter: invert(1); opacity: 0.035; }
+.u-light .u-featured :is(.text-white, h3) { color: #1f1416; }
+.u-light .u-featured :is(.text-slate-300, .text-slate-400) { color: #6b5559; }
+.u-light .u-featured .text-crimson-200 { color: #8c1d32; }
+.u-light .u-featured :is(.bg-white\/10, .bg-white\/\[0\.07\]) { background-color: rgba(116, 22, 41, 0.06); }
+.u-light .u-featured :is(.ring-white\/10, .ring-white\/15, .ring-white\/20) { --tw-ring-color: rgba(116, 22, 41, 0.16); }
+.u-light .u-featured .bg-white\/10.h-1\.5 { background-color: rgba(116, 22, 41, 0.1); }
+.u-light .u-featured button.text-white:not(.bg-crimson-600):not(.bg-crimson-700) { color: #1f1416; }
+@media (hover: hover) and (pointer: fine) { .u-light .u-featured button.hover\:bg-white\/10:hover { background-color: rgba(116, 22, 41, 0.06); } }
+.u-light .u-featured button.bg-white { background-color: #741629; color: #fff; }
+@media (hover: hover) and (pointer: fine) { .u-light .u-featured button.bg-white:hover { background-color: #8c1d32; } }
