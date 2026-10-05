@@ -70,16 +70,20 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
   return (
     <div className="relative bg-slate-100">
       {justPaid && <Confetti />}
-      <div className="u-keep relative overflow-hidden bg-slate-900 px-6 pb-16 pt-8 text-center text-white">
+      <div className="u-keep relative isolate overflow-hidden bg-slate-900 px-6 pb-16 pt-8 text-center text-white">
+        {b.cover && <><img src={b.cover} alt="" decoding="async" draggable={false} className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover opacity-60 blur-[2px]" />
+          <span className="absolute inset-0 -z-10 bg-gradient-to-b from-black/30 via-black/50 to-black/80" aria-hidden="true" /></>}
+        {!b.cover && <>
         <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-slate-900" style={{ filter: "blur(70px)", opacity: 0.55 }} />
         <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-emerald-500" style={{ filter: "blur(80px)", opacity: 0.22 }} />
+        </>}
         <div className="relative">
           <div className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
             <Check className="h-7 w-7" />
           </div>
           <h2 className="mt-3 text-lg font-semibold text-slate-200">{justPaid ? (b.paid ? "Payment Successful" : "You're in!") : "Your ticket"}</h2>
           {b.paid && <p className="mt-0.5 text-3xl font-bold tabular-nums tracking-tight">{b.price.toFixed(2)} <span className="text-base font-semibold text-slate-400">AED</span></p>}
-          <p className="mt-1 text-sm text-slate-400">{b.paid ? `Paid via Ziina · ${b.method}` : "Free spot reserved"}</p>
+          <p className="mt-1 text-sm text-slate-400">{b.paid ? `Paid via Ziina${b.method ? ` · ${b.method}` : ""}` : "Free spot reserved"}</p>
         </div>
       </div>
 
