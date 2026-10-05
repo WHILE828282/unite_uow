@@ -65,7 +65,7 @@ export function Events({ filteredParties, upcoming, feedLangs, filter, setFilter
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {g.items.map((p, k) => (
                 <PartyCard key={p.id} p={p} i={n++} wide={g.items.length % 2 === 1 && k === g.items.length - 1} open={cardOpen(() => setModal({ type: "detail", id: p.id }))} onShare={() => shareEvent(p)}
-                  actions={<>{partyBtn(p, "flex-1", true)}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
+                  actions={<>{partyBtn(p, "flex-1", true, true)}<button onClick={() => setModal({ type: "detail", id: p.id })} className="u-btn rounded-xl px-4 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">Details</button></>} />
               ))}
             </div>
             </>)}

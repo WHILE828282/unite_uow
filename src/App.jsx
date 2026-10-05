@@ -806,7 +806,8 @@ export default function App() {
   };
 
   // `short`: on cards, where the price is already shown next to the title.
-  const partyBtn = (p, extra = "w-full", short = false) => {
+  // quiet: list cards use a tinted button, so solid crimson stays for the main action on a page (detail, featured).
+  const partyBtn = (p, extra = "w-full", short = false, quiet = false) => {
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
@@ -815,7 +816,7 @@ export default function App() {
     else if (p.spots - p.taken <= 0) {
       label = wl ? `Waitlisted · #${wl}` : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
-    } else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = "bg-slate-900 text-white hover:bg-slate-800"; }
+    } else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
     return <button onClick={() => onParty(p)} className={`u-btn ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 

@@ -141,7 +141,7 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
         </span>
         <span className="u-keep whitespace-nowrap rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
       </div>
-      <h3 className="mt-4 max-w-xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{p.title}</h3>
+      <h3 className="font-display mt-4 max-w-xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{p.title}</h3>
       <p className="mt-2 text-sm text-slate-300">{new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · From {p.time}{p.until ? ` ${p.until}` : ""}</p>
       <p className="mt-0.5 flex items-start gap-1.5 text-sm text-slate-400"><Icon name="pin" className="mt-0.5 h-3.5 w-3.5 shrink-0" />{p.where}</p>
 

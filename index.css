@@ -327,8 +327,8 @@ html.u-typing { --nav: 0px; }
 .u-light .u-featured .bg-white\/10.h-1\.5 { background-color: rgba(116, 22, 41, 0.1); }
 .u-light .u-featured button.text-white:not(.bg-crimson-600):not(.bg-crimson-700) { color: #1f1416; }
 @media (hover: hover) and (pointer: fine) { .u-light .u-featured button.hover\:bg-white\/10:hover { background-color: rgba(116, 22, 41, 0.06); } }
-.u-light .u-featured button.bg-white { background-color: #741629; color: #fff; }
-@media (hover: hover) and (pointer: fine) { .u-light .u-featured button.bg-white:hover { background-color: #8c1d32; } }
+.u-light .u-featured button[class*="!bg-white"] { background-color: #741629 !important; color: #fff !important; }
+@media (hover: hover) and (pointer: fine) { .u-light .u-featured button[class*="!bg-white"]:hover { background-color: #8c1d32 !important; } }
 
 /* Detail panels on large screens: full height on the right, sliding in from the side; the page dims less. */
 @media (min-width: 1024px) {
@@ -336,3 +336,6 @@ html.u-typing { --nav: 0px; }
   .lg\:u-side-dim { background: rgba(0, 0, 0, 0.28) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
   @keyframes uSide { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
 }
+
+/* Headings: an expressive display face for page and section titles; text stays in Plus Jakarta Sans. */
+:is(h1, h2, .font-display) { font-family: "Bricolage Grotesque", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.015em; }
