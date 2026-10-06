@@ -26,13 +26,14 @@ export function Modal({ children, onClose, locked, size = "md", side = false }) 
     if (!d || !el) return;
     d.dy = e.touches[0].clientY - d.y;
     if (d.dy < 0 || el.scrollTop > 0) { drag.current = null; el.style.transform = ""; return; }
+    if (d.dy < 4) return;
     el.style.transition = "none";
     el.style.transform = `translateY(${d.dy * 0.9}px)`;
   };
   const onTouchEnd = () => {
     const d = drag.current, el = sheet.current;
     drag.current = null;
-    if (!d || !el) return;
+    if (!d || !el || d.dy < 4) return; // a plain tap: leave the sheet alone so the click goes through first time
     el.style.transition = "transform .25s cubic-bezier(.2,.8,.2,1)";
     if (d.dy > 110) { el.style.transform = "translateY(100%)"; setTimeout(onClose, 180); }
     else el.style.transform = "";

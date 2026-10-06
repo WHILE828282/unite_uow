@@ -28,13 +28,13 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
 
 /* Phones: Telegram-style floating bar at the bottom (thumb reach), plus a separate round profile button.
    Flat white icons; the active one takes the accent colour on a soft capsule. The capsule is one "lens" that glides
-   to the tab you touch: it swells into a glass bubble while it moves (and while your finger is down), then settles.
+   to the tab you tap: it swells into a glass bubble while it moves, then settles. Nothing changes on touch-down:
+   iOS treats a first tap that changes the page as a hover, which made tabs need a double tap.
    Hidden while typing so it never sits on top of the keyboard. "My events" lives in the profile menu. */
 const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   const items = tabs.filter(([k]) => k !== "events");
   const bar = useRef(null), btns = useRef({}), last = useRef(null);
-  const [press, setPress] = useState(null); // tab under the finger
   const [lens, setLens] = useState(null); // { x, w } of the capsule
   const [moving, setMoving] = useState(false);
   // The lens starts moving first; the (heavier) page switch follows a couple of frames later.
@@ -45,7 +45,7 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
     const t = setTimeout(() => setPending(null), 800);
     return () => clearTimeout(t);
   }, [tab, pending]);
-  const target = press || pending || tab;
+  const target = pending || tab;
   useLayoutEffect(() => {
     const b = btns.current[target], box = bar.current;
     if (!b || !box) return;
@@ -56,28 +56,25 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
     setLens(next);
   }, [target, items.length]);
   useEffect(() => {
-    if (!moving || press) return;
+    if (!moving) return;
     const t = setTimeout(() => setMoving(false), 420);
     return () => clearTimeout(t);
-  }, [moving, press, lens]);
+  }, [moving, lens]);
   // Keep the capsule aligned when the bar resizes (rotation, font load).
   useEffect(() => {
     const re = () => { const b = btns.current[tab], box = bar.current; if (b && box) { const r = b.getBoundingClientRect(), o = box.getBoundingClientRect(); setLens({ x: r.left - o.left, w: r.width }); } };
     window.addEventListener("resize", re);
     return () => window.removeEventListener("resize", re);
   }, [tab]);
-  const release = () => setPress(null);
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-1.5 px-2.5 min-[390px]:gap-2 min-[390px]:px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
-      <div ref={bar} className="u-glass-bar relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]"
-        onPointerUp={release} onPointerCancel={release} onPointerLeave={release}>
-        {lens && <span aria-hidden="true" className={`u-lens ${moving || press ? "u-lens-up" : ""}`} style={{ width: lens.w, transform: `translateX(${lens.x}px)` }} />}
+      <div ref={bar} className="u-glass-bar relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]">
+        {lens && <span aria-hidden="true" className={`u-lens ${moving ? "u-lens-up" : ""}`} style={{ width: lens.w, transform: `translateX(${lens.x}px)` }} />}
         {items.map(([k, , short]) => {
           const on = target === k;
           const badge = k === "tickets" && user ? liveTickets(bookings) : 0;
           return (
-            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => { setPress(null); if (k === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); }} aria-current={tab === k ? "page" : undefined}
-              onPointerDown={() => setPress(k)}
+            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => { if (k === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); }} aria-current={tab === k ? "page" : undefined}
               className={`u-keep u-haptic u-nav-item relative z-[1] flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10px] font-medium leading-none min-[390px]:text-[10.5px] ${on ? "u-nav-on" : ""}`}>
               <span className="u-nav-icon relative">
                 <Icon name={NAV_ICON[k] || "home"} className="h-[24px] w-[24px] min-[390px]:h-[26px] min-[390px]:w-[26px]" />
