@@ -371,3 +371,28 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Readable alert text on dark rose panels. */
 .u-dark :where(.text-rose-800:not(.u-keep)) { color: #fda4af; }
 .u-dark :where(.ring-rose-200:not(.u-keep)) { --tw-ring-color: rgba(244, 63, 94, 0.3); }
+
+/* ---- Telegram-style bottom bar: flat icons, accent on the active tab, a gliding glass "lens" ---- */
+.u-glass-bar { --nav-accent: #e0314f; }
+.u-dark .u-glass-bar { --nav-accent: #ff4d6a; background: rgba(28, 28, 30, 0.82) !important; box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 30px -10px rgba(0, 0, 0, 0.7) !important; }
+.u-light .u-glass-bar { background: rgba(255, 255, 255, 0.86) !important; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 10px 28px -12px rgba(0, 0, 0, 0.25) !important; }
+.u-nav-item { color: var(--nav-on); transition: color 0.2s ease; -webkit-user-select: none; user-select: none; }
+.u-nav-item.u-nav-on { color: var(--nav-accent); }
+.u-nav-item:active { transform: none; }
+.u-nav-icon { display: block; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.u-nav-on .u-nav-icon { transform: scale(1.06); }
+.u-lens {
+  position: absolute; top: 5px; bottom: 5px; left: 0; border-radius: 9999px; pointer-events: none;
+  background: rgba(15, 23, 42, 0.07);
+  transition: transform 0.5s cubic-bezier(0.25, 1.25, 0.4, 1), width 0.4s cubic-bezier(0.25, 1.25, 0.4, 1), background 0.25s, box-shadow 0.25s, scale 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.u-dark .u-lens { background: rgba(255, 255, 255, 0.11); }
+/* Swollen glass bubble while gliding or pressed: bigger, brighter rim, a light sheen. */
+.u-lens.u-lens-up {
+  scale: 1.16 1.22;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.06) 60%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), inset 0 -6px 12px rgba(255, 255, 255, 0.08), 0 6px 18px -6px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(2px) saturate(170%) brightness(1.1); backdrop-filter: blur(2px) saturate(170%) brightness(1.1);
+}
+.u-light .u-lens.u-lens-up { background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.35) 60%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 6px 18px -6px rgba(0, 0, 0, 0.25); }
+@media (prefers-reduced-motion: reduce) { .u-lens, .u-nav-icon { transition: none; } .u-lens.u-lens-up { scale: 1; } }

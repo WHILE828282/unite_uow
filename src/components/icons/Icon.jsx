@@ -1,4 +1,3 @@
-import { useId } from "react";
 
 /* Unite glass icons. Solid shapes with a soft top-to-bottom sheen (currentColor), an accent colour for the
    highlight part (var(--icon-accent), crimson by default) and a soft drop shadow that sits slightly outside the
@@ -8,7 +7,6 @@ import { useId } from "react";
    Layers per icon, drawn in order: f = filled body, a = filled accent, s = body stroke, sa = accent stroke. */
 
 const C = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0z`;
-const ACCENT = "#e11d48";
 
 export const ICONS = {
   calendar: [
@@ -221,31 +219,17 @@ ICONS.user = ICONS.person;
 ICONS.chevron = ICONS["chevron-down"];
 ICONS["shield-check"] = ICONS.shield;
 
+/* Flat, minimal glyphs (Telegram / SF Symbols style): one colour (currentColor), the accent part a softer tint of it
+   (or --icon-accent when a place sets one). No gradients or shadows. */
 export const Icon = ({ name, className = "h-4 w-4" }) => {
-  const id = useId().replace(/:/g, "");
   const layers = ICONS[name] || ICONS.check;
-  const g = `${id}g`, ga = `${id}a`, sh = `${id}s`;
+  const accent = { fill: "var(--icon-accent, currentColor)", fillOpacity: "var(--icon-accent-o, 0.55)" };
   return (
-    <svg viewBox="0 0 24 24" className={className} overflow="visible" aria-hidden="true">
-      <defs>
-        <linearGradient id={g} gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22">
-          <stop offset="0" style={{ stopColor: "currentColor", stopOpacity: 1 }} />
-          <stop offset="1" style={{ stopColor: "currentColor", stopOpacity: 0.74 }} />
-        </linearGradient>
-        <linearGradient id={ga} gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22">
-          <stop offset="0" style={{ stopColor: `var(--icon-accent, ${ACCENT})`, stopOpacity: 1 }} />
-          <stop offset="1" style={{ stopColor: `var(--icon-accent, ${ACCENT})`, stopOpacity: 0.82 }} />
-        </linearGradient>
-        <filter id={sh} x="-30%" y="-30%" width="160%" height="170%">
-          <feDropShadow dx="0" dy="0.8" stdDeviation="0.8" floodColor="#000" floodOpacity="0.28" />
-        </filter>
-      </defs>
-      <g filter={`url(#${sh})`}>
-        {layers.map(([t, d], i) =>
-          t === "f" ? <path key={i} d={d} fill={`url(#${g})`} fillRule="evenodd" />
-            : t === "a" ? <path key={i} d={d} fill={`url(#${ga})`} fillRule="evenodd" />
-            : <path key={i} d={d} fill="none" stroke={`url(#${t === "sa" ? ga : g})`} strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />)}
-      </g>
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      {layers.map(([t, d], i) =>
+        t === "f" ? <path key={i} d={d} fill="currentColor" fillRule="evenodd" />
+          : t === "a" ? <path key={i} d={d} style={accent} fillRule="evenodd" />
+          : <path key={i} d={d} fill="none" stroke={t === "sa" ? "var(--icon-accent, currentColor)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />)}
     </svg>
   );
 };

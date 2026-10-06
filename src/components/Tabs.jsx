@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Icon } from "./ui.jsx";
 import { dubaiDay } from "../lib/format.js";
 
@@ -25,24 +26,54 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
   );
 }
 
-/* Phones: Portals-style floating glass bar at the bottom (thumb reach), plus a separate round profile button.
-   Active item: full-colour icon and label on a capsule; inactive: icon and label fade (28% white in dark mode).
+/* Phones: Telegram-style floating bar at the bottom (thumb reach), plus a separate round profile button.
+   Flat white icons; the active one takes the accent colour on a soft capsule. The capsule is one "lens" that glides
+   to the tab you touch: it swells into a glass bubble while it moves (and while your finger is down), then settles.
    Hidden while typing so it never sits on top of the keyboard. "My events" lives in the profile menu. */
 const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
+  const items = tabs.filter(([k]) => k !== "events");
+  const bar = useRef(null), btns = useRef({}), last = useRef(null);
+  const [press, setPress] = useState(null); // tab under the finger
+  const [lens, setLens] = useState(null); // { x, w } of the capsule
+  const [moving, setMoving] = useState(false);
+  const target = press || tab;
+  useLayoutEffect(() => {
+    const b = btns.current[target], box = bar.current;
+    if (!b || !box) return;
+    const r = b.getBoundingClientRect(), o = box.getBoundingClientRect();
+    const next = { x: r.left - o.left, w: r.width };
+    if (last.current && Math.abs(last.current.x - next.x) > 1) setMoving(true);
+    last.current = next;
+    setLens(next);
+  }, [target, items.length]);
+  useEffect(() => {
+    if (!moving || press) return;
+    const t = setTimeout(() => setMoving(false), 420);
+    return () => clearTimeout(t);
+  }, [moving, press, lens]);
+  // Keep the capsule aligned when the bar resizes (rotation, font load).
+  useEffect(() => {
+    const re = () => { const b = btns.current[tab], box = bar.current; if (b && box) { const r = b.getBoundingClientRect(), o = box.getBoundingClientRect(); setLens({ x: r.left - o.left, w: r.width }); } };
+    window.addEventListener("resize", re);
+    return () => window.removeEventListener("resize", re);
+  }, [tab]);
+  const release = () => setPress(null);
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-1.5 px-2.5 min-[390px]:gap-2 min-[390px]:px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
-      <div className="u-glass-bar flex h-[58px] min-w-0 flex-1 items-stretch gap-0 rounded-full p-1 min-[390px]:h-[64px] min-[390px]:gap-0.5 min-[390px]:p-[5px]">
-        {tabs.filter(([k]) => k !== "events").map(([k, , short]) => {
-          const on = tab === k;
+      <div ref={bar} className="u-glass-bar relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]"
+        onPointerUp={release} onPointerCancel={release} onPointerLeave={release}>
+        {lens && <span aria-hidden="true" className={`u-lens ${moving || press ? "u-lens-up" : ""}`} style={{ width: lens.w, transform: `translateX(${lens.x}px)` }} />}
+        {items.map(([k, , short]) => {
+          const on = target === k;
           const badge = k === "tickets" && user ? liveTickets(bookings) : 0;
           return (
-            <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
-              className={`u-keep u-haptic relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[9.5px] font-semibold leading-none tracking-tight min-[390px]:text-[10.5px] transition-colors duration-200 ${on ? "u-glass-on" : ""}`}
-              style={on ? { color: "var(--nav-on)" } : { color: "var(--nav-off)", "--icon-accent": "var(--nav-off)" }}>
-              <span className="relative">
-                <Icon name={NAV_ICON[k] || "home"} className="h-[22px] w-[22px] min-[390px]:h-6 min-[390px]:w-6" />
-                {badge > 0 && <span className="absolute -right-2.5 -top-1.5 min-w-[1rem] rounded-full bg-crimson-600 px-1 text-center text-[9.5px] leading-4 text-white">{badge}</span>}
+            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => { setPress(null); changeTab(k); }} aria-current={tab === k ? "page" : undefined}
+              onPointerDown={() => setPress(k)}
+              className={`u-keep u-haptic u-nav-item relative z-[1] flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10px] font-medium leading-none min-[390px]:text-[10.5px] ${on ? "u-nav-on" : ""}`}>
+              <span className="u-nav-icon relative">
+                <Icon name={NAV_ICON[k] || "home"} className="h-[24px] w-[24px] min-[390px]:h-[26px] min-[390px]:w-[26px]" />
+                {badge > 0 && <span className="absolute -right-2.5 -top-1 min-w-[1.1rem] rounded-full bg-[#ff3b30] px-1 text-center text-[10px] font-semibold leading-[1.1rem] text-white">{badge}</span>}
               </span>
               <span className="truncate">{short}</span>
             </button>
