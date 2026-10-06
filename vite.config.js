@@ -50,12 +50,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // App shell + static assets (JS, CSS, icons, team/party photos) are precached so the app opens fast.
+        // Only the app shell (JS, CSS, icons) is precached. Photos are cached the first time they're shown ("photos"
+        // below): precaching ~3.5 MB of photos right after the first visit fought the visible page for bandwidth.
         // The page itself (HTML) is not precached: see the "pages" rule below.
-        globPatterns: ["**/*.{js,css,ico,png,svg,webp,jpg,jpeg,woff2}"],
-        // Install dialog screenshots and PNG fallbacks; club photos and large event covers are cached on first view
-        // instead (runtime "photos" cache below), so installing the app stays light.
-        globIgnores: ["screenshots/**", "install/*.png", "clubs/**", "events/*-large.webp"],
+        globPatterns: ["**/*.{js,css,ico,svg}", "icons/*.png"],
+        globIgnores: ["icons/icon-1024.png"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
@@ -72,9 +71,9 @@ export default defineConfig({
           },
           { urlPattern: ({ url }) => url.pathname.startsWith("/api/"), handler: "NetworkOnly" },
           {
-            urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events)\/.+\.webp$/.test(url.pathname),
+            urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events|teams|collage|explore|install)\/.+\.(webp|png|jpe?g)$/.test(url.pathname),
             handler: "CacheFirst",
-            options: { cacheName: "photos", expiration: { maxEntries: 120, maxAgeSeconds: 30 * 24 * 3600 } },
+            options: { cacheName: "photos", expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 } },
           },
           {
             // Google Fonts: stylesheet revalidates, font files are cached for a year.

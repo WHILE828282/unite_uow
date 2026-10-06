@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { applyUpdate } from "../updates.js";
 import { Header } from "./components/Header.jsx";
 import { Avatar, ProfileModal } from "./components/modals/ProfileModal.jsx";
@@ -28,7 +28,8 @@ import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
 import { hostList, issueTicket, myTickets, openTicketFile } from "./lib/tickets.js";
 import { CSS, glassDark } from "./lib/styles.js";
 import { Events } from "./pages/Events.jsx";
-import { CreateModal, composeCard } from "./pages/HostEvent.jsx";
+// The host-an-event form is big and rarely opened: loaded on demand.
+const CreateModal = lazy(() => import("./pages/HostEvent.jsx").then((m) => ({ default: m.CreateModal })));
 import { HomeHero, HomeSections } from "./pages/Home.jsx";
 import { MyEvents } from "./pages/MyEvents.jsx";
 import { MySchedulePage } from "./pages/MySchedule.jsx";
@@ -485,7 +486,7 @@ export default function App() {
     const timer = setTimeout(() => ctrl.abort(), 20000);
     let saved = sub;
     try {
-      const card = await composeCard(sub.cover, sub.logo).catch(() => "");
+      const card = await import("./pages/HostEvent.jsx").then((m) => m.composeCard(sub.cover, sub.logo)).catch(() => "");
       const res = await fetch("/api/pitch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1060,7 +1061,7 @@ export default function App() {
       })()}
       {modal && modal.type === "auth" && <AuthModal reason={modal.reason} title={modal.changeEmail ? "Change email" : undefined} defaultName={modal.changeEmail ? name : ""} defaultSid={modal.changeEmail ? studentIdRef.current : ""} onClose={closeModal} onSignIn={signIn} onRestricted={() => notify({ title: "UOWD students only", body: RESTRICTED_MSG, tone: "lock" }, 5000)} />}
       {modal && modal.type === "create" && (
-        <CreateModal email={modal.email} contacts={extra} dark={dark} onClose={closeModal} onSubmitted={submitParty} />
+        <Suspense fallback={null}><CreateModal email={modal.email} contacts={extra} dark={dark} onClose={closeModal} onSubmitted={submitParty} /></Suspense>
       )}
       {modal && modal.type === "checkout" && <Checkout party={modal.party} email={modal.email} onPaid={createBooking} onDownload={handleDownload} onClose={closeModal} live={liveBooking} onOpenFile={openFile} />}
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (

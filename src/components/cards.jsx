@@ -49,7 +49,8 @@ export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false 
    as a full-width pill. The whole tile opens the event; the pill buys or reserves. */
 export function PartyTile({ p, i = 0, open = {}, action }) {
   const left = p.spots - p.taken;
-  const pic = p.cover || p.logo;
+  // Built-in events: the square photo (lighter, made for this shape). Student events: their cover (the logo is a logo).
+  const pic = p.dyn ? p.cover || p.logo : p.logo || p.cover;
   return (
     <article id={"event-" + p.id} {...open}
       className="u-tile u-card u-rise group flex cursor-pointer flex-col overflow-hidden rounded-[22px] bg-white p-1.5 ring-1 ring-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400"
