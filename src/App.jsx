@@ -626,7 +626,7 @@ export default function App() {
           return {
             id: t.id, partyId: p.id != null ? p.id : t.demoId || t.partyAt, title: p.title || t.title, emoji: p.emoji, logo: p.logo || t.logo,
             date: p.date || t.date, time: p.time || t.time || (t.start ? fmtTime(t.start) : ""), where: p.where || t.where, price: t.price, paid: t.price > 0,
-            method: t.method, email: user, name: t.name, studentId: t.studentId, ref: t.ref, kind: t.kind, state: t.kind === "trip" ? "waiting" : "valid",
+            method: t.method, email: user, name: t.name, studentId: t.studentId, ref: t.ref, kind: t.kind, state: t.cancelled ? "cancelled" : t.kind === "trip" ? "waiting" : "valid",
             qr: t.qr, key: t.key, checkedIn: t.checkedIn, groupLink: t.groupLink || "", ...(t.kind === "trip" ? { extName: t.extName, collectUntil: t.collectUntil } : {}),
           };
         });
@@ -846,6 +846,7 @@ export default function App() {
   const filteredParties = upcoming.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
   const feedLangs = LANGUAGES.filter((l) => upcoming.some((p) => p.lang === l));
   const myClubs = clubs.filter(isJoined).length;
+  const liveTix = bookings.filter((b) => b.state !== "cancelled" && !(b.date && b.date < today)).length; // tickets you can still use
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
   // Signed-in strip: the next thing on your calendar (ticket or team session) and a nudge about teams.
@@ -927,7 +928,7 @@ export default function App() {
           cards={user ? [
             nextUp ? { k: "Next up", t: nextUp.title, d: nextUp.when + (nextUp.sub ? ` · ${nextUp.sub}` : ""), go: nextUp.open } : null,
             myClubs > 0 ? { k: "Teams & clubs", t: `You're in ${myClubs} ${myClubs > 1 ? "teams & clubs" : "team or club"}`, d: myPending ? `${myPending} waiting for approval` : "See your week →", go: () => jumpTo("schedule") } : null,
-            bookings.length ? { k: "Tickets", t: `${bookings.length} ticket${bookings.length > 1 ? "s" : ""} in your wallet`, d: "Show QR at the door →", go: () => jumpTo("tickets"), hot: true } : null,
+            liveTix ? { k: "Tickets", t: `${liveTix} ticket${liveTix > 1 ? "s" : ""} in your wallet`, d: "Show QR at the door →", go: () => jumpTo("tickets"), hot: true } : null,
             ...manageList.filter((c) => c.apps.some((a) => a.status === "new")).slice(0, 1).map((c) => {
               const n = c.apps.filter((a) => a.status === "new").length;
               return { k: "Your club", t: `${n} new application${n > 1 ? "s" : ""}`, d: `${c.club} · Review →`, go: () => setModal({ type: "manage", id: c.clubId }) };

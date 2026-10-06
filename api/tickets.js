@@ -21,14 +21,16 @@ const MAX_FILE_CHARS = 3_500_000; // ~2.5 MB file as base64
 const DELIVER_LEAD_MS = 24 * 36e5; // tickets must be delivered 24 h before the event
 
 // What a ticket holder sees about their own ticket.
+// An event the moderators took down (rejected or deleted after approval): its tickets are void.
+const eventOff = (rec) => !!rec && (rec.status === "deleted" || rec.status === "rejected");
 const holderView = (t, rec) => ({
   id: t.id, ref: t.ref, checkedIn: !!t.checkedIn, refunded: !!t.refunded,
   kind: rec ? rec.kind || "own" : "own",
-  state: !rec ? "missing" : rec.status === "deleted" || t.refunded || (isTrip(rec) && tripState(rec) === "cancelled") ? "cancelled"
+  state: !rec ? "missing" : eventOff(rec) || t.refunded || (isTrip(rec) && tripState(rec) === "cancelled") ? "cancelled"
     : !isTrip(rec) ? "valid" : t.delivery ? "ready" : tripState(rec) === "confirmed" ? "preparing" : "waiting",
   delivery: t.delivery ? { mode: t.delivery.mode, note: t.delivery.note || "", at: t.delivery.at, hasFile: t.delivery.mode === "file" } : null,
   // The host's guest group chat: only for a live ticket.
-  groupLink: rec && rec.groupLink && !t.refunded && !(isTrip(rec) && tripState(rec) === "cancelled") ? rec.groupLink : "",
+  groupLink: rec && rec.groupLink && !t.refunded && !eventOff(rec) && !(isTrip(rec) && tripState(rec) === "cancelled") ? rec.groupLink : "",
 });
 // What the host sees about each attendee.
 const hostView = (t) => ({
@@ -133,6 +135,7 @@ export default async function handler(req, res) {
       const t = await getTicket(ref, id);
       if (!t) return res.status(200).json({ ok: true, result: "invalid", reason: "This ticket is for a different event." });
       if (t.refunded) return res.status(200).json({ ok: true, result: "invalid", reason: "This ticket was refunded.", attendee: hostView(t) });
+      if (eventOff(rec)) return res.status(200).json({ ok: true, result: "invalid", reason: "This event was cancelled.", attendee: hostView(t) });
       if (t.checkedIn) return res.status(200).json({ ok: true, result: "used", attendee: hostView(t) });
       const next = { ...t, checkedIn: Date.now() };
       await saveTicket(next);

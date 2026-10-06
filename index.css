@@ -368,3 +368,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Feed photos fade in instead of popping. */
 .u-tile img, .u-shimmer > img { animation: uImgIn 0.5s ease both; }
 @keyframes uImgIn { from { opacity: 0; } to { opacity: 1; } }
+/* Readable alert text on dark rose panels. */
+.u-dark :where(.text-rose-800:not(.u-keep)) { color: #fda4af; }
+.u-dark :where(.ring-rose-200:not(.u-keep)) { --tw-ring-color: rgba(244, 63, 94, 0.3); }

@@ -228,7 +228,7 @@ export const demoSeats = async () => Object.fromEntries((await db().select({ ref
 export const listTicketsFor = async (email) => db().select({
   id: S.tickets.id, ref: S.tickets.eventRef, name: S.tickets.name, studentId: S.tickets.studentId, method: S.tickets.method, price: S.tickets.price,
   status: S.tickets.status, checkedInAt: S.tickets.checkedInAt, createdAt: S.tickets.createdAt,
-  title: S.events.title, kind: S.events.kind, date: S.events.date, start: S.events.startTime, venue: S.events.venueName, data: S.events.data, hasLogo: sql`${S.events.logo} is not null`,
+  title: S.events.title, kind: S.events.kind, evStatus: S.events.status, date: S.events.date, start: S.events.startTime, venue: S.events.venueName, data: S.events.data, hasLogo: sql`${S.events.logo} is not null`,
 }).from(S.tickets).innerJoin(S.events, eq(S.events.ref, S.tickets.eventRef)).where(eq(S.tickets.userEmail, lower(email))).orderBy(desc(S.tickets.createdAt)).limit(100);
 export const listWaitlist = async (email) => (await db().select({ ref: S.waitlist.eventRef }).from(S.waitlist).where(eq(S.waitlist.userEmail, lower(email)))).map((r) => r.ref);
 export const countTickets = async (ref) => Number((await db().select({ n: sql`count(*)` }).from(S.tickets).where(eq(S.tickets.eventRef, ref)))[0].n) || 0;

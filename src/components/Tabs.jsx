@@ -1,4 +1,8 @@
 import { Icon } from "./ui.jsx";
+import { dubaiDay } from "../lib/format.js";
+
+// Badge: tickets you can still use (not cancelled, event not over).
+const liveTickets = (bs) => bs.filter((b) => b.state !== "cancelled" && !(b.date && b.date < dubaiDay())).length;
 
 /* Section tabs. Stays under the header while you scroll, so switching sections is always one tap away. The strip behind
    it has the page background, so cards don't show between the header and the tabs. */
@@ -11,7 +15,7 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
         <button key={k} role="tab" aria-selected={tab === k} onClick={() => changeTab(k)}
           className={`relative z-10 whitespace-nowrap rounded-full px-1 py-2.5 text-xs font-semibold transition-colors sm:text-sm ${tab === k ? "text-white" : "text-slate-500 hover:text-slate-800"}`}>
           <span className="sm:hidden">{short}</span><span className="hidden sm:inline">{l}</span>
-          {k === "tickets" && user && bookings.length > 0 && <span className="ml-1 rounded-full bg-crimson-600 px-1.5 py-0.5 text-xs text-white">{bookings.length}</span>}
+          {k === "tickets" && user && liveTickets(bookings) > 0 && <span className="ml-1 rounded-full bg-crimson-600 px-1.5 py-0.5 text-xs text-white">{liveTickets(bookings)}</span>}
           {k === "events" && myEventItems.some(({ r }) => r.status === "review") && <span className="ml-1 hidden rounded-full bg-amber-500 px-1.5 py-0.5 text-xs text-white sm:inline">{myEventItems.filter(({ r }) => r.status === "review").length}</span>}
           {k === "schedule" && sessions.length > 0 && <span className="ml-1 hidden rounded-full bg-emerald-500 px-1.5 py-0.5 text-xs text-white sm:inline">{sessions.length}</span>}
         </button>
@@ -31,7 +35,7 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
       <div className="u-glass-bar flex h-[58px] min-w-0 flex-1 items-stretch gap-0 rounded-full p-1 min-[390px]:h-[64px] min-[390px]:gap-0.5 min-[390px]:p-[5px]">
         {tabs.filter(([k]) => k !== "events").map(([k, , short]) => {
           const on = tab === k;
-          const badge = k === "tickets" && user && bookings.length ? bookings.length : 0;
+          const badge = k === "tickets" && user ? liveTickets(bookings) : 0;
           return (
             <button key={k} onClick={() => changeTab(k)} aria-current={on ? "page" : undefined}
               className={`u-keep u-haptic relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[9.5px] font-semibold leading-none tracking-tight min-[390px]:text-[10.5px] transition-colors duration-200 ${on ? "u-glass-on" : ""}`}

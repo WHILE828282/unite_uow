@@ -1,6 +1,7 @@
 import { EventLogo, Icon } from "../components/ui.jsx";
 import { ComingUp } from "../components/ComingUp.jsx";
-import { fmtDate } from "../lib/format.js";
+import { useState } from "react";
+import { dubaiDay, fmtDate } from "../lib/format.js";
 
 
 
@@ -11,12 +12,20 @@ const CHIP = {
 };
 const TicketChip = ({ b }) => {
   const [label, cls] = b.kind === "trip" ? CHIP[b.state] || CHIP.waiting
-    : b.state === "cancelled" ? ["Event cancelled", "bg-rose-50 text-rose-700"] : b.checkedIn ? ["Checked in", "bg-sky-50 text-sky-700"] : [b.paid ? "Paid" : "Free", "bg-emerald-50 text-emerald-700"];
+    : b.state === "cancelled" ? ["Event cancelled", "bg-rose-50 text-rose-700"]
+    : b.date && b.date < dubaiDay() ? [b.checkedIn ? "Attended" : "Ended", "bg-slate-100 text-slate-500"] : b.checkedIn ? ["Checked in", "bg-sky-50 text-sky-700"] : [b.paid ? "Paid" : "Free", "bg-emerald-50 text-emerald-700"];
   return <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>{label}</span>;
 };
 
 /* My Tickets tab: tickets, waitlist spots and a pointer to hosting. */
 export function MyTickets({ user, bookings, waitlist, parties, submissions, setModal, changeTab, hostEvent, upcoming = [] }) {
+  // Active: upcoming and still valid. Past: the date has gone, or the event was cancelled.
+  const [view, setView] = useState("active");
+  const today = dubaiDay();
+  const isPast = (b) => b.state === "cancelled" || (b.date && b.date < today);
+  const active = bookings.filter((b) => !isPast(b)).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  const past = bookings.filter(isPast).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const shown = view === "active" ? active : past;
   return (
     (!user ? (
       <>
@@ -31,8 +40,24 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
     ) : (
       <div className="space-y-8">
         <section>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 max-sm:hidden">Tickets</h3>
-          {bookings.length === 0 ? (
+          {bookings.length > 0 && (
+            <div role="tablist" aria-label="Tickets" className="mb-4 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 sm:max-w-sm">
+              {[["active", "Active", active.length], ["past", "Past", past.length]].map(([k, l, n]) => (
+                <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)}
+                  className={`u-btn u-haptic rounded-xl py-2 text-sm font-semibold ${view === k ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>
+                  {l}<span className={`ml-1.5 tabular-nums ${view === k ? "text-slate-400" : "text-slate-400/70"}`}>{n}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {bookings.length > 0 && shown.length === 0 ? (
+            <div className="rounded-3xl bg-white px-6 py-10 text-center">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="ticket" className="h-6 w-6" /></span>
+              <p className="mt-3 font-semibold">{view === "active" ? "No active tickets" : "Nothing here yet"}</p>
+              <p className="text-sm text-slate-500">{view === "active" ? "Your upcoming tickets show up here." : "Tickets for events that have ended or were cancelled show up here."}</p>
+              {view === "active" && <button onClick={() => changeTab("parties")} className="u-btn mt-4 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">Browse events</button>}
+            </div>
+          ) : bookings.length === 0 ? (
             <div>
               <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500"><Icon name="ticket" className="h-6 w-6" /></span>
@@ -44,10 +69,10 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {bookings.map((b) => {
+              {shown.map((b) => {
                 // Wallet pass: the event's photo behind the ticket (cancelled tickets stay plain).
                 const ev = parties.find((p) => p.id === b.partyId) || {};
-                if (ev.cover && b.state !== "cancelled") return (
+                if (ev.cover && !isPast(b)) return (
                   <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })}
                     className="u-keep u-card u-shimmer relative isolate flex h-40 flex-col justify-between overflow-hidden rounded-3xl p-4 text-left text-white shadow-lg">
                     <img src={ev.cover} alt="" loading="lazy" decoding="async" draggable={false} className="absolute inset-0 -z-10 h-full w-full object-cover" />
@@ -66,7 +91,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                   </button>
                 );
                 return (
-                <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
+                <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className={`u-card flex items-center gap-4 ${isPast(b) ? "opacity-75" : ""} rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left`}>
                   {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo, id: b.id, key: b.key, emoji: b.emoji }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{b.title}</p>

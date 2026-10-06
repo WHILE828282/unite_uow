@@ -78,12 +78,12 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
         <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-emerald-500" style={{ filter: "blur(80px)", opacity: 0.22 }} />
         </>}
         <div className="relative">
-          <div className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
-            <Check className="h-7 w-7" />
+          <div className={`u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg ${b.state === "cancelled" ? "bg-rose-500" : "bg-emerald-500"}`}>
+            {b.state === "cancelled" ? <Icon name="close" className="h-7 w-7" /> : <Check className="h-7 w-7" />}
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-slate-200">{justPaid ? (b.paid ? "Payment Successful" : "You're in!") : "Your ticket"}</h2>
+          <h2 className="mt-3 text-lg font-semibold text-slate-200">{b.state === "cancelled" ? "Event cancelled" : justPaid ? (b.paid ? "Payment Successful" : "You're in!") : "Your ticket"}</h2>
           {b.paid && <p className="mt-0.5 text-3xl font-bold tabular-nums tracking-tight">{b.price.toFixed(2)} <span className="text-base font-semibold text-slate-400">AED</span></p>}
-          <p className="mt-1 text-sm text-slate-400">{b.paid ? `Paid via Ziina${b.method ? ` · ${b.method}` : ""}` : "Free spot reserved"}</p>
+          <p className="mt-1 text-sm text-slate-400">{b.state === "cancelled" ? "This ticket is no longer valid" : b.paid ? `Paid via Ziina${b.method ? ` · ${b.method}` : ""}` : "Free spot reserved"}</p>
         </div>
       </div>
 
@@ -119,7 +119,12 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
               <span className="absolute h-7 w-7 rounded-full bg-slate-100" style={{ right: -34, top: -15 }} />
             </div>
 
-            {trip ? <TripStatus b={b} onOpenFile={onOpenFile} /> : b.ref && !b.qr ? (
+            {trip ? <TripStatus b={b} onOpenFile={onOpenFile} /> : b.state === "cancelled" ? (
+              <div className="rounded-2xl bg-rose-50 p-4 text-center text-sm text-rose-800 ring-1 ring-inset ring-rose-200">
+                <p className="font-semibold">Event cancelled</p>
+                <p className="mt-1 leading-relaxed">The organizers cancelled this event, so this ticket can't be used.{b.paid ? " For a refund, write to support@uniteuow.com with your booking ID." : ""}</p>
+              </div>
+            ) : b.ref && !b.qr ? (
               <div className="mx-auto flex h-44 w-44 flex-col items-center justify-center gap-2 rounded-2xl bg-slate-50 text-center text-xs text-slate-500 ring-1 ring-slate-200/60">
                 <span className="u-spin h-6 w-6 rounded-full border-2 border-slate-400 border-t-transparent" />Activating your ticket…
               </div>
@@ -140,21 +145,21 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
           </div>
         </div>
 
-        {!trip && <button onClick={() => onDownload(b)} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
+        {!trip && b.state !== "cancelled" && <button onClick={() => onDownload(b)} className="u-btn mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16" /></svg>
           Download ticket
         </button>}
-        {b.groupLink && b.qr && (
+        {b.groupLink && b.qr && b.state !== "cancelled" && (
           <a href={b.groupLink} target="_blank" rel="noopener noreferrer" className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">
             <Icon name="users" className="h-4 w-4" /> Join the {/whatsapp/i.test(b.groupLink) ? "WhatsApp" : "Telegram"} group ↗
           </a>
         )}
-        <button onClick={() => downloadCalendar([], [b], `${b.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`)}
+        {b.state !== "cancelled" && <button onClick={() => downloadCalendar([], [b], `${b.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`)}
           className="u-btn mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-white">
           <Icon name="download" className="h-4 w-4" /> Add to calendar
-        </button>
+        </button>}
         <button onClick={onClose} className="u-btn mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-slate-600 hover:bg-white">Done</button>
-        <p className="mt-1 text-center text-xs text-slate-400">{trip ? "Your official ticket appears here once the host delivers it." : b.ref ? "Show the QR code at the entrance. Each code works once." : "Show the QR code at the entrance. Screenshots work too."}</p>
+        <p className="mt-1 text-center text-xs text-slate-400">{b.state === "cancelled" && !trip ? "Questions? support@uniteuow.com" : trip ? "Your official ticket appears here once the host delivers it." : b.ref ? "Show the QR code at the entrance. Each code works once." : "Show the QR code at the entrance. Screenshots work too."}</p>
       </div>
     </div>
   );
