@@ -37,7 +37,15 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   const [press, setPress] = useState(null); // tab under the finger
   const [lens, setLens] = useState(null); // { x, w } of the capsule
   const [moving, setMoving] = useState(false);
-  const target = press || tab;
+  // The lens starts moving first; the (heavier) page switch follows a couple of frames later.
+  const [pending, setPending] = useState(null);
+  useEffect(() => {
+    if (!pending) return;
+    if (pending === tab) { setPending(null); return; }
+    const t = setTimeout(() => setPending(null), 800);
+    return () => clearTimeout(t);
+  }, [tab, pending]);
+  const target = press || pending || tab;
   useLayoutEffect(() => {
     const b = btns.current[target], box = bar.current;
     if (!b || !box) return;
@@ -68,7 +76,7 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
           const on = target === k;
           const badge = k === "tickets" && user ? liveTickets(bookings) : 0;
           return (
-            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => { setPress(null); changeTab(k); }} aria-current={tab === k ? "page" : undefined}
+            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => { setPress(null); if (k === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); }} aria-current={tab === k ? "page" : undefined}
               onPointerDown={() => setPress(k)}
               className={`u-keep u-haptic u-nav-item relative z-[1] flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10px] font-medium leading-none min-[390px]:text-[10.5px] ${on ? "u-nav-on" : ""}`}>
               <span className="u-nav-icon relative">

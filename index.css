@@ -241,14 +241,15 @@ html.u-typing { --nav: 0px; }
 
 /* Home hero glow (slow breathing crimson light behind the collage) */
 @keyframes uGlow { 0%, 100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.15); opacity: .8; } }
-.u-hero-glow { background: radial-gradient(circle, rgba(196, 90, 104, .55), transparent 65%); filter: blur(20px); animation: uGlow 7s ease-in-out infinite; }
+/* Static soft glow (a blurred, endlessly animated layer made scrolling on phones stutter). */
+.u-hero-glow { background: radial-gradient(circle, rgba(196, 90, 104, .45), transparent 68%); opacity: .7; }
 @media (prefers-reduced-motion: reduce) { .u-hero-glow { animation: none; } }
 
 /* Glass surfaces (Portals style): floating bottom bar, its active capsule and glass icon tiles. Always dark glass. */
 /* Floating glass nav: frosted white in light mode, dark glass in dark mode. Icon colours come from --nav-on/--nav-off. */
-.u-glass-bar, .u-glass-round { --nav-on: #0f172a; --nav-off: rgba(15, 23, 42, 0.36); color: #0f172a; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07), 0 12px 30px -12px rgba(15, 23, 42, 0.28), 0 2px 6px -2px rgba(15, 23, 42, 0.08); }
+.u-glass-bar, .u-glass-round { --nav-on: #0f172a; --nav-off: rgba(15, 23, 42, 0.36); color: #0f172a; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07), 0 12px 30px -12px rgba(15, 23, 42, 0.28), 0 2px 6px -2px rgba(15, 23, 42, 0.08); }
 .u-glass-on { background: rgba(15, 23, 42, 0.07); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04); }
-.u-dark .u-glass-bar, .u-dark .u-glass-round { --nav-on: #ffffff; --nav-off: rgba(255, 255, 255, 0.28); color: #ffffff; background: linear-gradient(180deg, rgba(34, 35, 42, 0.96), rgba(20, 21, 26, 0.96)); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
+.u-dark .u-glass-bar, .u-dark .u-glass-round { --nav-on: #ffffff; --nav-off: rgba(255, 255, 255, 0.28); color: #ffffff; background: linear-gradient(180deg, rgba(34, 35, 42, 0.96), rgba(20, 21, 26, 0.96)); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
 .u-dark .u-glass-round { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 14px 32px -12px rgba(0, 0, 0, 0.6); }
 .u-dark .u-glass-on { background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.11)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 /* Install banner: same glass as the nav. */
@@ -362,7 +363,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Accent buttons: one confident crimson, slightly brighter on black. */
 .u-dark .bg-crimson-600:not(.u-keep) { background-color: #c0263f; }
 /* Picture placeholders shimmer until the photo arrives (the photo covers it). */
-.u-shimmer { background: linear-gradient(100deg, #17171a 30%, #26262b 50%, #17171a 70%); background-size: 220% 100%; animation: uShimmer 1.4s linear infinite; }
+.u-shimmer { background-color: #1c1c1e; }
 @keyframes uShimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 @media (prefers-reduced-motion: reduce) { .u-shimmer { animation: none; } }
 /* Feed photos fade in instead of popping. */
@@ -383,16 +384,17 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-nav-on .u-nav-icon { transform: scale(1.06); }
 .u-lens {
   position: absolute; top: 5px; bottom: 5px; left: 0; border-radius: 9999px; pointer-events: none;
-  background: rgba(15, 23, 42, 0.07);
-  transition: transform 0.5s cubic-bezier(0.25, 1.25, 0.4, 1), width 0.4s cubic-bezier(0.25, 1.25, 0.4, 1), background 0.25s, box-shadow 0.25s, scale 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+  background: rgba(15, 23, 42, 0.07); will-change: transform;
+  transition: transform 0.42s cubic-bezier(0.3, 1.3, 0.45, 1);
 }
 .u-dark .u-lens { background: rgba(255, 255, 255, 0.11); }
-/* Swollen glass bubble while gliding or pressed: bigger, brighter rim, a light sheen. */
-.u-lens.u-lens-up {
-  scale: 1.16 1.22;
-  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.06) 60%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), inset 0 -6px 12px rgba(255, 255, 255, 0.08), 0 6px 18px -6px rgba(0, 0, 0, 0.45);
-  -webkit-backdrop-filter: blur(2px) saturate(170%) brightness(1.1); backdrop-filter: blur(2px) saturate(170%) brightness(1.1);
+/* The glass bubble is a layer on top that only fades and scales (cheap on the GPU). */
+.u-lens::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0; transform: scale(1);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.05) 60%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
-.u-light .u-lens.u-lens-up { background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.35) 60%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 6px 18px -6px rgba(0, 0, 0, 0.25); }
-@media (prefers-reduced-motion: reduce) { .u-lens, .u-nav-icon { transition: none; } .u-lens.u-lens-up { scale: 1; } }
+.u-light .u-lens::after { background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.4) 60%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); }
+.u-lens.u-lens-up::after { opacity: 1; transform: scale(1.14, 1.2); }
+@media (prefers-reduced-motion: reduce) { .u-lens, .u-lens::after, .u-nav-icon { transition: none; } }

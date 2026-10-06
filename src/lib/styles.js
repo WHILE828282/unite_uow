@@ -8,7 +8,7 @@ export const GRADIENTS = new Proxy({}, { get: () => INK });
 // the header (no hard band); the header's own blur shows through its lower part.
 export const STATUS_BAR_STRIP = { backgroundImage: "linear-gradient(rgba(14,15,19,0.9) 0, rgba(14,15,19,0.78) calc(var(--sat) * 0.6), rgba(14,15,19,0) calc(var(--sat) + 10px))" };
 
-export const glassDark = { background: "rgba(0,0,0,0.72)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)" };
+export const glassDark = { background: "rgba(0,0,0,0.78)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" };
 export const overlayStyle = { background: "rgba(0,0,0,0.6)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" };
 export const glassChip = { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" };
 
