@@ -45,7 +45,31 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
     const t = setTimeout(() => setPending(null), 800);
     return () => clearTimeout(t);
   }, [tab, pending]);
-  const target = pending || tab;
+  // Hold and slide along the bar (like Telegram): the glass follows the finger, the tab under it lights up, and
+  // letting go opens it. Nothing happens until the finger actually moves, so a plain tap is still a normal click.
+  const drag = useRef(null);
+  const [dragX, setDragX] = useState(null), [hover, setHover] = useState(null);
+  const tabAt = (x) => { for (const [k] of items) { const b = btns.current[k]; if (!b) continue; const r = b.getBoundingClientRect(); if (x >= r.left && x <= r.right) return k; } return null; };
+  const onTouchStart = (e) => { if (e.touches.length === 1) drag.current = { x0: e.touches[0].clientX, on: false }; };
+  const onTouchMove = (e) => {
+    const d = drag.current, box = bar.current;
+    if (!d || !box) return;
+    const x = e.touches[0].clientX;
+    if (!d.on && Math.abs(x - d.x0) < 8) return;
+    d.on = true;
+    setDragX(x - box.getBoundingClientRect().left);
+    const k = tabAt(x);
+    if (k) setHover(k);
+  };
+  const onTouchEnd = () => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d || !d.on) return;
+    const k = hover;
+    setDragX(null); setHover(null);
+    if (k && k !== tab) { setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); }
+  };
+  const target = hover || pending || tab;
   useLayoutEffect(() => {
     const b = btns.current[target], box = bar.current;
     if (!b || !box) return;
@@ -68,8 +92,10 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   }, [tab]);
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-1.5 px-2.5 min-[390px]:gap-2 min-[390px]:px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
-      <div ref={bar} className="u-glass-bar relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]">
-        {lens && <span aria-hidden="true" className={`u-lens ${moving ? "u-lens-up" : ""}`} style={{ width: lens.w, transform: `translateX(${lens.x}px)` }} />}
+      <div ref={bar} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd} style={{ touchAction: "none" }}
+        className={`u-glass-bar ${moving || dragX !== null ? "u-moving" : ""} relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]`}>
+        {lens && <span aria-hidden="true" className={`u-lens ${moving || dragX !== null ? "u-lens-up" : ""} ${dragX !== null ? "u-lens-drag" : ""}`}
+          style={{ width: lens.w, transform: `translateX(${dragX !== null && bar.current ? Math.max(0, Math.min(bar.current.clientWidth - lens.w, dragX - lens.w / 2)) : lens.x}px)` }} />}
         {items.map(([k, , short]) => {
           const on = target === k;
           const badge = k === "tickets" && user ? liveTickets(bookings) : 0;

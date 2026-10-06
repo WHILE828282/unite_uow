@@ -388,13 +388,25 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   transition: transform 0.42s cubic-bezier(0.3, 1.3, 0.45, 1);
 }
 .u-dark .u-lens { background: rgba(255, 255, 255, 0.11); }
-/* The glass bubble is a layer on top that only fades and scales (cheap on the GPU). */
-.u-lens::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0; transform: scale(1);
-  background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.05) 60%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
+/* The glass bubble (Telegram style): clear in the middle, a thin bright rim with a soft inner light, bigger than the bar.
+   Only opacity and transform animate, so it stays on the GPU. */
+.u-lens::after, .u-nav-item::before {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px; pointer-events: none; opacity: 0; transform: scale(0.92);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.14) 100%);
+  box-shadow: inset 0 0 0 1.25px rgba(255, 255, 255, 0.55), inset 0 2px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 5px rgba(0, 0, 0, 0.25), 0 10px 22px -10px rgba(0, 0, 0, 0.7);
+  transition: opacity 0.18s ease, transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
-.u-light .u-lens::after { background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.4) 60%); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08); }
-.u-lens.u-lens-up::after { opacity: 1; transform: scale(1.14, 1.2); }
-@media (prefers-reduced-motion: reduce) { .u-lens, .u-lens::after, .u-nav-icon { transition: none; } }
+.u-light .u-lens::after, .u-light .u-nav-item::before {
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0.7) 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 2px 3px rgba(255, 255, 255, 0.9), 0 10px 22px -10px rgba(0, 0, 0, 0.3);
+}
+.u-lens { transition: transform 0.42s cubic-bezier(0.3, 1.3, 0.45, 1), background-color 0.2s; }
+.u-lens.u-lens-up { background: transparent; }
+.u-lens.u-lens-up::after { opacity: 1; transform: scale(1.2, 1.42); }
+/* Under the finger: the bubble appears at once on that tab (pure CSS :active, so the tap still counts first time). */
+.u-nav-item:active::before { opacity: 1; transform: scale(1.2, 1.42); transition-duration: 0.12s, 0.25s; }
+/* The glass magnifies what's under it. */
+.u-nav-item:active .u-nav-icon, .u-moving .u-nav-on .u-nav-icon { transform: scale(1.28); }
+@media (prefers-reduced-motion: reduce) { .u-lens, .u-lens::after, .u-nav-item::before, .u-nav-icon { transition: none; } }
+/* While dragged the glass sticks to the finger (no easing lag). */
+.u-lens.u-lens-drag { transition: background-color 0.2s; }
