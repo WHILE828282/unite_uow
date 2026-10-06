@@ -167,14 +167,11 @@ export function FeaturedCard({ p, open = {}, onShare, action, onDetails }) {
       <p className="mt-2 text-sm text-slate-300">{new Date(p.date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · From {p.time}{p.until ? ` ${p.until}` : ""}</p>
       <p className="mt-0.5 flex items-start gap-1.5 text-sm text-slate-400"><Icon name="pin" className="mt-0.5 h-3.5 w-3.5 shrink-0" />{p.where}</p>
 
-      <div className="mt-5 grid max-w-sm grid-cols-4 gap-2" aria-label="Countdown to doors">
-        {parts.map(([k, v]) => (
-          <div key={k} className="rounded-2xl bg-white/[0.07] py-2.5 text-center ring-1 ring-inset ring-white/10">
-            <div className="text-xl font-bold tabular-nums sm:text-2xl">{String(v).padStart(2, "0")}</div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{k}</div>
-          </div>
-        ))}
-      </div>
+      {/* One quiet countdown line instead of four tiles. */}
+      <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium text-white/90 backdrop-blur-md" aria-label="Countdown to doors">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-crimson-400" />
+        Starts in <span className="font-semibold tabular-nums text-white">{parts[0][1]}d {String(parts[1][1]).padStart(2, "0")}:{String(parts[2][1]).padStart(2, "0")}:{String(parts[3][1]).padStart(2, "0")}</span>
+      </p>
 
 
       <div className="mt-5 flex max-w-md gap-2">
