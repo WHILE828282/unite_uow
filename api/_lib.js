@@ -74,7 +74,7 @@ export const K = {
 };
 export const STATUSES = ["pending", "under_review", "approved", "rejected"];
 // Student events (UN-XXXXXX) and Unite's own built-in events (DEMO-<id>, seeded into the database).
-export const isRef = (v) => /^(UN-[A-Z0-9]{6}|DEMO-\d{1,4})$/.test(String(v || ""));
+export const isRef = (v) => /^(UN-[A-Z0-9]{6}|DEMO-\d{1,4}|OFF-\d{1,4})$/.test(String(v || ""));
 // Events (hosted applications) live in Postgres.
 export const getPitch = (ref) => store.getEvent(ref);
 

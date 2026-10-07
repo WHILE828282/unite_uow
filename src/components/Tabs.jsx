@@ -3,7 +3,7 @@ import { Icon } from "./ui.jsx";
 import { dubaiDay } from "../lib/format.js";
 
 // Badge: tickets you can still use (not cancelled, event not over).
-const liveTickets = (bs) => bs.filter((b) => b.state !== "cancelled" && !(b.date && b.date < dubaiDay())).length;
+const liveTickets = (bs) => bs.filter((b) => b.state !== "cancelled" && !((b.endDate || b.date) && (b.endDate || b.date) < dubaiDay())).length;
 
 /* Section tabs. Stays under the header while you scroll, so switching sections is always one tap away. The strip behind
    it has the page background, so cards don't show between the header and the tabs. */

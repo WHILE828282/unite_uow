@@ -18,10 +18,10 @@ import { WaitlistModal } from "./components/modals/WaitlistModal.jsx";
 import { Check, Icon } from "./components/ui.jsx";
 import { CLUBS, clubFromPath, clubPath, isSports } from "./data/clubs.js";
 import { PARTIES } from "./data/events.js";
-import { LANGUAGES } from "./data/options.js";
+import { OFFICIAL } from "./data/official.js";
 import { copyText } from "./lib/clipboard.js";
 import { downloadCalendar, downloadTicket } from "./lib/downloads.js";
-import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, submissionToParty, tripClosed } from "./lib/events.js";
+import { MOD_STATUSES, PROCESSING_MS, REVIEW_MS, campusToParty, eventImg, eventStartMs, isPastEvent, officialToParty, submissionToParty, tripClosed } from "./lib/events.js";
 import { dubaiDay, firstName, fmtDate, fmtLeft, fmtTime, makeId, shortVenue, to24, weekdayIdx } from "./lib/format.js";
 import { overlaps, scheduleLabel } from "./lib/schedule.js";
 import { isCampusEmail, RESTRICTED_MSG } from "./lib/auth.js";
@@ -72,11 +72,13 @@ export default function App() {
   const [bookings, setBookings] = useState(() => (saved && Array.isArray(saved.bookings) ? saved.bookings : []));
   // Seat and waitlist counts include your own saved tickets and waitlist spots.
   // Built-in events are real events on the server too (DEMO-<id>): tickets, seats and waitlists live there.
-  const [parties, setParties] = useState(() => PARTIES.map((p) => ({
+  // Built-in student events plus the official UOWD events (bundled copy until the database list arrives).
+  const [parties, setParties] = useState(() => [...PARTIES.map((p) => ({
     ...p, ref: p.ref || `DEMO-${p.id}`,
     taken: p.taken + bookings.filter((b) => b.partyId === p.id).length,
     wait: p.wait + (saved && saved.waitlist && saved.waitlist[p.id] ? 1 : 0),
-  })));
+  })), ...OFFICIAL.map(officialToParty)]);
+  const [official, setOfficial] = useState(null); // official UOWD events from the database (with RSVP counts)
   // Party applications. Moderated ones (database connected) carry { moderated, mod: status, key } and follow the
   // admin's Telegram decision; otherwise the 2-hour demo review applies. Saved per account in this browser.
   const [submissions, setSubmissions] = useState(() => {
@@ -279,6 +281,15 @@ export default function App() {
     }));
   }, [demoSeats]);
 
+  // Official UOWD events: the database is the source of truth (an event taken down there disappears here).
+  useEffect(() => {
+    if (!official) return;
+    setParties((ps) => {
+      const prev = new Map(ps.filter((x) => x.official).map((x) => [x.id, x]));
+      return [...ps.filter((x) => !x.official), ...official.map((o) => { const p = officialToParty(o), old = prev.get(p.id); return old ? { ...p, wait: old.wait } : p; })];
+    });
+  }, [official]);
+
   // Campus feed of approved student events (refreshed every minute).
   useEffect(() => {
     let stop = false;
@@ -287,6 +298,7 @@ export default function App() {
         const d = await (await fetch("/api/events")).json();
         if (!stop && d && Array.isArray(d.events)) setCampus((old) => (JSON.stringify(old) === JSON.stringify(d.events) ? old : d.events));
         if (!stop && d && d.seats && typeof d.seats === "object") setDemoSeats((old) => (JSON.stringify(old) === JSON.stringify(d.seats) ? old : d.seats));
+        if (!stop && d && Array.isArray(d.official) && d.official.length) setOfficial((old) => (JSON.stringify(old) === JSON.stringify(d.official) ? old : d.official));
       } catch (e) { /* offline or no database: keep what we have */ }
       if (!stop) setCampusLoaded(true);
     };
@@ -626,7 +638,7 @@ export default function App() {
           const p = parties.find((x) => x.ref === t.ref) || {};
           return {
             id: t.id, partyId: p.id != null ? p.id : t.demoId || t.partyAt, title: p.title || t.title, emoji: p.emoji, logo: p.logo || t.logo,
-            date: p.date || t.date, time: p.time || t.time || (t.start ? fmtTime(t.start) : ""), where: p.where || t.where, price: t.price, paid: t.price > 0,
+            date: p.date || t.date, ...(p.endDate || t.endDate ? { endDate: p.endDate || t.endDate } : {}), time: p.time || t.time || (t.start ? fmtTime(t.start) : ""), where: p.where || t.where, price: t.price, paid: t.price > 0,
             method: t.method, email: user, name: t.name, studentId: t.studentId, ref: t.ref, kind: t.kind, state: t.cancelled ? "cancelled" : t.kind === "trip" ? "waiting" : "valid",
             qr: t.qr, key: t.key, checkedIn: t.checkedIn, groupLink: t.groupLink || "", ...(t.kind === "trip" ? { extName: t.extName, collectUntil: t.collectUntil } : {}),
           };
@@ -716,7 +728,7 @@ export default function App() {
   // Student-hosted events: the ticket is registered with Unite, which signs its QR code (own events) or holds the
   // place in the group (group trips). If that fails, the (demo) payment is reversed and the ticket removed.
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, ...(p.endDate ? { endDate: p.endDate } : {}), time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
       ...(p.ref ? { ref: p.ref, kind: p.kind || "own", state: p.kind === "trip" ? "waiting" : "valid", ...(p.kind === "trip" ? { extName: p.extName, collectUntil: p.collectUntil } : {}) } : {}) };
     setBookings((bs) => [b, ...bs]);
     agreeLegal();
@@ -769,9 +781,9 @@ export default function App() {
     requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : `Sign in to reserve your spot at ${p.title}`, (email) => {
       if (p.price > 0) setModal({ type: "checkout", party: p, email });
       else setModal({
-        type: "confirm", title: `Reserve a spot at ${p.title}?`,
+        type: "confirm", title: p.official ? `RSVP to ${p.title}?` : `Reserve a spot at ${p.title}?`,
         body: `${fmtDate(p.date)} · ${p.time} · ${shortVenue(p.where)}. It's free; you'll get a ticket with a QR code.`,
-        confirmLabel: "Reserve", onConfirm: () => setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true }),
+        confirmLabel: p.official ? "RSVP" : "Reserve", onConfirm: () => setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true }),
       });
     });
   };
@@ -823,16 +835,18 @@ export default function App() {
 
   // `short`: on cards, where the price is already shown next to the title.
   // quiet: list cards use a tinted button, so solid crimson stays for the main action on a page (detail, featured).
-  const partyBtn = (p, extra = "w-full", short = false, quiet = false, price = false) => {
+  // cta: the feed's wording, "Get ticket" (paid) or "RSVP" (free and official events).
+  const partyBtn = (p, extra = "w-full", short = false, quiet = false, price = false, cta = false) => {
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
-    if (mine) { label = price ? "Your ticket" : "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
+    if (mine) { label = price || cta ? "Your ticket" : "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
     else if (tripClosed(p, clock)) return <button disabled className={`u-btn ${extra} rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-500`}>{price ? "Closed" : "Payments closed"}</button>;
     else if (p.spots - p.taken <= 0) {
       label = wl ? `${price ? "" : "Waitlisted · "}#${wl}${price ? " in line" : ""}` : price ? "Waitlist" : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
-    } else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
+    } else if (cta) { label = p.price > 0 ? "Get ticket" : "RSVP"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
+    else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
     else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
     return <button onClick={() => onParty(p)} className={`u-btn u-haptic ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
@@ -843,11 +857,11 @@ export default function App() {
   // The feed: upcoming events only (past dates drop off), soonest first.
   const today = dubaiDay(clock); // Dubai date, so past events drop off at midnight campus time
   // Pinned events (the launch party) lead the feed.
-  const upcoming = parties.filter((p) => p.date >= today).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
-  const filteredParties = upcoming.filter((p) => (filter === "All" || p.category === filter) && (langFilter === "All" || p.lang === langFilter));
-  const feedLangs = LANGUAGES.filter((l) => upcoming.some((p) => p.lang === l));
+  // Upcoming until an event's end time has passed (Dubai time); then it moves to Past.
+  const upcoming = parties.filter((p) => !isPastEvent(p, clock)).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || eventStartMs(a) - eventStartMs(b));
+  const pastEvents = parties.filter((p) => isPastEvent(p, clock));
   const myClubs = clubs.filter(isJoined).length;
-  const liveTix = bookings.filter((b) => b.state !== "cancelled" && !(b.date && b.date < today)).length; // tickets you can still use
+  const liveTix = bookings.filter((b) => b.state !== "cancelled" && !((b.endDate || b.date) && (b.endDate || b.date) < today)).length; // tickets you can still use
   const myPending = clubs.filter((c) => statusOf(c) === "pending").length;
   const totalMembers = clubs.reduce((s, c) => s + memberCount(c), 0);
   // Signed-in strip: the next thing on your calendar (ticket or team session) and a nudge about teams.
@@ -951,9 +965,7 @@ export default function App() {
         {tab !== "home" && <h1 ref={titleRef} className="u-large-title sm:hidden">{TAB_TITLE[tab]}</h1>}
         {/* Events */}
         {tab === "parties" && (
-          <Events filteredParties={filteredParties} upcoming={upcoming} feedLangs={feedLangs} filter={filter} setFilter={setFilter}
-            langFilter={langFilter} setLangFilter={setLangFilter} hostEvent={hostEvent} cardOpen={cardOpen} setModal={setModal}
-            shareEvent={shareEvent} partyBtn={partyBtn} />
+          <Events upcoming={upcoming} past={pastEvents} clock={clock} hostEvent={hostEvent} cardOpen={cardOpen} setModal={setModal} partyBtn={partyBtn} />
         )}
 
         {/* Home */}
@@ -1067,7 +1079,7 @@ export default function App() {
       {modal && modal.type === "detail" && parties.find((x) => x.id === modal.id) && (
         <EventDetail
           party={parties.find((x) => x.id === modal.id)}
-          action={partyBtn(parties.find((x) => x.id === modal.id), "w-full !py-3.5 !rounded-2xl text-[15px]", true)}
+          action={(() => { const p = parties.find((x) => x.id === modal.id); return isPastEvent(p, clock) ? <button disabled className="u-btn w-full rounded-2xl bg-slate-100 py-3.5 text-[15px] font-semibold text-slate-500">Ended</button> : partyBtn(p, "w-full !py-3.5 !rounded-2xl text-[15px]", true, false, false, !!p.official || p.price === 0); })()}
           groupLink={(() => { const p = parties.find((x) => x.id === modal.id), b = p && bookingFor(p.id); return p && p.own ? p.groupLink : b && b.qr && !b.refunded ? b.groupLink : ""; })()}
           onShare={shareEvent}
           onClose={closeModal}

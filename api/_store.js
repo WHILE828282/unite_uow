@@ -204,6 +204,19 @@ export const getEventImage = async (ref, kind) => {
 // With "taken": tickets issued so far (valid ones), so everyone sees the same availability.
 export const listApprovedEvents = async () => (await db().select({ ...evCols, taken: sql`(select count(*)::int from tickets t where t.event_ref = ${S.events.ref} and t.status = 'valid')`.as("taken") }).from(S.events)
   .where(and(eq(S.events.status, "approved"), eq(S.events.source, "hosted"))).orderBy(asc(S.events.date)).limit(100)).map(evOf);
+// Official UOWD events (source "official"): seeded from src/data/official.js. Updates the details on every deploy
+// but keeps the status, so an event the admin took down stays down.
+export const upsertOfficial = async (rec) => {
+  const row = {
+    ref: rec.ref, source: "official", status: "approved", kind: "own", title: rec.title, category: rec.category || null,
+    date: rec.date || null, startTime: rec.start || null, endTime: rec.end || null, spots: Number(rec.spots) || null, price: 0,
+    venueName: rec.venueName || null, hostEmail: null, data: rec,
+  };
+  const { ref, status, ...set } = row;
+  await db().insert(S.events).values(row).onConflictDoUpdate({ target: S.events.ref, set: { ...set, updatedAt: new Date() } });
+};
+export const listOfficialEvents = async () => (await db().select({ ...evCols, taken: sql`(select count(*)::int from tickets t where t.event_ref = ${S.events.ref} and t.status = 'valid')`.as("taken") }).from(S.events)
+  .where(and(eq(S.events.status, "approved"), eq(S.events.source, "official"))).orderBy(asc(S.events.date)).limit(300)).map(evOf);
 export const listActiveTrips = async () => (await db().select(evCols).from(S.events)
   .where(and(eq(S.events.kind, "trip"), eq(S.events.source, "hosted"), inArray(S.events.status, ["pending", "under_review", "approved"]))).limit(200)).map(evOf);
 

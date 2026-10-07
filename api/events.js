@@ -3,7 +3,7 @@
    GET /api/events?mine=REF.KEY,REF.KEY    -> status of your own applications (KEY is returned on submit)
    GET /api/events?img=REF&kind=cover|logo -> artwork of an approved event (or your own, with &k=KEY) */
 import { isRef, getPitch, ownerOk, holderKey, STATUSES, sweepTrips, isTrip, tripState } from "./_lib.js";
-import { dbConfigured, getEventImage, getTicket, listApprovedEvents, demoSeats } from "./_store.js";
+import { dbConfigured, getEventImage, getTicket, listApprovedEvents, listOfficialEvents, demoSeats } from "./_store.js";
 import { sweepApps } from "./_apps.js";
 
 // What everyone may see: no email, Student ID or account details.
@@ -49,7 +49,12 @@ export default async function handler(req, res) {
     const events = (await listApprovedEvents()).filter((r) => !(isTrip(r) && tripState(r) === "cancelled")).map(pick);
     res.setHeader("Cache-Control", "public, max-age=15");
     const seats = await demoSeats().catch(() => ({})); // tickets taken on Unite's built-in events
-    return res.status(200).json({ ok: true, store: true, events, seats });
+    // Official UOWD events: same shape as src/data/official.js, plus RSVPs taken so far.
+    const official = (await listOfficialEvents().catch(() => null) || []).map((r) => ({
+      n: r.n, date: r.date, endDate: r.endDate, start: r.start, end: r.end, title: r.title, category: r.category, club: r.clubId || r.club,
+      host: r.host, where: r.where, desc: r.desc, featured: !!r.featured, taken: r.taken || 0,
+    })).filter((o) => o.n);
+    return res.status(200).json({ ok: true, store: true, events, seats, official });
   } catch (e) {
     console.error("Events lookup failed:", e && e.message);
     return res.status(200).json({ ok: false, store: true, events: [], mine: [] });

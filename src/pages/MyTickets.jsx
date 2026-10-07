@@ -22,7 +22,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
   // Active: upcoming and still valid. Past: the date has gone, or the event was cancelled.
   const [view, setView] = useState("active");
   const today = dubaiDay();
-  const isPast = (b) => b.state === "cancelled" || (b.date && b.date < today);
+  const isPast = (b) => b.state === "cancelled" || ((b.endDate || b.date) && (b.endDate || b.date) < today);
   const active = bookings.filter((b) => !isPast(b)).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
   const past = bookings.filter(isPast).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const shown = view === "active" ? active : past;

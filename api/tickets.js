@@ -11,7 +11,7 @@
    Files: GET ?a=file&t=ID&exp=…&s=… (signed, expires after 5 minutes). Payments are demo only. */
 import {
   isRef, getPitch, ownerOk, isTicketId, ticketCode, holderKey, holderOk, parseTicketCode,
-  fileLink, fileLinkOk, isTrip, tripState, startMs, collectMs, getTickets, saveTicket, sweepTrip,
+  fileLink, fileLinkOk, isTrip, tripState, startMs, dubaiMs, collectMs, getTickets, saveTicket, sweepTrip,
 } from "./_lib.js";
 import { dbConfigured, getTicket, countTickets, insertTicket, saveDeliveryFile, getDeliveryFile } from "./_store.js";
 
@@ -81,7 +81,8 @@ export default async function handler(req, res) {
       if (!isRef(ref) || !isTicketId(id)) return fail("Invalid ticket.");
       const rec = await getPitch(ref);
       if (!rec || rec.status !== "approved") return fail("This event isn't available any more.");
-      if (Date.now() > startMs(rec)) return fail("This event has already started.");
+      // Official UOWD events take RSVPs until they end (all-day and multi-day ones too); others until they start.
+      if (rec.official ? Date.now() > dubaiMs(rec.endDate || rec.date, rec.end || "23:59") : Date.now() > startMs(rec)) return fail(rec.official ? "This event has ended." : "This event has already started.");
       if (isTrip(rec) && (tripState(rec) !== "collecting" || Date.now() > collectMs(rec))) return fail("Payments for this group trip are closed.");
       const count = await countTickets(ref);
       if (count >= rec.spots) return fail("Sold out.");

@@ -3,6 +3,7 @@ import { DateBlock, DayTag, EventLogo, Icon } from "./ui.jsx";
 import { clubDays, dayTag, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 import { roomLabel } from "../data/clubs.js";
+import { CAT_ICON, CAT_TINT, whenLabel } from "../lib/events.js";
 
 /* An event card as shown in Events (also used in the host's preview). */
 export function PartyCard({ p, i = 0, open = {}, onShare, actions, wide = false }) {
@@ -66,6 +67,67 @@ export function PartyTile({ p, i = 0, open = {}, action }) {
         <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-slate-900">{p.title}</h3>
         <p className="mt-0.5 truncate text-xs text-slate-500">{p.time} · {shortVenue(p.where)}</p>
         <div className="mt-auto pt-2.5">{action}</div>
+      </div>
+    </article>
+  );
+}
+
+/* Events feed card, the same size and layout for both kinds:
+   student events show their photo; official UOWD events a coloured header with the category icon and the club name.
+   Past events are faded with "Ended" in place of the button. */
+const OfficialHeader = ({ p, big = false }) => (
+  <div className="absolute inset-0 flex flex-col justify-between p-3 text-white" style={{ background: CAT_TINT[p.category] || CAT_TINT.Social }}>
+    <span className="pointer-events-none absolute -right-6 -top-6 opacity-[0.16]" aria-hidden="true"><Icon name={CAT_ICON[p.category] || "star"} className={big ? "h-40 w-40" : "h-28 w-28"} /></span>
+    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm"><Icon name={CAT_ICON[p.category] || "star"} className="h-5 w-5" /></span>
+    <span className={`relative line-clamp-2 font-semibold leading-tight ${big ? "text-sm" : "text-[12px]"}`}>{p.host}</span>
+  </div>
+);
+const KindTag = ({ p }) => p.official
+  ? <span className="shrink-0 rounded-full bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 ring-1 ring-inset ring-sky-200">Official UOWD</span>
+  : <span className="shrink-0 rounded-full bg-crimson-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-crimson-700 ring-1 ring-inset ring-crimson-100">Student event</span>;
+export function EventCard({ p, i = 0, open = {}, action, past = false }) {
+  const left = p.spots - p.taken;
+  const pic = p.official ? null : p.dyn ? p.cover || p.logo : p.logo || p.cover;
+  return (
+    <article id={"event-" + p.id} {...open}
+      className={`u-tile u-card u-rise group flex cursor-pointer flex-col overflow-hidden rounded-[22px] bg-white p-1.5 ring-1 ring-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 ${past ? "opacity-60" : ""}`}
+      style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
+      <div className="u-keep u-shimmer relative aspect-[4/3] overflow-hidden rounded-[17px]">
+        {p.official ? <OfficialHeader p={p} />
+          : pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+          : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
+        {!past && left <= 0 ? <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">Full</span>
+          : !past && left <= 5 ? <span className="absolute right-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">{left} left</span> : null}
+      </div>
+      <div className="flex flex-1 flex-col px-1.5 pb-1 pt-2.5">
+        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-slate-900">{p.title}</h3>
+        <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-slate-500"><KindTag p={p} />{!p.official && <span className="truncate">{p.host}</span>}</p>
+        <p className="mt-1.5 truncate text-xs text-slate-600">{whenLabel(p)}</p>
+        <p className="truncate text-xs text-slate-500">{shortVenue(p.where)}</p>
+        <div className="mt-auto flex items-center justify-between gap-2 pt-2.5">
+          <span className="text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+          {past ? <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[13px] font-semibold text-slate-500">Ended</span> : action}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/* "Featured this week" slide: big, swipeable; the photo (student events) or the coloured header (official) fills it. */
+export function FeaturedSlide({ p, open = {}, action }) {
+  const pic = p.official ? null : p.cover || p.logo;
+  return (
+    <article {...open} className="u-keep u-card group relative isolate flex h-60 w-[84%] shrink-0 cursor-pointer snap-start flex-col justify-end overflow-hidden rounded-3xl p-4 text-white shadow-lg sm:h-64 sm:w-[22rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400">
+      <div className="u-shimmer absolute inset-0 -z-10">
+        {p.official ? <OfficialHeader p={p} big /> : pic && <img src={pic} alt="" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />}
+      </div>
+      <span className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent" aria-hidden="true" />
+      <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md ${p.official ? "bg-white/90 text-sky-800" : "bg-white/90 text-crimson-700"}`}>{p.official ? "Official UOWD" : "Student event"}</span>
+      <p className="text-xs font-semibold text-white/80">{dayTag(p.date) || fmtDate(p.date)} · {whenLabel(p)}</p>
+      <h3 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{p.title}</h3>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="min-w-0 truncate text-sm text-white/75">{p.official ? shortVenue(p.where) : p.host} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
+        {action}
       </div>
     </article>
   );

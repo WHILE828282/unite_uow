@@ -2,6 +2,7 @@
    Both are idempotent: running them again never duplicates or overwrites newer Postgres rows
    (inserts skip rows that already exist). Used by scripts/migrate.mjs on deploy and by the /admin page. */
 import { PARTIES } from "../src/data/events.js";
+import { OFFICIAL, OFFICIAL_ID, clubOf, officialRef } from "../src/data/official.js";
 import { kv, storeConfigured, ticketCode, isRef, isTicketId } from "./_lib.js";
 import * as store from "./_store.js";
 import { db } from "../db/client.js";
@@ -26,6 +27,12 @@ export const seed = async () => {
     await store.saveEvent({ ...rest, ref, status: "approved", kind: "own", title: p.title, category: p.category, date: p.date, start: to24(p.time), price: p.price, spots: p.spots,
       venueName: p.where, coverUrl: cover || null, logoUrl: logo || null, demoId: p.id }, "demo");
   }
+  // Official UOWD events (free, RSVP). demoId is the feed id, so tickets synced to a new device find their event.
+  for (const o of OFFICIAL) {
+    const club = clubOf(o);
+    await store.upsertOfficial({ ...o, ref: officialRef(o.n), official: true, demoId: OFFICIAL_ID(o.n), title: o.title, category: o.category,
+      clubId: club ? club.id : null, host: club ? club.name : o.host || "UOWD", venueName: o.where || (club && club.where) || "UOWD campus", spots: 1000 });
+  }
   // Demo account owns Music Club, with three sample applications.
   const roles = await store.getRoles(21);
   if (!roles.owner || roles.owner === "studentlife@uowdubai.ac.ae") await store.saveRoles(21, { owner: DEMO_OWNER, helpers: roles.helpers });
@@ -35,7 +42,7 @@ export const seed = async () => {
     const at = Date.now() - a.hoursAgo * 36e5;
     await store.insertApp({ ...a, clubId: 21, consent: true, consentAt: at, at, updatedAt: at, ...(a.status === "contacted" ? { contactedAt: at + 20 * 36e5 } : {}) });
   }
-  return { clubs: true, demoEvents: PARTIES.length, demoApps: DEMO_APPS.length };
+  return { clubs: true, demoEvents: PARTIES.length, officialEvents: OFFICIAL.length, demoApps: DEMO_APPS.length };
 };
 
 /* ---------------------------- Copy from Redis ---------------------- */
