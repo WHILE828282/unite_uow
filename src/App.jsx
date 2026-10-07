@@ -92,6 +92,9 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState("");
   const [waitlist, setWaitlist] = useState(() => (saved && saved.waitlist) || {});
+  // Official UOWD events are free entry: "I'm going" just puts them in your schedule (kept on this device).
+  const [going, setGoing] = useState(() => { try { const x = JSON.parse(localStorage.getItem("unite-going") || "[]"); return Array.isArray(x) ? x : []; } catch (e) { return []; } });
+  useEffect(() => { try { localStorage.setItem("unite-going", JSON.stringify(going)); } catch (e) { /* ignore */ } }, [going]);
   // iOS large title: once it scrolls under the header, the header shows the tab name small and centred.
   const titleRef = useRef(null);
   const [titleGone, setTitleGone] = useState(false);
@@ -837,6 +840,11 @@ export default function App() {
   // quiet: list cards use a tinted button, so solid crimson stays for the main action on a page (detail, featured).
   // cta: the feed's wording, "Get ticket" (paid) or "Register" (free).
   const partyBtn = (p, extra = "w-full", short = false, quiet = false, price = false, cta = false) => {
+    if (p.official) {
+      const on = going.includes(p.id);
+      return <button onClick={(e) => { e.stopPropagation(); setGoing((g) => (on ? g.filter((x) => x !== p.id) : [...g, p.id])); notify(on ? "Removed from your schedule" : "Added to your schedule"); }}
+        aria-pressed={on} className={`u-btn u-haptic ${extra} rounded-xl py-2.5 text-sm font-semibold ${on ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100" : "bg-crimson-600 text-white hover:bg-crimson-500"}`}>{on ? "Going ✓" : "I'm going"}</button>;
+    }
     const mine = bookingFor(p.id);
     const wl = user ? waitlist[p.id] : undefined;
     let label, cls;
@@ -986,11 +994,11 @@ export default function App() {
             user={user}
             onSignIn={() => setModal({ type: "auth", reason: "Sign in to see your schedule." })}
             sessions={sessions}
-            events={bookings.map(liveBooking)}
+            events={[...bookings.map(liveBooking), ...parties.filter((p) => p.official && going.includes(p.id)).map((p) => ({ id: `go-${p.id}`, going: true, partyId: p.id, title: p.title, emoji: p.emoji, date: p.date, endDate: p.endDate, time: p.time, endTime: p.endTime, where: p.where, price: 0 }))]}
             onOpenClub={(c) => setModal({ type: "club", id: c.id })}
             reviews={submissions.filter((sub) => reviewOf(sub) !== "rejected").map((sub) => ({ ...sub, status: reviewOf(sub), left: reviewLeft(sub) }))}
             onOpenReview={openOwn}
-            onOpenTicket={(b) => setModal({ type: "ticket", booking: b })}
+            onOpenTicket={(b) => setModal(b.going ? { type: "detail", id: b.partyId } : { type: "ticket", booking: b })}
             onBrowse={changeTab}
             suggest={upcoming} onOpenEvent={(p) => setModal({ type: "detail", id: p.id })}
             onExport={() => { downloadCalendar(sessions, bookings); notify("Calendar file saved. Open it to add your schedule to Google, Apple or Outlook Calendar.", 3600); }}

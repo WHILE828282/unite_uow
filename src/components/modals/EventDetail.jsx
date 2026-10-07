@@ -96,7 +96,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
             <InfoIcon name="calendar" />
-            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.until ? `From ${p.time} ${p.until}` : whenLabel(p)} <DayTag iso={p.date} /></p><p className="text-slate-500">{p.official ? "Free · register to get your QR ticket" : "Doors open 30 minutes before"}</p></div>
+            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.until ? `From ${p.time} ${p.until}` : whenLabel(p)} <DayTag iso={p.date} /></p><p className="text-slate-500">{p.official ? "Free entry · no registration needed" : "Doors open 30 minutes before"}</p></div>
           </div>
           <div className="flex gap-3">
             <InfoIcon name="pin" />
@@ -133,7 +133,7 @@ export function EventDetail({ party: p, action, groupLink, onShare, onClose }) {
       <EventDetailBody p={p} onShare={onShare} groupLink={groupLink} />
       <div className="u-safe-bar sticky bottom-0 flex items-center gap-4 border-t border-slate-200/50 bg-white p-4 shadow-sm">
         <div className="shrink-0">
-          <p className="text-lg font-bold leading-tight text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</p>
+          <p className="text-lg font-bold leading-tight text-slate-900">{p.price > 0 ? `${p.price} AED` : p.official ? "Free entry" : "Free"}</p>
           <p className={`text-xs ${!p.official && p.spots - p.taken <= 5 ? "font-semibold text-crimson-600" : "text-slate-500"}`}>{p.official ? "Official UOWD" : p.spots - p.taken > 0 ? `${p.spots - p.taken} left` : "Fully booked"}</p>
         </div>
         <div className="min-w-0 flex-1">{action}</div>

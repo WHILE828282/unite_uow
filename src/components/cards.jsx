@@ -126,7 +126,7 @@ export function FeaturedSlide({ p, open = {}, action }) {
       <p className="text-xs font-semibold text-white/80">{dayTag(p.date) || fmtDate(p.date)} · {whenLabel(p)}</p>
       <h3 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{p.title}</h3>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-sm text-white/75">{p.host} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
+        <p className="min-w-0 truncate text-sm text-white/75">{p.host} · {p.price > 0 ? `${p.price} AED` : p.official ? "Free entry" : "Free"}</p>
         {action}
       </div>
     </article>
