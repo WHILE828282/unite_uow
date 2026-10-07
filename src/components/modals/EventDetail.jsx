@@ -96,7 +96,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
         <div className="space-y-4 text-sm">
           <div className="flex gap-3">
             <InfoIcon name="calendar" />
-            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.until ? `From ${p.time} ${p.until}` : whenLabel(p)} <DayTag iso={p.date} /></p><p className="text-slate-500">{p.official ? "Free · RSVP to get your QR ticket" : "Doors open 30 minutes before"}</p></div>
+            <div><p className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-900">{fmtDate(p.date)} · {p.until ? `From ${p.time} ${p.until}` : whenLabel(p)} <DayTag iso={p.date} /></p><p className="text-slate-500">{p.official ? "Free · register to get your QR ticket" : "Doors open 30 minutes before"}</p></div>
           </div>
           <div className="flex gap-3">
             <InfoIcon name="pin" />
