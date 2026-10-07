@@ -31,7 +31,7 @@ export const seed = async () => {
   for (const o of OFFICIAL) {
     const club = clubOf(o);
     await store.upsertOfficial({ ...o, ref: officialRef(o.n), official: true, demoId: OFFICIAL_ID(o.n), title: o.title, category: o.category,
-      clubId: club ? club.id : null, host: club ? club.name : o.host || "UOWD", venueName: o.where || (club && club.where) || "UOWD campus", spots: 1000 });
+      clubId: club ? club.id : null, host: club ? club.name : o.host || "UOWD", venueName: o.where || (club && club.where) || "Campus-wide", spots: 1000 });
   }
   // Demo account owns Music Club, with three sample applications.
   const roles = await store.getRoles(21);

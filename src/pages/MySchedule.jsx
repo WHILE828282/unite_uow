@@ -29,7 +29,11 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
     const iso = isoDay(d);
     return layoutDay([
       ...sessions.filter((x) => x.slot.day === i).map((x) => ({ kind: "session", key: x.slot.id, s: toMin(x.slot.start), e: toMin(x.slot.end), x })),
-      ...events.filter((b) => b.date === iso).map((b) => { const s = toMin(to24(b.time)); return { kind: "event", key: b.id, s, e: Math.min(s + 120, 24 * 60), b }; }),
+      // All-day events sit at 9:00–17:00 on each of their days; timed ones run to their end time (or 2 hours).
+      ...events.filter((b) => b.date <= iso && iso <= (b.endDate || b.date)).map((b) => {
+        const all = b.time === "All day", s = all ? 540 : toMin(to24(b.time));
+        return { kind: "event", key: b.id, all, s, e: all ? 1020 : b.endTime && toMin(b.endTime) > s ? toMin(b.endTime) : Math.min(s + 120, 24 * 60), b };
+      }),
       ...reviews.filter((r) => r.date === iso).map((r) => ({ kind: "review", key: r.ref, s: toMin(r.start), e: toMin(r.end), r })),
     ]);
   });
@@ -42,9 +46,9 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
   const hours = Array.from({ length: endH - startH }, (_, i) => startH + i);
   const gridH = (endH - startH) * HOUR_PX;
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  const weekHours = all.reduce((h, it) => h + (it.e - it.s) / 60, 0);
+  const weekHours = all.reduce((h, it) => h + (it.all ? 0 : (it.e - it.s) / 60), 0); // all-day events don't count as busy hours
   const weekly = sessions.reduce((h, x) => h + slotHours(x.slot), 0);
-  const upcoming = events.filter((b) => b.date >= isoDay(today)).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
+  const upcoming = events.filter((b) => (b.endDate || b.date) >= isoDay(today)).sort((a, b) => (a.date + to24(a.time)).localeCompare(b.date + to24(b.time)));
 
   const nextSession = sessions
     .map((x) => { const ahead = (x.slot.day - weekdayIdx(today) + 7) % 7; return { ...x, days: ahead === 0 && toMin(x.slot.start) <= nowMin ? 7 : ahead }; })

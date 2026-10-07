@@ -70,28 +70,26 @@ export function Events({ upcoming, past, clock, hostEvent, cardOpen, setModal, p
     <>
       {/* Search, with the one Host button on the right. */}
       <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1"><SearchField value={q} onChange={setQ} placeholder="Search events, clubs or places" /></div>
+        <div className="min-w-0 flex-1"><SearchField value={q} onChange={setQ} placeholder="Search events" /></div>
         <button onClick={hostEvent} className="u-btn u-haptic flex h-12 shrink-0 items-center gap-1.5 rounded-2xl bg-crimson-600 px-4 text-sm font-semibold text-white hover:bg-crimson-500">
           <Icon name="plus" className="h-4 w-4" /><span>Host<span className="hidden min-[360px]:inline"> event</span></span>
         </button>
       </div>
 
-      {/* Filters: who runs it, past, then categories. */}
+      {/* Filters: who runs it, then categories. Past events are a quiet link at the end of the feed. */}
       <div className="u-chips -mx-4 mb-5 mt-3 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" role="toolbar" aria-label="Filter events">
         <button onClick={() => { setSrc("all"); setCat(null); }} aria-pressed={src === "all" && !cat} className={chip(src === "all" && !cat)}>All</button>
         <button onClick={() => setSrc(src === "official" ? "all" : "official")} aria-pressed={src === "official"} className={chip(src === "official")}>Official UOWD</button>
         <button onClick={() => setSrc(src === "student" ? "all" : "student")} aria-pressed={src === "student"} className={chip(src === "student")}>Student events</button>
-        <button onClick={() => setPast(!showPast)} aria-pressed={showPast} className={chip(showPast)}>Past</button>
-        <span className="h-5 w-px shrink-0 bg-slate-200" aria-hidden="true" />
         {FEED_CATS.map((c) => <button key={c} onClick={() => setCat(cat === c ? null : c)} aria-pressed={cat === c} className={chip(cat === c)}>{c}</button>)}
       </div>
 
       {showPast && (
         <div className="mb-5 flex items-center justify-between gap-3">
-          <button onClick={() => setPast(false)} className="u-btn inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
-            <Icon name="arrow-left" className="h-4 w-4" /> Back to upcoming
+          <h2 className="text-lg font-bold tracking-tight text-slate-900">Past events</h2>
+          <button onClick={() => setPast(false)} className="inline-flex items-center gap-1 text-sm font-semibold text-crimson-600 hover:underline">
+            <Icon name="arrow-left" className="h-3.5 w-3.5" /> Back to upcoming
           </button>
-          <span className="text-sm text-slate-500">Past events</span>
         </div>
       )}
 
@@ -133,9 +131,7 @@ export function Events({ upcoming, past, clock, hostEvent, cardOpen, setModal, p
 
       {!showPast && past.length > 0 && (
         <div className="mt-8 flex justify-center">
-          <button onClick={() => setPast(true)} className="u-btn inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
-            <Icon name="clock" className="h-4 w-4" /> Show past events
-          </button>
+          <button onClick={() => setPast(true)} className="px-3 py-2 text-sm font-medium text-slate-500 underline-offset-4 hover:text-slate-700 hover:underline">Show past events</button>
         </div>
       )}
     </>

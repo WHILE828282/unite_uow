@@ -65,8 +65,8 @@ export function downloadCalendar(sessions, events, file = "unite-schedule.ics") 
     ev(slot.id, stamp(d, slot.start), stamp(d, slot.end), `${club.name}: ${slot.title}${pending ? " (pending approval)" : ""}`, slot.where, "RRULE:FREQ=WEEKLY;COUNT=12");
   });
   events.forEach((b) => {
-    const d = new Date(b.date + "T00:00:00"), st = to24(b.time);
-    const endMin = toMin(st) + 120, et = `${pad(Math.min(23, Math.floor(endMin / 60)))}:${pad(endMin % 60)}`;
+    const all = b.time === "All day", d = new Date(b.date + "T00:00:00"), st = all ? "09:00" : to24(b.time);
+    const endMin = all ? 17 * 60 : b.endTime && toMin(b.endTime) > toMin(st) ? toMin(b.endTime) : toMin(st) + 120, et = `${pad(Math.min(23, Math.floor(endMin / 60)))}:${pad(endMin % 60)}`;
     ev(b.id, stamp(d, st), stamp(d, et), b.title, b.where);
   });
   out.push("END:VCALENDAR");

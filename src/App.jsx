@@ -728,7 +728,7 @@ export default function App() {
   // Student-hosted events: the ticket is registered with Unite, which signs its QR code (own events) or holds the
   // place in the group (group trips). If that fails, the (demo) payment is reversed and the ticket removed.
   const createBooking = (p, email, method) => {
-    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, ...(p.endDate ? { endDate: p.endDate } : {}), time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
+    const b = { id: makeId("UNT-2026", 5), partyId: p.id, title: p.title, emoji: p.emoji, logo: p.logo, date: p.date, ...(p.endDate ? { endDate: p.endDate } : {}), ...(p.endTime ? { endTime: p.endTime } : {}), time: p.time, where: p.where, price: p.price, paid: p.price > 0, method, email, name, studentId: studentIdRef.current, txn: p.price > 0 ? makeId("ZN", 8) : null,
       ...(p.ref ? { ref: p.ref, kind: p.kind || "own", state: p.kind === "trip" ? "waiting" : "valid", ...(p.kind === "trip" ? { extName: p.extName, collectUntil: p.collectUntil } : {}) } : {}) };
     setBookings((bs) => [b, ...bs]);
     agreeLegal();
@@ -778,7 +778,7 @@ export default function App() {
         confirmLabel: "Join waitlist", onConfirm: () => joinWaitlist(p, email),
       }));
     }
-    requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : `Sign in to reserve your spot at ${p.title}`, (email) => {
+    requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : p.official ? `Sign in to RSVP to ${p.title}` : `Sign in to reserve your spot at ${p.title}`, (email) => {
       if (p.price > 0) setModal({ type: "checkout", party: p, email });
       else setModal({
         type: "confirm", title: p.official ? `RSVP to ${p.title}?` : `Reserve a spot at ${p.title}?`,
@@ -843,7 +843,7 @@ export default function App() {
     if (mine) { label = price || cta ? "Your ticket" : "Show ticket"; cls = "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 hover:bg-emerald-100"; }
     else if (tripClosed(p, clock)) return <button disabled className={`u-btn ${extra} rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-500`}>{price ? "Closed" : "Payments closed"}</button>;
     else if (p.spots - p.taken <= 0) {
-      label = wl ? `${price ? "" : "Waitlisted · "}#${wl}${price ? " in line" : ""}` : price ? "Waitlist" : "Join waitlist";
+      label = wl ? `${price || cta ? "" : "Waitlisted · "}#${wl}${price || cta ? " in line" : ""}` : price || cta ? "Waitlist" : "Join waitlist";
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
     } else if (cta) { label = p.price > 0 ? "Get ticket" : "RSVP"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
     else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }

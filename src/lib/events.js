@@ -67,6 +67,13 @@ export const eventEndMs = (p) => {
 export const isPastEvent = (p, now = Date.now()) => eventEndMs(p) <= now;
 // "All day · until Sun, 11 Oct", "All day" or "4:30 – 6:30 PM".
 const range = (a, b) => (a.slice(-2) === b.slice(-2) ? `${a.slice(0, -3)} – ${b}` : `${a} – ${b}`); // "4:30 – 6:30 PM"
+// "8–11 Oct" for multi-day events, else "Thu, 8 Oct".
+const MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const dateLabel = (p) => {
+  if (!p.endDate) return fmtDate(p.date);
+  const a = new Date(p.date + "T00:00:00"), b = new Date(p.endDate + "T00:00:00");
+  return a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${MO[b.getMonth()]}` : `${a.getDate()} ${MO[a.getMonth()]} – ${b.getDate()} ${MO[b.getMonth()]}`;
+};
 export const whenLabel = (p) => p.allDay ? (p.endDate ? `All day · until ${fmtDate(p.endDate)}` : "All day")
   : p.endTime ? range(p.time, fmtTime(p.endTime)) : p.time;
 
@@ -80,7 +87,7 @@ export const officialToParty = (o) => {
     title: o.title, emoji: club ? club.emoji : "🎓", category: o.category, lang: "English",
     date: o.date, endDate: o.endDate || "", allDay, start: o.start || "", endTime: o.end || "",
     time: allDay ? "All day" : fmtTime(o.start),
-    where: o.where || (club && club.where) || "UOWD campus", address: UOWD_ADDRESS, maps: UOWD_MAPS,
+    where: o.where || (club && club.where) || "Campus-wide", address: UOWD_ADDRESS, maps: UOWD_MAPS,
     price: 0, spots: 1000, taken: Number(o.taken) || 0, wait: 0, vibe: null, host,
     contact: { name: host, role: "Official UOWD", email: (club && club.lead && club.lead.email) || "studentlife@uowdubai.ac.ae" },
     desc: o.desc || "", perks: [],

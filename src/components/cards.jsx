@@ -79,7 +79,7 @@ const OfficialHeader = ({ p, big = false }) => (
   <div className="absolute inset-0 flex flex-col justify-between p-3 text-white" style={{ background: CAT_TINT[p.category] || CAT_TINT.Social }}>
     <span className="pointer-events-none absolute -right-6 -top-6 opacity-[0.16]" aria-hidden="true"><Icon name={CAT_ICON[p.category] || "star"} className={big ? "h-40 w-40" : "h-28 w-28"} /></span>
     <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm"><Icon name={CAT_ICON[p.category] || "star"} className="h-5 w-5" /></span>
-    <span className={`relative line-clamp-2 font-semibold leading-tight ${big ? "text-sm" : "text-[12px]"}`}>{p.host}</span>
+    {!big && <span className="relative line-clamp-2 text-[12px] font-semibold leading-tight">{p.host}</span>}
   </div>
 );
 const KindTag = ({ p }) => p.official
@@ -105,7 +105,7 @@ export function EventCard({ p, i = 0, open = {}, action, past = false }) {
         <p className="mt-1.5 truncate text-xs text-slate-600">{whenLabel(p)}</p>
         <p className="truncate text-xs text-slate-500">{shortVenue(p.where)}</p>
         <div className="mt-auto flex items-center justify-between gap-2 pt-2.5">
-          <span className="text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
+          <span className="whitespace-nowrap text-sm font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
           {past ? <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[13px] font-semibold text-slate-500">Ended</span> : action}
         </div>
       </div>
@@ -126,7 +126,7 @@ export function FeaturedSlide({ p, open = {}, action }) {
       <p className="text-xs font-semibold text-white/80">{dayTag(p.date) || fmtDate(p.date)} · {whenLabel(p)}</p>
       <h3 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{p.title}</h3>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="min-w-0 truncate text-sm text-white/75">{p.official ? shortVenue(p.where) : p.host} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
+        <p className="min-w-0 truncate text-sm text-white/75">{p.host} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
         {action}
       </div>
     </article>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { CAT_TINT } from "../lib/events.js";
+import { CAT_ICON, CAT_TINT } from "../lib/events.js";
 import { dubaiStart } from "../components/cards.jsx";
+import { Icon } from "../components/ui.jsx";
 import { fmtDate } from "../lib/format.js";
 
 /* Home: its own page, not a copy of the others. A dark photo-collage hero (with the launch party built in), a grid of
@@ -127,9 +128,10 @@ const Rail = ({ children, cols = "lg:grid-cols-4" }) => (
   <div className={`u-chips -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 px-4 pb-1 sm:mx-0 sm:px-0 sm:[-webkit-mask-image:none] sm:[mask-image:none] lg:grid lg:overflow-visible ${cols}`}>{children}</div>
 );
 /* The one tile style of this page: picture or colour, dark fade, white text at the bottom. */
-const Tile = ({ onClick, bg, img, tint, className = "", children }) => (
+const Tile = ({ onClick, bg, img, tint, icon, className = "", children }) => (
   <button onClick={onClick} className={`u-keep u-card group relative shrink-0 snap-start overflow-hidden rounded-2xl text-left text-white shadow-sm ${className}`} style={{ background: bg || "#0f172a" }}>
     {img && <img src={img} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+    {icon && <span className="pointer-events-none absolute -right-5 top-6 opacity-20" aria-hidden="true"><Icon name={icon} className="h-32 w-32" /></span>}
     <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
     {tint && <span className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tint}e6 0%, ${tint}66 38%, transparent 72%)` }} aria-hidden="true" />}
     <span className="relative flex h-full flex-col justify-between p-3.5">{children}</span>
@@ -171,7 +173,7 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
             {events.map((p) => {
               const left = p.spots - p.taken;
               return (
-                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.official ? null : p.cover || p.logo} bg={p.official ? CAT_TINT[p.category] : ROOM_BG.Events} className="h-56 w-52 sm:w-56 lg:w-auto">
+                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.official ? null : p.cover || p.logo} bg={p.official ? CAT_TINT[p.category] : ROOM_BG.Events} icon={p.official ? CAT_ICON[p.category] : null} className="h-56 w-52 sm:w-56 lg:w-auto">
                   <span className="flex items-start justify-between gap-2">
                     <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{fmtDate(p.date)}</span>
                     <span className="u-keep rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>

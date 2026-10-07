@@ -1,6 +1,6 @@
 import { Modal } from "./Modal.jsx";
 import { Check, ContactButtons, Icon, DateBlock, DayTag, EventLogo, InfoIcon, ShareBtn, Spots } from "../ui.jsx";
-import { CAT_ICON, CAT_TINT, partyMapsUrl, whenLabel } from "../../lib/events.js";
+import { CAT_ICON, CAT_TINT, dateLabel, partyMapsUrl, whenLabel } from "../../lib/events.js";
 import { TRIP_NOTE } from "../../lib/tripText.js";
 import { fmtDate, shortVenue } from "../../lib/format.js";
 
@@ -56,11 +56,11 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
 
       <div className="space-y-5 p-5">
         {/* Key facts at a glance, as tiles. */}
-        <div className="grid grid-cols-3 gap-2">
-          {[["Date", fmtDate(p.date)], ["Time", p.allDay && p.endDate ? `Until ${fmtDate(p.endDate)}` : whenLabel(p)], ["Price", p.price > 0 ? `${p.price} AED` : "Free"]].map(([k, v]) => (
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,0.8fr)] gap-2">
+          {[["Date", dateLabel(p)], ["Time", p.allDay ? "All day" : whenLabel(p)], ["Price", p.price > 0 ? `${p.price} AED` : "Free"]].map(([k, v]) => (
             <div key={k} className="rounded-2xl bg-slate-100 px-3 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{k}</p>
-              <p className="mt-0.5 truncate text-[15px] font-semibold text-slate-900">{v}</p>
+              <p className="mt-0.5 truncate text-[14px] font-semibold text-slate-900">{v}</p>
             </div>
           ))}
         </div>
