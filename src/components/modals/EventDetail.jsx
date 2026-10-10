@@ -29,7 +29,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
           <img src={p.cover} alt="" decoding="async" draggable={false} className="h-full w-full object-cover" />
           <span className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" aria-hidden="true" />
           <div className="absolute inset-x-0 bottom-0 flex items-end gap-3 p-5">
-            {p.logo && <EventLogo p={p} className="h-14 w-14 ring-2 ring-white/20" />}
+            {p.logo && !p.official && <EventLogo p={p} className="h-14 w-14 ring-2 ring-white/20" />}
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/75">
                 {p.category} · {p.lang}{p.kind === "trip" && <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white backdrop-blur">🚌 Group trip</span>}
@@ -61,7 +61,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
           {[["Date", dateLabel(p)], ["Time", p.allDay ? "All day" : whenLabel(p)], ["Price", p.price > 0 ? `${p.price} AED` : "Free"]].map(([k, v]) => (
             <div key={k} className="rounded-2xl bg-slate-100 px-3 py-2.5">
               <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{k}</p>
-              <p className="mt-0.5 truncate text-[14px] font-semibold text-slate-900">{v}</p>
+              <p className="mt-0.5 text-[14px] font-semibold leading-snug text-slate-900">{v}</p>
             </div>
           ))}
         </div>

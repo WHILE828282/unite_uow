@@ -781,12 +781,12 @@ export default function App() {
         confirmLabel: "Join waitlist", onConfirm: () => joinWaitlist(p, email),
       }));
     }
-    requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : p.official ? `Sign in to register for ${p.title}` : `Sign in to reserve your spot at ${p.title}`, (email) => {
+    requireAuth(p.price > 0 ? `Sign in to buy a ticket for ${p.title}` : `Sign in to register for ${p.title}`, (email) => {
       if (p.price > 0) setModal({ type: "checkout", party: p, email });
       else setModal({
-        type: "confirm", title: p.official ? `Register for ${p.title}?` : `Reserve a spot at ${p.title}?`,
+        type: "confirm", title: `Register for ${p.title}?`,
         body: `${fmtDate(p.date)} · ${p.time} · ${shortVenue(p.where)}. It's free; you'll get a ticket with a QR code.`,
-        confirmLabel: p.official ? "Register" : "Reserve", onConfirm: () => setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true }),
+        confirmLabel: "Register", onConfirm: () => setModal({ type: "ticket", booking: createBooking(p, email, "Free"), justPaid: true }),
       });
     });
   };
@@ -855,7 +855,7 @@ export default function App() {
       cls = wl ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100" : "bg-slate-900 text-white hover:bg-slate-800";
     } else if (cta) { label = p.price > 0 ? "Get ticket" : "Register"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
     else if (price) { label = p.price > 0 ? `${p.price} AED` : "Free"; cls = "bg-crimson-600 text-white hover:bg-crimson-500"; }
-    else { label = p.price > 0 ? (short ? "Buy ticket" : `Buy ticket · ${p.price} AED`) : (short ? "Reserve a spot" : "Reserve a free spot"); cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
+    else { label = p.price > 0 ? (short ? "Get ticket" : `Get ticket · ${p.price} AED`) : "Register"; cls = quiet ? "bg-crimson-50 text-crimson-700 ring-1 ring-crimson-100 hover:bg-crimson-100" : "bg-slate-900 text-white hover:bg-slate-800"; }
     return <button onClick={() => onParty(p)} className={`u-btn u-haptic ${extra} rounded-xl py-2.5 text-sm font-semibold ${cls}`}>{label}</button>;
   };
 

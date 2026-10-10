@@ -275,7 +275,7 @@ export function HostPreview({ sub, onEdit }) {
   const fake = (label, primary) => (
     <span className={`u-btn inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold ${primary ? "flex-1 bg-slate-900 text-white" : "text-slate-700 ring-1 ring-slate-200"}`}>{label}</span>
   );
-  const buy = p.price > 0 ? `Buy ticket · ${p.price} AED` : "Reserve free spot";
+  const buy = p.price > 0 ? `Get ticket · ${p.price} AED` : "Register";
   const rows = [
     ["Event type", kindLabel(sub.kind), "kind"],
     ...(sub.kind === "trip" ? [
@@ -303,7 +303,7 @@ export function HostPreview({ sub, onEdit }) {
         <div className="space-y-10">
           <PreviewBlock title="Event card" note="Events" onEdit={() => onEdit("logo")}>
             <div className="pointer-events-none select-none" aria-hidden="true">
-              <PartyCard p={p} onShare={() => {}} actions={fake(p.price > 0 ? "Buy ticket" : "Reserve a spot")} />
+              <PartyCard p={p} onShare={() => {}} actions={fake(p.price > 0 ? "Get ticket" : "Register")} />
             </div>
           </PreviewBlock>
           <PreviewBlock title="Application details" onEdit={() => onEdit("title")}>

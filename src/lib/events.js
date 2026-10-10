@@ -89,7 +89,7 @@ export const officialToParty = (o) => {
     time: allDay ? "All day" : fmtTime(o.start),
     where: o.where || (club && club.where) || "Campus-wide", address: UOWD_ADDRESS, maps: UOWD_MAPS,
     price: 0, spots: 1000, taken: Number(o.taken) || 0, wait: 0, vibe: null, host,
-    contact: { name: host, role: "Official UOWD", email: (club && club.lead && club.lead.email) || "studentlife@uowdubai.ac.ae" },
+    contact: { name: host, role: "Organizer", email: (club && club.lead && club.lead.email) || "studentlife@uowdubai.ac.ae" },
     desc: o.desc || "", perks: [],
     ...(o.photo ? { logo: `/official/${o.photo}-small.webp`, cover: `/official/${o.photo}-large.webp` } : {}),
   };
