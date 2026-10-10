@@ -373,48 +373,34 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-dark :where(.text-rose-800:not(.u-keep)) { color: #fda4af; }
 .u-dark :where(.ring-rose-200:not(.u-keep)) { --tw-ring-color: rgba(244, 63, 94, 0.3); }
 
-/* ---- Telegram-style bottom bar: flat icons, accent on the active tab, a gliding glass "lens" ---- */
-.u-glass-bar { --nav-accent: #e0314f; }
-.u-dark .u-glass-bar { --nav-accent: #ff4d6a; background: rgba(28, 28, 30, 0.82) !important; box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 30px -10px rgba(0, 0, 0, 0.7) !important; }
-.u-light .u-glass-bar { background: rgba(255, 255, 255, 0.86) !important; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 10px 28px -12px rgba(0, 0, 0, 0.25) !important; }
+/* ---- Telegram-style bottom bar ---- */
+.u-glass-bar { --nav-accent: #e0314f; --lens-bg: #ffffff; }
+.u-dark .u-glass-bar { --nav-accent: #ff4d6a; --lens-bg: #232326; background: rgba(28, 28, 30, 0.78) !important; box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 30px -10px rgba(0, 0, 0, 0.7) !important; }
+.u-light .u-glass-bar { background: rgba(255, 255, 255, 0.82) !important; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 10px 28px -12px rgba(0, 0, 0, 0.25) !important; }
 .u-nav-item { color: var(--nav-on); transition: color 0.2s ease; -webkit-user-select: none; user-select: none; }
 .u-nav-item.u-nav-on { color: var(--nav-accent); }
 .u-nav-item:active { transform: none; }
-.u-nav-icon { display: block; transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
-.u-nav-on .u-nav-icon { transform: scale(1.06); }
-.u-lens {
-  position: absolute; top: 5px; bottom: 5px; left: 0; border-radius: 9999px; pointer-events: none;
-  background: rgba(15, 23, 42, 0.07); will-change: transform;
-  transition: transform 0.42s cubic-bezier(0.3, 1.3, 0.45, 1);
+.u-nav-icon { display: block; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.u-nav-item:active .u-nav-icon { transform: scale(0.9); }
+/* The lens: positioned by translateX (GPU only), a capsule at rest, a round magnifying glass while it moves. */
+.u-tglens { position: absolute; left: 0; z-index: 2; pointer-events: none; will-change: transform; transition: transform 0.42s cubic-bezier(0.3, 1.35, 0.45, 1); }
+.u-tglens.u-lens-drag { transition: none; }
+.u-tglens-cap { position: absolute; border-radius: 9999px; background: rgba(15, 23, 42, 0.07); transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.u-dark .u-tglens-cap { background: rgba(255, 255, 255, 0.12); }
+.u-tglens-glass {
+  position: absolute; inset: 0; overflow: hidden; border-radius: 9999px; opacity: 0; transform: scale(0.72, 0.6);
+  background: var(--lens-bg);
+  box-shadow: inset 0 0 0 1.25px rgba(255, 255, 255, 0.5), inset 0 3px 6px rgba(255, 255, 255, 0.22), inset 0 -4px 8px rgba(0, 0, 0, 0.35), 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+  transition: opacity 0.16s ease, transform 0.38s cubic-bezier(0.3, 1.45, 0.5, 1);
 }
-.u-dark .u-lens { background: rgba(255, 255, 255, 0.11); }
-/* The glass bubble (Telegram style): clear in the middle, a thin bright rim with a soft inner light, bigger than the bar.
-   Only opacity and transform animate, so it stays on the GPU. */
-.u-lens::after, .u-nav-item::before {
-  content: ""; position: absolute; inset: 0; border-radius: 9999px; pointer-events: none; opacity: 0; transform: scale(0.92);
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.14) 100%);
-  box-shadow: inset 0 0 0 1.25px rgba(255, 255, 255, 0.55), inset 0 2px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 5px rgba(0, 0, 0, 0.25), 0 10px 22px -10px rgba(0, 0, 0, 0.7);
-  transition: opacity 0.18s ease, transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-.u-light .u-lens::after, .u-light .u-nav-item::before {
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.1) 70%, rgba(255, 255, 255, 0.7) 100%);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), inset 0 2px 3px rgba(255, 255, 255, 0.9), 0 10px 22px -10px rgba(0, 0, 0, 0.3);
-}
-/* Tap: the capsule slides quickly to the new tab while the tapped button shows the glass bubble. */
-.u-lens { transition: transform 0.3s cubic-bezier(0.25, 1.15, 0.4, 1), background-color 0.2s; }
-.u-lens.u-lens-up { background: transparent; }
-.u-lens.u-lens-up::after { opacity: 1; transform: scale(1.2, 1.42); }
-/* Dragging: the glass sticks to the finger (no easing); release eases it onto the chosen tab. */
-.u-lens.u-lens-drag { transition: background-color 0.2s; }
-.u-nav-item:active::before { opacity: 1; transform: scale(1.2, 1.42); transition-duration: 0.12s, 0.25s; }
-.u-nav-item:active .u-nav-icon { transform: scale(1.22); }
-/* While sliding, only the moving glass shows: the button where the finger started doesn't keep its own bubble. */
-.u-dragging .u-nav-item::before { opacity: 0 !important; }
-.u-dragging .u-nav-item .u-nav-icon { transform: none; }
-.u-dragging .u-nav-item.u-nav-on:not(.u-nav-hot) { color: var(--nav-on); }
-.u-dragging .u-nav-item.u-nav-hot { color: var(--nav-accent); }
-.u-dragging .u-nav-item.u-nav-hot .u-nav-icon { transform: scale(1.22); }
-@media (prefers-reduced-motion: reduce) { .u-lens, .u-lens::after, .u-nav-item::before, .u-nav-icon { transition: none; } }
+.u-light .u-tglens-glass { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09), inset 0 3px 6px rgba(255, 255, 255, 0.9), inset 0 -3px 6px rgba(0, 0, 0, 0.06), 0 10px 24px -10px rgba(0, 0, 0, 0.3); }
+.u-tglens-glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.16), transparent 55%), radial-gradient(90% 60% at 50% 110%, rgba(255, 255, 255, 0.08), transparent 60%); }
+.u-tglens-copy { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform 0.42s cubic-bezier(0.3, 1.35, 0.45, 1); }
+.u-lens-drag .u-tglens-copy { transition: none; }
+.u-tglens.u-lens-up .u-tglens-glass { opacity: 1; transform: none; }
+.u-tglens.u-lens-up .u-tglens-cap { opacity: 0; transform: scale(1.15); }
+@media (prefers-reduced-motion: reduce) { .u-tglens, .u-tglens-copy, .u-tglens-glass, .u-tglens-cap, .u-nav-icon { transition: none; } }
 /* Light theme: photo placeholders are a soft grey, not black. */
 .u-light .u-shimmer { background-color: #e5e5ea; }
 /* Checkboxes: a clear outline in dark mode (filled crimson once ticked). */

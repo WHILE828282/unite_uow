@@ -27,17 +27,29 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
 }
 
 /* Phones: Telegram-style floating bar at the bottom (thumb reach), plus a separate round profile button.
-   Flat white icons; the active one takes the accent colour on a soft capsule. The capsule is one "lens" that glides
-   to the tab you tap: it swells into a glass bubble while it moves, then settles. Nothing changes on touch-down:
-   iOS treats a first tap that changes the page as a hover, which made tabs need a double tap.
-   Hidden while typing so it never sits on top of the keyboard. "My events" lives in the profile menu. */
+   White icons; the open tab is accent-coloured on a soft capsule. Tapping or sliding the finger along the bar turns
+   the capsule into a round glass lens that magnifies what's under it (a scaled copy of the bar inside the lens),
+   glides with a spring and settles back into the capsule. Nothing changes on touch-down, so a tap is always a
+   first-time click on iOS. Hidden while typing so it never sits on top of the keyboard. */
 const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
+const MAG = 1.22; // lens magnification
+const NavItem = ({ k, short, on, badge, ...rest }) => (
+  <>
+    <span className="u-nav-icon relative">
+      <Icon name={NAV_ICON[k] || "home"} className="h-[24px] w-[24px] min-[390px]:h-[26px] min-[390px]:w-[26px]" />
+      {badge > 0 && <span className="absolute -right-2.5 -top-1 min-w-[1.1rem] rounded-full bg-[#ff3b30] px-1 text-center text-[10px] font-semibold leading-[1.1rem] text-white">{badge}</span>}
+    </span>
+    <span className="truncate">{short}</span>
+  </>
+);
+const itemCls = (on) => `u-keep u-nav-item relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10px] font-medium leading-none min-[390px]:text-[10.5px] ${on ? "u-nav-on" : ""}`;
+
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   const items = tabs.filter(([k]) => k !== "events");
-  const bar = useRef(null), lensEl = useRef(null), btns = useRef({});
-  const [lens, setLens] = useState(null); // { x, w } of the capsule under the open tab
-  // The capsule moves first; the (heavier) page switch follows a couple of frames later.
-  const [pending, setPending] = useState(null);
+  const bar = useRef(null), lensEl = useRef(null), copyEl = useRef(null), btns = useRef({});
+  const [geo, setGeo] = useState(null); // { cx, w, W, H }: centre and width of the tab under the lens, bar size
+  const [up, setUp] = useState(false); // lens open (moving or dragged)
+  const [pending, setPending] = useState(null); // tab tapped, page switch on its way
   useEffect(() => {
     if (!pending) return;
     if (pending === tab) { setPending(null); return; }
@@ -45,70 +57,95 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
     return () => clearTimeout(t);
   }, [tab, pending]);
   const target = pending || tab;
-  const measure = (k) => { const b = btns.current[k], box = bar.current; if (!b || !box) return null; const r = b.getBoundingClientRect(), o = box.getBoundingClientRect(); return { x: r.left - o.left, w: r.width }; };
-  useLayoutEffect(() => { const m = measure(target); if (m) setLens(m); }, [target, items.length]);
+  const measure = (k) => {
+    const b = btns.current[k], box = bar.current;
+    if (!b || !box) return null;
+    const r = b.getBoundingClientRect(), o = box.getBoundingClientRect();
+    return { cx: r.left - o.left + r.width / 2, w: r.width, W: box.clientWidth, H: box.clientHeight };
+  };
+  const last = useRef(null);
+  useLayoutEffect(() => {
+    const m = measure(target);
+    if (!m) return;
+    if (last.current && Math.abs(last.current - m.cx) > 1) setUp(true);
+    last.current = m.cx;
+    setGeo(m);
+  }, [target, items.length]);
+  useEffect(() => { if (!up || drag.current) return; const t = setTimeout(() => setUp(false), 430); return () => clearTimeout(t); }, [up, geo]);
   useEffect(() => {
-    const re = () => { const m = measure(tab); if (m) setLens(m); };
+    const re = () => { const m = measure(tab); if (m) { last.current = m.cx; setGeo(m); } };
     window.addEventListener("resize", re);
     return () => window.removeEventListener("resize", re);
   }, [tab]);
   const go = (k) => { if (k === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); };
 
-  /* Hold and slide (like Telegram): the glass follows the finger, the tab under it lights up, letting go opens it.
-     The glass is moved straight on the DOM (no React render per finger move), and nothing changes until the finger
-     actually moves, so a plain tap stays a normal first-time click. */
+  // Lens geometry: a little wider than a tab and taller than the bar, so it bulges out like Telegram's.
+  const ew = geo ? Math.round(Math.min(geo.w * 1.3, geo.w + 26)) : 0, eh = geo ? geo.H + 16 : 0;
+  const place = (cx) => {
+    const L = cx - ew / 2;
+    return {
+      lens: `translate3d(${L}px,0,0)`,
+      copy: `translate(${ew / 2}px, ${eh / 2}px) scale(${MAG}) translate(${-cx}px, ${-geo.H / 2}px)`,
+    };
+  };
+
+  /* Sliding: the lens follows the finger (moved straight on the DOM, no React render per move), the tab under it
+     lights up inside the lens, letting go opens it. */
   const drag = useRef(null);
   const tabAt = (x) => { for (const [k] of items) { const b = btns.current[k]; if (!b) continue; const r = b.getBoundingClientRect(); if (x >= r.left && x <= r.right) return k; } return null; };
-  const light = (k) => { for (const [key] of items) { const b = btns.current[key]; if (b) b.classList.toggle("u-nav-hot", key === k); } };
+  const hot = (k) => { const c = copyEl.current; if (c) c.querySelectorAll("[data-k]").forEach((el) => el.classList.toggle("u-nav-on", el.dataset.k === k)); };
   const onTouchStart = (e) => { drag.current = e.touches.length === 1 ? { x0: e.touches[0].clientX, on: false, k: null } : null; };
   const onTouchMove = (e) => {
-    const d = drag.current, box = bar.current, el = lensEl.current;
-    if (!d || !box || !el || !lens) return;
+    const d = drag.current, box = bar.current, el = lensEl.current, cp = copyEl.current;
+    if (!d || !box || !el || !cp || !geo) return;
     const x = e.touches[0].clientX;
     if (!d.on) {
       if (Math.abs(x - d.x0) < 8) return;
       d.on = true;
-      box.classList.add("u-dragging");
       el.classList.add("u-lens-up", "u-lens-drag");
     }
     const o = box.getBoundingClientRect();
-    const left = Math.max(0, Math.min(box.clientWidth - lens.w, x - o.left - lens.w / 2));
-    el.style.transform = `translateX(${left}px)`;
+    const cx = Math.max(geo.w / 2, Math.min(geo.W - geo.w / 2, x - o.left));
+    const p = place(cx);
+    el.style.transform = p.lens; cp.style.transform = p.copy;
     const k = tabAt(x);
-    if (k && k !== d.k) { d.k = k; light(k); if (navigator.vibrate) { try { navigator.vibrate(4); } catch (err) { /* ignore */ } } }
+    if (k && k !== d.k) { d.k = k; hot(k); if (navigator.vibrate) { try { navigator.vibrate(4); } catch (err) { /* ignore */ } } }
   };
   const onTouchEnd = () => {
-    const d = drag.current, box = bar.current, el = lensEl.current;
+    const d = drag.current, el = lensEl.current, cp = copyEl.current;
     drag.current = null;
-    if (!d || !d.on || !box || !el) return;
-    box.classList.remove("u-dragging");
-    el.classList.remove("u-lens-drag"); // eases from the finger to the chosen tab
-    const k = d.k || tab;
-    const m = measure(k);
-    if (m) el.style.transform = `translateX(${m.x}px)`;
-    setTimeout(() => { el.classList.remove("u-lens-up"); light(null); }, 260);
+    if (!d || !d.on || !el || !cp) return;
+    el.classList.remove("u-lens-drag"); // eases from the finger onto the chosen tab
+    const k = d.k || tab, m = measure(k);
+    if (m) { const p = place(m.cx); el.style.transform = p.lens; cp.style.transform = p.copy; }
+    // The lens stays where it landed; React moves it on from there when the tab changes.
+    setTimeout(() => { el.classList.remove("u-lens-up"); hot(null); }, 300);
     if (k !== tab) go(k);
   };
 
+  const badgeOf = (k) => (k === "tickets" && user ? liveTickets(bookings) : 0);
+  const p = geo ? place(geo.cx) : null;
   return (
     <nav aria-label="Sections" className="u-keep u-hide-typing fixed inset-x-0 z-[45] flex items-center gap-1.5 px-2.5 min-[390px]:gap-2 min-[390px]:px-3 sm:hidden" style={{ bottom: "calc(var(--sabx) + 10px)" }}>
       <div ref={bar} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd} style={{ touchAction: "none" }}
         className="u-glass-bar relative flex h-[58px] min-w-0 flex-1 items-stretch rounded-full p-1 min-[390px]:h-[62px] min-[390px]:p-[5px]">
-        {lens && <span ref={lensEl} aria-hidden="true" className="u-lens" style={{ width: lens.w, transform: `translateX(${lens.x}px)` }} />}
-        {items.map(([k, , short]) => {
-          const on = target === k;
-          const badge = k === "tickets" && user ? liveTickets(bookings) : 0;
-          return (
-            <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => go(k)} aria-current={tab === k ? "page" : undefined}
-              className={`u-keep u-haptic u-nav-item relative z-[1] flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-full px-0.5 text-[10px] font-medium leading-none min-[390px]:text-[10.5px] ${on ? "u-nav-on" : ""}`}>
-              <span className="u-nav-icon relative">
-                <Icon name={NAV_ICON[k] || "home"} className="h-[24px] w-[24px] min-[390px]:h-[26px] min-[390px]:w-[26px]" />
-                {badge > 0 && <span className="absolute -right-2.5 -top-1 min-w-[1.1rem] rounded-full bg-[#ff3b30] px-1 text-center text-[10px] font-semibold leading-[1.1rem] text-white">{badge}</span>}
+        {geo && (
+          <span ref={lensEl} aria-hidden="true" className={`u-tglens ${up ? "u-lens-up" : ""}`}
+            style={{ width: ew, height: eh, top: (geo.H - eh) / 2, transform: p.lens }}>
+            <span className="u-tglens-cap" style={{ width: geo.w, height: geo.H - 10, left: (ew - geo.w) / 2, top: (eh - geo.H + 10) / 2 }} />
+            <span className="u-tglens-glass">
+              <span ref={copyEl} className="u-tglens-copy flex items-stretch p-1 min-[390px]:p-[5px]" style={{ width: geo.W, height: geo.H, transform: p.copy }}>
+                {items.map(([k, , short]) => <span key={k} data-k={k} className={itemCls(target === k)}><NavItem k={k} short={short} badge={badgeOf(k)} /></span>)}
               </span>
-              <span className="truncate">{short}</span>
-            </button>
-          );
-        })}
+            </span>
+          </span>
+        )}
+        {items.map(([k, , short]) => (
+          <button key={k} ref={(el) => { btns.current[k] = el; }} onClick={() => go(k)} aria-current={tab === k ? "page" : undefined}
+            className={`u-haptic z-[1] ${itemCls(target === k)}`}>
+            <NavItem k={k} short={short} badge={badgeOf(k)} />
+          </button>
+        ))}
       </div>
       {side}
     </nav>
