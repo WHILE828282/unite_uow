@@ -92,7 +92,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                 );
                 return (
                 <button key={b.id} onClick={() => setModal({ type: "ticket", booking: b })} className={`u-card flex items-center gap-4 ${isPast(b) ? "opacity-75" : ""} rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left`}>
-                  {(() => { const logo = b.logo || (parties.find((p) => p.id === b.partyId) || {}).logo; return logo ? <EventLogo p={{ logo, id: b.id, key: b.key, emoji: b.emoji }} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{b.emoji}</div>; })()}
+                  {(() => { const ev = parties.find((p) => p.id === b.partyId) || {}; return <EventLogo p={{ logo: b.logo || ev.logo || ev.cover, id: b.id, key: b.key, category: ev.category }} className="h-12 w-12 ring-1 ring-slate-200/70" />; })()}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{b.title}</p>
                     <p className="text-sm text-slate-500">{fmtDate(b.date)} · {b.time}</p>
@@ -113,7 +113,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
                 const p = parties.find((x) => x.id === Number(id));
                 return p ? (
                   <button key={id} onClick={() => setModal({ type: "waitlist", party: p, pos, email: user })} className="u-card flex items-center gap-4 rounded-2xl border border-slate-200/50 bg-white shadow-sm p-4 text-left">
-                    {p.logo ? <EventLogo p={p} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl">{p.emoji}</div>}
+                    <EventLogo p={p} className="h-12 w-12 ring-1 ring-slate-200/70" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{p.title}</p>
                       <p className="text-sm text-slate-500">{fmtDate(p.date)} · {p.time}</p>

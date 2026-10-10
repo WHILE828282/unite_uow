@@ -1,6 +1,5 @@
 import { Modal } from "./Modal.jsx";
 import { ContactButtons, EventLogo, Icon, LangBadge } from "../ui.jsx";
-import { TYPE_EMOJI } from "../../lib/events.js";
 import { fmtDate, fmtRange } from "../../lib/format.js";
 import { englishMapsUrl, mapsLink } from "../../lib/maps.js";
 import { GRADIENTS } from "../../lib/styles.js";
@@ -23,12 +22,12 @@ export function ReviewModal({ sub: s, r, onClose, onDelete }) {
     <Modal onClose={onClose}>
       <div className={`relative overflow-hidden px-6 pb-5 pt-7 text-white ${s.cover ? "bg-slate-900" : `bg-gradient-to-br ${GRADIENTS[s.category] || GRADIENTS.Party}`}`}>
         {s.cover && (<><img src={s.cover} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover" style={{ aspectRatio: "16 / 9" }} /><span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" aria-hidden="true" /></>)}
-        <span className={`relative block ${s.cover ? "pt-12" : ""}`}>{s.logo ? <EventLogo p={s} className="h-14 w-14 ring-2 ring-white/80 shadow-lg" /> : <span className="text-4xl">{TYPE_EMOJI[s.category] || "🎉"}</span>}</span>
+        <span className={`relative block ${s.cover ? "pt-12" : ""}`}><EventLogo p={{ ...s, cover: "" }} className="h-14 w-14 ring-2 ring-white/80 shadow-lg" /></span>
         <h2 className="relative mt-2 pr-8 text-xl font-bold leading-tight">{s.title}</h2>
         {r.status === "rejected" ? (
           <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-semibold text-white">✕ Not approved</span>
         ) : (
-          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">{!s.moderated ? `Party Under Review · ~${r.left} left` : s.mod === "under_review" ? "🔍 Additional check in progress" : "Pending moderation"}</span>
+          <span className="u-keep relative mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">{!s.moderated ? `Party Under Review · ~${r.left} left` : s.mod === "under_review" ? "Additional check in progress" : "Pending moderation"}</span>
         )}
       </div>
       <div className="space-y-4 p-5">

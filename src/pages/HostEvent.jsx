@@ -153,8 +153,8 @@ export const FIELD_ORDER = ["logo", "cover", "title", "pitch", "date", "time", "
 
 /* The two kinds of event a student can host. */
 export const EVENT_KINDS = [
-  { k: "own", icon: "party", emoji: "🏠", title: "Our own event", body: "You run it yourself: party, yacht, tournament, dinner, workshop." },
-  { k: "trip", icon: "ticket", emoji: "🚌", title: "Group trip to an external event", body: "You buy tickets from an official seller (concert, match, theme park) and bring a group." },
+  { k: "own", icon: "party", title: "Our own event", body: "You run it yourself: party, yacht, tournament, dinner, workshop." },
+  { k: "trip", icon: "ticket", title: "Group trip to an external event", body: "You buy tickets from an official seller (concert, match, theme park) and bring a group." },
 ];
 export const kindLabel = (k) => (k === "trip" ? "Group trip to an external event" : "Our own event");
 

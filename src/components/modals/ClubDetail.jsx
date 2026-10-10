@@ -1,6 +1,6 @@
 import { roomLabel } from "../../data/clubs.js";
 import { Modal } from "./Modal.jsx";
-import { Badge, InfoIcon, Icon } from "../ui.jsx";
+import { Badge, ClubThumb, InfoIcon, Icon } from "../ui.jsx";
 import { HERO_PHOTOS, heroBackground } from "../../data/clubs.js";
 import { UOWD_ADDRESS, UOWD_MAPS } from "../../data/events.js";
 import { DAYS } from "../../data/options.js";
@@ -43,7 +43,7 @@ export function ClubDetail({ club: c, status, action, onClose, onShare, verified
             Share
           </button>
         )}
-        {!(art && art.photo) && <span className="relative text-5xl">{c.emoji}</span>}
+        {!(art && art.photo) && <span className="relative block w-fit"><ClubThumb c={c} className="h-16 w-16 !rounded-2xl ring-2 ring-white/30" /></span>}
         <div className="relative mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>{roomLabel(c)}</span>
           {joined && <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: "rgba(255,255,255,0.22)" }}>✓ You're a member</span>}

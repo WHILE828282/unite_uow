@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DateBlock, DayTag, EventLogo, Icon } from "./ui.jsx";
+import { ClubThumb, DateBlock, DayTag, EventLogo, Icon, IconTile } from "./ui.jsx";
 import { clubDays, dayTag, fmtDate, shortVenue } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 import { roomLabel } from "../data/clubs.js";
@@ -58,7 +58,7 @@ export function PartyTile({ p, i = 0, open = {}, action }) {
       style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}>
       <div className="u-keep u-shimmer relative aspect-square overflow-hidden rounded-[17px]">
         {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-          : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
+          : <IconTile category={p.category} className="h-full w-full !rounded-none" />}
         <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">{dayTag(p.date) || fmtDate(p.date)}</span>
         {left <= 0 ? <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">Full</span>
           : left <= 5 ? <span className="absolute right-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">{left} left</span> : null}
@@ -95,7 +95,7 @@ export function EventCard({ p, i = 0, open = {}, action, past = false }) {
       <div className="u-keep u-shimmer relative aspect-[4/3] overflow-hidden rounded-[17px]">
         {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
           : p.official ? <OfficialHeader p={p} />
-          : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
+          : <IconTile category={p.category} className="h-full w-full !rounded-none" />}
         {!past && left <= 0 ? <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">Full</span>
           : !past && left <= 5 ? <span className="absolute right-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">{left} left</span> : null}
       </div>
@@ -182,7 +182,7 @@ export function ClubCard({ c, i, open, members, button }) {
     <article {...open} className="u-card u-rise relative cursor-pointer overflow-hidden rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" style={{ animationDelay: `${i * 60}ms` }}>
       {ROOM_TILE[c.category] && <span className="u-keep absolute inset-x-0 top-0 h-1 opacity-80" style={{ background: ROOM_TILE[c.category] }} aria-hidden="true" />}
       <div className="flex items-start gap-4">
-        <div className={`u-keep flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-3xl shadow-sm ${ROOM_TILE[c.category] ? "" : GRADIENTS[c.category]}`} style={ROOM_TILE[c.category] ? { background: ROOM_TILE[c.category] } : undefined}>{c.emoji}</div>
+        <ClubThumb c={c} className="h-14 w-14 !rounded-2xl shadow-sm" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{c.name}</h3>

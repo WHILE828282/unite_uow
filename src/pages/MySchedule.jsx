@@ -1,6 +1,6 @@
 import { ComingUp } from "../components/ComingUp.jsx";
 import { useEffect, useRef, useState } from "react";
-import { EventLogo, Icon, ReviewBadge } from "../components/ui.jsx";
+import { ClubThumb, EventLogo, Icon, ReviewBadge } from "../components/ui.jsx";
 import { DAYS } from "../data/options.js";
 import { fmtRange, isoDay, shortVenue, slotHours, to24, toMin, weekdayIdx } from "../lib/format.js";
 import { HOUR_PX, addDays, hourLabel, layoutDay, mondayOf } from "../lib/schedule.js";
@@ -82,7 +82,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
   const tagOf = (it) => it.kind === "session" ? (it.x.pending ? ["Pending", "bg-amber-50 text-amber-700"] : null)
     : it.kind === "event" ? (it.b.going ? ["Going", "bg-emerald-50 text-emerald-700"] : ["Ticket", "bg-crimson-50 text-crimson-700"])
     : [it.r.status === "approved" ? "Hosting · live" : "Under review", it.r.status === "approved" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"];
-  const emojiOf = (it) => it.kind === "session" ? it.x.club.emoji : it.kind === "event" ? it.b.emoji : "🎉";
+  const thumbOf = (it, cls) => it.kind === "session" ? <ClubThumb c={it.x.club} className={cls} /> : <EventLogo p={it.kind === "event" ? it.b : { ...it.r, cover: "" }} className={cls} />;
   const dayName = (d) => (+d === +today ? "Today" : +d === +addDays(today, 1) ? "Tomorrow" : d.toLocaleDateString("en-GB", { weekday: "long" }));
 
   return (
@@ -91,7 +91,7 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
       {next && (
         <button onClick={() => open(next)} className="u-card u-keep relative flex w-full items-center gap-4 overflow-hidden rounded-3xl p-4 text-left text-white shadow-lg"
           style={{ background: `linear-gradient(135deg, ${next.color} 0%, #1c1c1e 130%)` }}>
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm">{emojiOf(next)}</span>
+          {thumbOf(next, "h-12 w-12 !rounded-2xl ring-2 ring-white/25")}
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/75">Next up · {next.n === 0 ? (next.all ? "Today" : next.s <= nowMin ? "Now" : `in ${next.s - nowMin >= 60 ? `${Math.floor((next.s - nowMin) / 60)} h ` : ""}${(next.s - nowMin) % 60} min`) : dayName(next.d)}</span>
             <span className="mt-0.5 block truncate text-lg font-bold leading-tight">{titleOf(next)}</span>
@@ -164,9 +164,10 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
                           {!it.all && <span className="block text-xs tabular-nums text-slate-400">{fmt12(it.e)}</span>}
                         </span>
                         <span className="w-1 shrink-0 rounded-full" style={{ background: it.color, opacity: it.kind === "session" && it.x.pending ? 0.45 : 1 }} />
+                        {thumbOf(it, "h-11 w-11 self-center")}
                         <span className="min-w-0 flex-1">
                           <span className="flex items-start justify-between gap-2">
-                            <span className="line-clamp-2 min-w-0 font-semibold leading-snug text-slate-900">{emojiOf(it)} {titleOf(it)}</span>
+                            <span className="line-clamp-2 min-w-0 font-semibold leading-snug text-slate-900">{titleOf(it)}</span>
                             {live ? <span className="shrink-0 rounded-full bg-rose-500 px-2 py-0.5 text-[11px] font-semibold text-white">Now</span>
                               : tag && <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tag[1]}`}>{tag[0]}</span>}
                           </span>

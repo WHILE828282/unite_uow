@@ -16,7 +16,7 @@ export function WaitlistModal({ party, pos, email, fresh, onLeave, onClose }) {
 
         <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left">
           <div className="flex items-center gap-3">
-            {party.logo ? <EventLogo p={party} className="h-11 w-11 shadow-sm" /> : <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-2xl shadow-sm">{party.emoji}</div>}
+            <EventLogo p={party} className="h-11 w-11 shadow-sm" />
             <div className="min-w-0">
               <p className="truncate font-semibold text-slate-900">{party.title}</p>
               <p className="text-sm text-slate-500">{fmtDate(party.date)} · {party.time}</p>

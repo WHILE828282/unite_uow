@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { Modal } from "./Modal.jsx";
+import { ClubThumb } from "../ui.jsx";
 import { scheduleLabel } from "../../lib/schedule.js";
 
 
@@ -29,7 +30,7 @@ export function LeaveConfirm({ club: c, pending, onConfirm: confirm, onCancel })
   return (
     <Modal onClose={onCancel} size="sm">
       <div className="p-6 pt-8 text-center">
-        <span className="u-pop mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-2xl ring-1 ring-inset ring-rose-200">{c.emoji}</span>
+        <span className="u-pop mx-auto block w-fit"><ClubThumb c={c} className="h-14 w-14 !rounded-2xl" /></span>
         <h2 className="mt-4 text-lg font-bold text-slate-900">{pending ? "Cancel your sign-up?" : `Leave this ${kind}?`}</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           {pending

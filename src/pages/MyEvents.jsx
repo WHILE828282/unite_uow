@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { LangBadge, ReviewBadge, VenueChip } from "../components/ui.jsx";
-import { TYPE_EMOJI } from "../lib/events.js";
+import { IconTile, LangBadge, ReviewBadge, VenueChip } from "../components/ui.jsx";
 import { fmtDate, fmtRange } from "../lib/format.js";
 import { GRADIENTS } from "../lib/styles.js";
 import { DeliveryBar, payoutText, tripStateLabel } from "../components/modals/HostManage.jsx";
@@ -31,7 +30,7 @@ export function MyEventCard({ s, r, onOpen }) {
     <button onClick={() => onOpen(s)} className="u-card group flex flex-col overflow-hidden rounded-2xl border border-slate-200/50 bg-white text-left shadow-sm">
       <span className={`relative block aspect-[16/9] w-full bg-gradient-to-br ${GRADIENTS[s.category] || GRADIENTS.Party}`}>
         {s.cover && imgOk ? <img src={s.cover} alt="" loading="lazy" decoding="async" onError={() => setImgOk(false)} className="absolute inset-0 h-full w-full object-cover" />
-          : <span className="absolute inset-0 flex items-center justify-center text-5xl" aria-hidden="true">{TYPE_EMOJI[s.category] || "🎉"}</span>}
+          : <IconTile category={s.category} className="absolute inset-0 h-full w-full !rounded-none" />}
         <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" aria-hidden="true" />
         <span className="absolute left-3 top-3"><ReviewBadge r={r} /></span>
       </span>

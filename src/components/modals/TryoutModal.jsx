@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "../ui.jsx";
+import { ClubThumb, Icon } from "../ui.jsx";
 import { typingNow } from "./Modal.jsx";
 import { isSports } from "../../data/clubs.js";
 import { scheduleLabel } from "../../lib/schedule.js";
@@ -54,7 +54,7 @@ export function TryoutModal({ club: c, onSent, onClose }) {
             </div>
           </div>
           <div className="u-short-hide mt-4 flex items-center gap-3">
-            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg ${GRADIENTS[c.category]}`}>{c.emoji}</span>
+            <ClubThumb c={c} className="h-12 w-12 !rounded-2xl shadow-lg" />
             <div className="min-w-0">
               <p className="inline-flex items-center gap-1.5 rounded-full bg-crimson-600/20 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-crimson-200 ring-1 ring-inset ring-crimson-400/40">
                 <Icon name="shield" className="h-3.5 w-3.5" /> Official UOWD Form

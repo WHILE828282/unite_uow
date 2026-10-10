@@ -142,13 +142,32 @@ export const AnimatedCheck = ({ className = "h-16 w-16" }) => (
   </svg>
 );
 
-/* Event artwork for headers/thumbnails: logo image or emoji fallback. */
-// On a ticket (id + holder key) the logo keeps loading even after the event is taken down; a broken image falls back to the emoji.
-export function EventLogo({ p, className = "h-12 w-12 text-2xl" }) {
+/* No emoji anywhere: pictures first (the event's logo or cover, the club's photo), and where there is none a flat
+   category icon on its colour. */
+const CAT_ICON_OF = { Party: "party", Social: "users", "Academic Study": "book", Networking: "briefcase", Career: "briefcase", Sports: "trophy",
+  Gaming: "controller", Music: "music", "Arts & Culture": "palette", Arts: "palette", Tech: "laptop", Wellbeing: "heart", Business: "chart", Culture: "globe" };
+const CAT_BG_OF = { Party: "#e0314f", Social: "#f97316", "Academic Study": "#2563eb", Networking: "#2563eb", Career: "#2563eb", Sports: "#16a34a",
+  Gaming: "#7c3aed", Music: "#e11d48", "Arts & Culture": "#db2777", Arts: "#db2777", Tech: "#0284c7", Wellbeing: "#0d9488", Business: "#059669", Culture: "#d97706" };
+export const IconTile = ({ category, icon, className = "h-12 w-12" }) => (
+  <span className={`${className} u-keep flex shrink-0 items-center justify-center rounded-xl text-white`} style={{ background: `linear-gradient(135deg, ${CAT_BG_OF[category] || "#475569"}, #1c1c1e 160%)`, aspectRatio: "1 / 1" }} aria-hidden="true">
+    <Icon name={icon || CAT_ICON_OF[category] || "ticket"} className="h-[45%] w-[45%]" />
+  </span>
+);
+// Event artwork for headers/thumbnails. On a ticket (id + holder key) the logo keeps loading even after the event is
+// taken down; a broken image falls back to the icon tile.
+export function EventLogo({ p, className = "h-12 w-12" }) {
   const [bad, setBad] = useState("");
-  const src = p.logo && p.key && p.id && /^\/api\/events\?img=/.test(p.logo) && !/[?&]t=/.test(p.logo) ? `${p.logo}&t=${encodeURIComponent(`${p.id}.${p.key}`)}` : p.logo;
+  const raw = p.logo || p.cover;
+  const src = raw && p.key && p.id && /^\/api\/events\?img=/.test(raw) && !/[?&]t=/.test(raw) ? `${raw}&t=${encodeURIComponent(`${p.id}.${p.key}`)}` : raw;
   return src && bad !== src ? <img src={src} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setBad(src)} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1" }} />
-    : <span className={`${className} flex shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl`}>{p.emoji || "🎟️"}</span>;
+    : <IconTile category={p.category} className={className} />;
+}
+// A club or team: its photo (football for the Football Team…), or its category icon.
+export function ClubThumb({ c, className = "h-12 w-12" }) {
+  const [bad, setBad] = useState(false);
+  const src = c.backgroundImage;
+  return src && !bad ? <img src={src} alt="" loading="lazy" decoding="async" draggable={false} onError={() => setBad(true)} className={`${className} shrink-0 rounded-xl object-cover`} style={{ aspectRatio: "1 / 1", objectPosition: c.focus || "center" }} />
+    : <IconTile category={c.category} className={className} />;
 }
 
 export const ReviewBadge = ({ r }) =>
@@ -157,7 +176,7 @@ export const ReviewBadge = ({ r }) =>
   ) : r.status === "rejected" ? (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-200">✕ Not approved</span>
   ) : r.moderated ? (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">{r.mod === "under_review" ? "🔍 Additional check" : "Pending moderation"}</span>
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">{r.mod === "under_review" ? "Additional check" : "Pending moderation"}</span>
   ) : (
     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Party Under Review · ~{r.left}</span>
   );

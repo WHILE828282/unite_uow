@@ -102,7 +102,7 @@ export function Ticket({ booking: b, justPaid, onClose, onDownload, onOpenFile }
 
           <div className="p-5">
             <div className="flex items-center gap-3">
-              {b.logo ? <EventLogo p={b} className="h-12 w-12 ring-1 ring-slate-200/70" /> : <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-2xl ring-1 ring-inset ring-slate-200/70">{b.emoji}</div>}
+              <EventLogo p={b} className="h-12 w-12 ring-1 ring-slate-200/70" />
               <p className="min-w-0 font-semibold leading-snug text-slate-900">{b.title}</p>
             </div>
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">

@@ -32,7 +32,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
             {p.logo && !p.official && <EventLogo p={p} className="h-14 w-14 ring-2 ring-white/20" />}
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/75">
-                {p.category} · {p.lang}{p.kind === "trip" && <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white backdrop-blur">🚌 Group trip</span>}
+                {p.category} · {p.lang}{p.kind === "trip" && <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white backdrop-blur">Group trip</span>}
               </p>
               <h2 className="mt-1 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{p.title}</h2>
               <p className="mt-0.5 text-sm text-white/70">{p.official ? "By" : "Hosted by"} {p.host}</p>
@@ -47,7 +47,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
           {p.logo ? <EventLogo p={p} className="h-14 w-14" /> : <DateBlock iso={p.date} />}
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{p.category} · {p.lang} · {p.price > 0 ? `${p.price} AED` : "Free"}</p>
-            {p.kind === "trip" && <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">🚌 Group trip</span>}
+            {p.kind === "trip" && <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200">Group trip</span>}
             <h2 className="mt-1 text-xl font-bold leading-tight text-slate-900 sm:text-2xl">{p.title}</h2>
             <p className="mt-1 text-sm text-slate-500">Hosted by {p.host}</p>
           </div>
