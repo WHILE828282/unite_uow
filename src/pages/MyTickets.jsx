@@ -130,7 +130,7 @@ export function MyTickets({ user, bookings, waitlist, parties, submissions, setM
           {submissions.length === 0 ? (
             <div className="rounded-2xl border border-slate-200/50 bg-white shadow-sm p-5 text-sm text-slate-500">
               Want to run your own party or meetup? The admin team reviews every application for safety.
-              <button onClick={hostEvent} className="ml-1 font-semibold text-crimson-700 hover:underline">Host an event</button>
+              {" "}<button onClick={hostEvent} className="font-semibold text-crimson-700 hover:underline">Host an event</button>
             </div>
           ) : (
             <button onClick={() => changeTab("events")} className="u-card flex w-full items-center justify-between gap-3 rounded-2xl border border-slate-200/50 bg-white p-4 text-left text-sm shadow-sm">

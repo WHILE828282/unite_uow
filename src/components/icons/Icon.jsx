@@ -1,3 +1,4 @@
+import { useId } from "react";
 
 /* Unite glass icons. Solid shapes with a soft top-to-bottom sheen (currentColor), an accent colour for the
    highlight part (var(--icon-accent), crimson by default) and a soft drop shadow that sits slightly outside the
@@ -222,13 +223,32 @@ ICONS["shield-check"] = ICONS.shield;
    (or --icon-accent when a place sets one). No gradients or shadows. */
 export const Icon = ({ name, className = "h-4 w-4" }) => {
   const layers = ICONS[name] || ICONS.check;
-  const accent = { fill: "var(--icon-accent, currentColor)", fillOpacity: "var(--icon-accent-o, 0.55)" };
+  const id = useId().replace(/:/g, "");
+  // One flat colour: a detail drawn on top of another part (a door, a plus, an envelope flap) would vanish, so every
+  // layer is cut (with a thin gap) where later layers sit, and accent layers are drawn a little softer.
+  const shape = (t, d, key, props) => t === "f" || t === "a"
+    ? <path key={key} d={d} fillRule="evenodd" {...props} />
+    : <path key={key} d={d} fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props} />;
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      {layers.map(([t, d], i) =>
-        t === "f" ? <path key={i} d={d} fill="currentColor" fillRule="evenodd" />
-          : t === "a" ? <path key={i} d={d} style={accent} fillRule="evenodd" />
-          : <path key={i} d={d} fill="none" stroke={t === "sa" ? "var(--icon-accent, currentColor)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />)}
+      <defs>
+        {layers.slice(0, -1).map((_, i) => (
+          <mask key={i} id={`${id}m${i}`} maskUnits="userSpaceOnUse" x="-2" y="-2" width="28" height="28">
+            <rect x="-2" y="-2" width="28" height="28" fill="#fff" />
+            {layers.slice(i + 1).map(([t, d], k) => t === "f" || t === "a"
+              ? <path key={k} d={d} fill="#000" stroke="#000" strokeWidth="1.6" strokeLinejoin="round" fillRule="evenodd" />
+              : <path key={k} d={d} fill="none" stroke="#000" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />)}
+          </mask>
+        ))}
+      </defs>
+      {layers.map(([t, d], i) => {
+        const soft = t === "a" || t === "sa";
+        const paint = t === "f" || t === "a"
+          ? { style: soft ? { fill: "var(--icon-accent, currentColor)", fillOpacity: "var(--icon-accent-o, 0.7)" } : { fill: "currentColor" } }
+          : { style: soft ? { stroke: "var(--icon-accent, currentColor)", strokeOpacity: "var(--icon-accent-o, 0.7)" } : { stroke: "currentColor" } };
+        return <g key={i} mask={i < layers.length - 1 ? `url(#${id}m${i})` : undefined}>{shape(t, d, i, paint)}</g>;
+      })}
     </svg>
   );
 };
+

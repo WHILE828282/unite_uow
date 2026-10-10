@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CAT_ICON, CAT_TINT } from "../lib/events.js";
 import { dubaiStart } from "../components/cards.jsx";
 import { Icon } from "../components/ui.jsx";
-import { fmtDate } from "../lib/format.js";
+import { dubaiDay, fmtDate } from "../lib/format.js";
 
 /* Home: its own page, not a copy of the others. A dark photo-collage hero (with the launch party built in), a grid of
    places to explore, two swipeable rails of visual tiles (events, clubs), a three-step explainer and a host banner.
@@ -175,7 +175,7 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
               return (
                 <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.cover || p.logo} bg={p.official ? CAT_TINT[p.category] : ROOM_BG.Events} icon={p.official && !p.cover ? CAT_ICON[p.category] : null} className="h-56 w-52 sm:w-56 lg:w-auto">
                   <span className="flex items-start justify-between gap-2">
-                    <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{fmtDate(p.date)}</span>
+                    <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{p.endDate && p.date <= dubaiDay() ? `Until ${fmtDate(p.endDate)}` : fmtDate(p.date)}</span>
                     <span className="u-keep rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>
                   </span>
                   <span>

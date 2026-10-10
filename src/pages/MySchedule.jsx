@@ -1,5 +1,5 @@
 import { ComingUp } from "../components/ComingUp.jsx";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EventLogo, Icon, ReviewBadge } from "../components/ui.jsx";
 import { DAYS } from "../data/options.js";
 import { fmtDate, fmtRange, isoDay, shortVenue, slotHours, to24, toMin, weekdayIdx } from "../lib/format.js";
@@ -9,6 +9,14 @@ import { GRADIENTS } from "../lib/styles.js";
 export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenTicket, onOpenReview, onBrowse, onExport, suggest = [], onOpenEvent }) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const [anchor, setAnchor] = useState(() => mondayOf(today));
+  // On phones the week scrolls sideways: bring today's column into view (start of the week otherwise).
+  const gridRef = useRef(null);
+  useEffect(() => {
+    const box = gridRef.current;
+    if (!box) return;
+    const el = box.querySelector("[data-today]");
+    box.scrollLeft = el ? Math.max(0, el.offsetLeft - 56) : 0;
+  }, [+anchor]);
   const [now, setNow] = useState(new Date());
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 60000); return () => clearInterval(t); }, []);
 
@@ -144,15 +152,15 @@ export function MySchedule({ sessions, events, reviews = [], onOpenClub, onOpenT
           </div>
         </div>
 
-        {/* Week grid */}
-        <div className="overflow-x-auto">
+        {/* Week grid (phones scroll it sideways: it opens on today's column) */}
+        <div ref={gridRef} className="overflow-x-auto">
           <div key={+anchor} className="u-fade min-w-[860px]">
             <div className="grid border-b border-slate-200/50" style={{ gridTemplateColumns: cols }}>
               <div className="px-2 py-3 text-right text-xs font-medium text-slate-400">{weekHours ? `${weekHours % 1 ? weekHours.toFixed(1) : weekHours} h` : ""}</div>
               {days.map((d, i) => {
                 const isToday = +d === +today;
                 return (
-                  <div key={i} className={`border-l border-slate-200/50 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
+                  <div key={i} data-today={isToday ? "" : undefined} className={`border-l border-slate-200/50 px-2 py-2.5 text-center ${i >= 5 ? "bg-slate-50" : ""}`}>
                     <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-crimson-700" : "text-slate-400"}`}>{DAYS[i].slice(0, 3)}</p>
                     <p className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-base font-bold ${isToday ? "bg-slate-900 text-white" : d < today ? "text-slate-400" : "text-slate-900"}`}>{d.getDate()}</p>
                   </div>

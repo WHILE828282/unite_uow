@@ -122,7 +122,7 @@ export function FeaturedSlide({ p, open = {}, action }) {
         {!pic && p.official ? <OfficialHeader p={p} big /> : pic && <img src={pic} alt="" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />}
       </div>
       <span className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent" aria-hidden="true" />
-      <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md ${p.official ? "bg-white/90 text-sky-800" : "bg-white/90 text-crimson-700"}`}>{p.official ? "Official UOWD" : "Student event"}</span>
+      <span className={`u-keep absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md ${p.official ? "bg-white/90 text-sky-800" : "bg-white/90 text-crimson-700"}`}>{p.official ? "Official UOWD" : "Student event"}</span>
       <p className="text-xs font-semibold text-white/80">{dayTag(p.date) || fmtDate(p.date)} · {whenLabel(p)}</p>
       <h3 className="mt-1 line-clamp-2 text-xl font-bold leading-tight">{p.title}</h3>
       <div className="mt-3 flex items-center justify-between gap-3">

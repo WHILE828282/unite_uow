@@ -103,7 +103,7 @@ html.u-typing { scroll-behavior: auto; }
 /* Strip behind the sticky section tabs: exactly the page background in both themes. */
 .u-tabbar { background-color: #f8fafc; }
 .u-dark .u-tabbar { background-color: #000000; }
-.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #121214; color: #f5f5f7; }
+.u-dark :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #121214; color: #f5f5f7; }
 .u-dark :where(input)::placeholder { color: #64748b; }
 
 /* Surfaces */
@@ -358,8 +358,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-dark .u-tabbar { background-color: #000; }
 .u-light .u-tabbar { background-color: #f2f2f7; }
 /* Inputs and selects: filled, borderless, like iOS search fields. */
-.u-dark.u-dark :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #1c1c1e; }
-.u-light.u-light :where(input:not(.u-keep), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #e3e3e8; }
+.u-dark.u-dark :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #1c1c1e; }
+.u-light.u-light :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { border-color: transparent; background-color: #e3e3e8; }
 /* Accent buttons: one confident crimson, slightly brighter on black. */
 .u-dark .bg-crimson-600:not(.u-keep) { background-color: #c0263f; }
 /* Picture placeholders shimmer until the photo arrives (the photo covers it). */
@@ -415,3 +415,10 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-dragging .u-nav-item.u-nav-hot { color: var(--nav-accent); }
 .u-dragging .u-nav-item.u-nav-hot .u-nav-icon { transform: scale(1.22); }
 @media (prefers-reduced-motion: reduce) { .u-lens, .u-lens::after, .u-nav-item::before, .u-nav-icon { transition: none; } }
+/* Light theme: photo placeholders are a soft grey, not black. */
+.u-light .u-shimmer { background-color: #e5e5ea; }
+/* Checkboxes: a clear outline in dark mode (filled crimson once ticked). */
+.u-dark input[type="checkbox"]:not(.u-keep):not(:checked) { background-color: transparent; border-color: rgba(255, 255, 255, 0.35); }
+/* Inside sheets (which are #1c1c1e themselves) fields need a lighter fill to be seen. */
+.u-dark.u-dark .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #2c2c2e; }
+.u-light.u-light .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #eeeef2; }
