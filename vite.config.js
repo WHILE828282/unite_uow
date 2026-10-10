@@ -71,7 +71,7 @@ export default defineConfig({
           },
           { urlPattern: ({ url }) => url.pathname.startsWith("/api/"), handler: "NetworkOnly" },
           {
-            urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events|teams|collage|explore|install)\/.+\.(webp|png|jpe?g)$/.test(url.pathname),
+            urlPattern: ({ url }) => url.origin === self.location.origin && /^\/(clubs|events|official|teams|collage|explore|install)\/.+\.(webp|png|jpe?g)$/.test(url.pathname),
             handler: "CacheFirst",
             options: { cacheName: "photos", expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 } },
           },

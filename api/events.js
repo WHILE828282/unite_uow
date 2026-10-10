@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     // Official UOWD events: same shape as src/data/official.js, plus RSVPs taken so far.
     const official = (await listOfficialEvents().catch(() => null) || []).map((r) => ({
       n: r.n, date: r.date, endDate: r.endDate, start: r.start, end: r.end, title: r.title, category: r.category, club: r.clubId || r.club,
-      host: r.host, where: r.where, desc: r.desc, featured: !!r.featured, taken: r.taken || 0,
+      host: r.host, where: r.where, desc: r.desc, featured: !!r.featured, photo: r.photo || "", taken: r.taken || 0,
     })).filter((o) => o.n);
     return res.status(200).json({ ok: true, store: true, events, seats, official });
   } catch (e) {

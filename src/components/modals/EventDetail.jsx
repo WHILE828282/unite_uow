@@ -14,7 +14,7 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
     <>
       {/* With a photo: the title sits on it (immersive header). Without one: the classic header below. */}
       {/* Official UOWD events: the category colour and icon instead of a photo. */}
-      {p.official && (
+      {p.official && !p.cover && (
         <div className="u-keep relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden p-5 text-white" style={{ background: CAT_TINT[p.category] || CAT_TINT.Social }}>
           <span className="pointer-events-none absolute -right-8 -top-8 opacity-[0.15]" aria-hidden="true"><Icon name={CAT_ICON[p.category] || "star"} className="h-48 w-48" /></span>
           <span className="mb-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800"><Check className="h-3 w-3" /> Official UOWD</span>
@@ -35,9 +35,10 @@ export function EventDetailBody({ p, onShare, groupLink = p.own ? p.groupLink : 
                 {p.category} · {p.lang}{p.kind === "trip" && <span className="rounded-full bg-white/15 px-2 py-0.5 normal-case tracking-normal text-white backdrop-blur">🚌 Group trip</span>}
               </p>
               <h2 className="mt-1 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{p.title}</h2>
-              <p className="mt-0.5 text-sm text-white/70">Hosted by {p.host}</p>
+              <p className="mt-0.5 text-sm text-white/70">{p.official ? "By" : "Hosted by"} {p.host}</p>
             </div>
           </div>
+          {p.official && <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800"><Check className="h-3 w-3" /> Official UOWD</span>}
           <div className="absolute right-14 top-3 z-10"><ShareBtn onClick={() => onShare(p)} /></div>
         </div>
       )}

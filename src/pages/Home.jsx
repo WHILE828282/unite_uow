@@ -173,7 +173,7 @@ export function HomeSections({ user, events, clubs, roomCounts, upcomingCount, m
             {events.map((p) => {
               const left = p.spots - p.taken;
               return (
-                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.official ? null : p.cover || p.logo} bg={p.official ? CAT_TINT[p.category] : ROOM_BG.Events} icon={p.official ? CAT_ICON[p.category] : null} className="h-56 w-52 sm:w-56 lg:w-auto">
+                <Tile key={p.id} onClick={() => setModal({ type: "detail", id: p.id })} img={p.cover || p.logo} bg={p.official ? CAT_TINT[p.category] : ROOM_BG.Events} icon={p.official && !p.cover ? CAT_ICON[p.category] : null} className="h-56 w-52 sm:w-56 lg:w-auto">
                   <span className="flex items-start justify-between gap-2">
                     <span className="rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm">{fmtDate(p.date)}</span>
                     <span className="u-keep rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-900">{p.price > 0 ? `${p.price} AED` : "Free"}</span>

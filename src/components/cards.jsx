@@ -87,14 +87,14 @@ const KindTag = ({ p }) => p.official
   : <span className="shrink-0 rounded-full bg-crimson-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-crimson-700 ring-1 ring-inset ring-crimson-100">Student event</span>;
 export function EventCard({ p, i = 0, open = {}, action, past = false }) {
   const left = p.spots - p.taken;
-  const pic = p.official ? null : p.dyn ? p.cover || p.logo : p.logo || p.cover;
+  const pic = p.dyn ? p.cover || p.logo : p.logo || p.cover;
   return (
     <article id={"event-" + p.id} {...open}
       className={`u-tile u-card u-rise group flex cursor-pointer flex-col overflow-hidden rounded-[22px] bg-white p-1.5 ring-1 ring-slate-200/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400 ${past ? "opacity-60" : ""}`}
       style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
       <div className="u-keep u-shimmer relative aspect-[4/3] overflow-hidden rounded-[17px]">
-        {p.official ? <OfficialHeader p={p} />
-          : pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+        {pic ? <img src={pic} alt="" loading="lazy" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+          : p.official ? <OfficialHeader p={p} />
           : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900 text-5xl">{p.emoji}</span>}
         {!past && left <= 0 ? <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-md">Full</span>
           : !past && left <= 5 ? <span className="absolute right-2 top-2 rounded-full bg-crimson-600 px-2 py-0.5 text-[11px] font-semibold text-white">{left} left</span> : null}
@@ -115,11 +115,11 @@ export function EventCard({ p, i = 0, open = {}, action, past = false }) {
 
 /* "Featured this week" slide: big, swipeable; the photo (student events) or the coloured header (official) fills it. */
 export function FeaturedSlide({ p, open = {}, action }) {
-  const pic = p.official ? null : p.cover || p.logo;
+  const pic = p.cover || p.logo;
   return (
     <article {...open} className="u-keep u-card group relative isolate flex h-60 w-[84%] shrink-0 cursor-pointer snap-start flex-col justify-end overflow-hidden rounded-3xl p-4 text-white shadow-lg sm:h-64 sm:w-[22rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson-400">
       <div className="u-shimmer absolute inset-0 -z-10">
-        {p.official ? <OfficialHeader p={p} big /> : pic && <img src={pic} alt="" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />}
+        {!pic && p.official ? <OfficialHeader p={p} big /> : pic && <img src={pic} alt="" decoding="async" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />}
       </div>
       <span className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/35 to-transparent" aria-hidden="true" />
       <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide backdrop-blur-md ${p.official ? "bg-white/90 text-sky-800" : "bg-white/90 text-crimson-700"}`}>{p.official ? "Official UOWD" : "Student event"}</span>
