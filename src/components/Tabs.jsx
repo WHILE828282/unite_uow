@@ -27,10 +27,10 @@ export function Tabs({ tabs, tab, changeTab, user, bookings, myEventItems, sessi
 }
 
 /* Phones: Telegram-style floating bar at the bottom (thumb reach), plus a separate round profile button.
-   One lens sits under the open tab: a soft capsule at rest, a bigger clear glass while it moves. It is driven by a
-   small spring (requestAnimationFrame, transform only), so it is smooth, can be interrupted at any moment and always
-   settles: tap a tab and it glides there; hold and slide along the bar and it follows the finger, letting go opens
-   the tab under it. Nothing changes on touch-down, so a tap is a first-time click on iOS. */
+   One lens sits under the open tab: a soft capsule at rest, a clear glass bubble while it moves. A tap moves it with
+   a CSS transition, which the GPU runs even while the new page is being drawn (so it never stutters); sliding the
+   finger moves it straight under the finger and letting go opens the tab under it. Nothing changes on touch-down,
+   so a tap is a first-time click on iOS. */
 const NAV_ICON = { home: "home", clubs: "trophy", parties: "party", schedule: "calendar", tickets: "ticket" };
 
 export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
@@ -45,69 +45,63 @@ export function BottomNav({ tabs, tab, changeTab, user, bookings, side }) {
   }, [tab, pending]);
   const target = pending || tab;
 
-  // Spring state lives in a ref: x (left edge of the lens), velocity, where it's heading, and the lens width.
-  const sp = useRef({ x: null, v: 0, to: 0, w: 0, raf: 0, last: 0, drag: null, hot: null });
+  const st = useRef({ x: null, w: 0, drag: null, start: null, hot: null, timer: 0 });
   const rectOf = (k) => { const b = btns.current[k], box = bar.current; if (!b || !box) return null; const r = b.getBoundingClientRect(), o = box.getBoundingClientRect(); return { x: r.left - o.left, w: r.width }; };
-  const paint = () => { const s = sp.current, el = lens.current; if (el) { el.style.width = `${s.w}px`; el.style.transform = `translate3d(${s.x}px,0,0)`; } };
-  const setHot = (k) => { const s = sp.current; if (s.hot === k) return; s.hot = k; for (const [key] of items) { const b = btns.current[key]; if (b) b.classList.toggle("u-nav-hot", key === k); } };
-  const glass = (on) => { const el = lens.current; if (el) el.classList.toggle("u-lens-up", on); };
-  const step = (now) => {
-    const s = sp.current;
-    const dt = Math.min(0.032, (now - (s.last || now)) / 1000) || 0.016;
-    s.last = now;
-    if (!s.drag) {
-      // Critically-ish damped spring with a touch of bounce.
-      const a = 520 * (s.to - s.x) - 34 * s.v;
-      s.v += a * dt; s.x += s.v * dt;
-      if (Math.abs(s.to - s.x) < 0.4 && Math.abs(s.v) < 8) { s.x = s.to; s.v = 0; paint(); glass(false); setHot(null); s.raf = 0; s.last = 0; return; }
-    }
-    paint();
-    s.raf = requestAnimationFrame(step);
+  const put = (x, w) => { const el = lens.current; if (!el) return; st.current.x = x; if (w) { st.current.w = w; el.style.width = `${w}px`; } el.style.transform = `translate3d(${x}px,0,0)`; };
+  const setHot = (k) => { const s = st.current; if (s.hot === k) return; s.hot = k; for (const [key] of items) { const b = btns.current[key]; if (b) b.classList.toggle("u-nav-hot", key === k); } };
+  // Show the glass while moving, then fold back into the capsule.
+  const pulse = (ms = 380) => {
+    const el = lens.current, s = st.current;
+    if (!el) return;
+    el.classList.add("u-lens-up");
+    clearTimeout(s.timer);
+    s.timer = setTimeout(() => { if (!s.drag) { el.classList.remove("u-lens-up"); setHot(null); } }, ms);
   };
-  const run = () => { const s = sp.current; if (!s.raf) { s.last = 0; s.raf = requestAnimationFrame(step); } };
   const moveTo = (k, animate) => {
-    const r = rectOf(k), s = sp.current;
-    if (!r) return;
-    s.to = r.x; s.w = r.w;
-    if (s.x === null || !animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { s.x = r.x; s.v = 0; paint(); return; }
-    if (Math.abs(s.to - s.x) > 1) { glass(true); setHot(k); run(); }
+    const r = rectOf(k), el = lens.current, s = st.current;
+    if (!r || !el) return;
+    const far = s.x !== null && Math.abs(r.x - s.x) > 1;
+    el.classList.toggle("u-lens-still", !animate || s.x === null);
+    put(r.x, r.w);
+    if (animate && far) { setHot(k); pulse(); }
   };
   useLayoutEffect(() => { moveTo(target, true); }, [target, items.length]); // eslint-disable-line
   useEffect(() => {
     const re = () => moveTo(tab, false);
     window.addEventListener("resize", re);
-    return () => { window.removeEventListener("resize", re); };
+    return () => window.removeEventListener("resize", re);
   }, [tab]); // eslint-disable-line
-  useEffect(() => () => cancelAnimationFrame(sp.current.raf), []);
+  useEffect(() => () => clearTimeout(st.current.timer), []);
 
   const go = (k) => { if (k === tab) { window.scrollTo({ top: 0, behavior: "smooth" }); return; } setPending(k); requestAnimationFrame(() => requestAnimationFrame(() => changeTab(k))); };
 
   const tabAt = (x) => { for (const [k] of items) { const b = btns.current[k]; if (!b) continue; const r = b.getBoundingClientRect(); if (x >= r.left && x <= r.right) return k; } return null; };
-  const onTouchStart = (e) => { sp.current.drag = null; if (e.touches.length === 1) sp.current.start = e.touches[0].clientX; };
+  const onTouchStart = (e) => { st.current.drag = null; st.current.start = e.touches.length === 1 ? e.touches[0].clientX : null; };
   const onTouchMove = (e) => {
-    const s = sp.current, box = bar.current;
-    if (!box || s.start == null) return;
+    const s = st.current, box = bar.current, el = lens.current;
+    if (!box || !el || s.start == null) return;
     const x = e.touches[0].clientX;
     if (!s.drag) {
       if (Math.abs(x - s.start) < 8) return;
       s.drag = { k: null };
       box.classList.add("u-dragging");
-      glass(true); run();
+      el.classList.add("u-lens-up", "u-lens-still");
+      clearTimeout(s.timer);
     }
     const o = box.getBoundingClientRect();
-    s.x = Math.max(0, Math.min(box.clientWidth - s.w, x - o.left - s.w / 2)); s.v = 0;
+    put(Math.max(0, Math.min(box.clientWidth - s.w, x - o.left - s.w / 2)));
     const k = tabAt(x);
     if (k && k !== s.drag.k) { s.drag.k = k; setHot(k); if (navigator.vibrate) { try { navigator.vibrate(4); } catch (err) { /* ignore */ } } }
   };
   const onTouchEnd = () => {
-    const s = sp.current, d = s.drag;
+    const s = st.current, d = s.drag, el = lens.current;
     s.drag = null; s.start = null;
     if (bar.current) bar.current.classList.remove("u-dragging");
-    if (!d) return;
-    const k = d.k || tab;
-    const r = rectOf(k);
-    if (r) { s.to = r.x; s.w = r.w; }
-    run();
+    if (!d || !el) return;
+    const k = d.k || tab, r = rectOf(k);
+    el.classList.remove("u-lens-still");
+    if (r) put(r.x, r.w);
+    pulse(320);
     if (k !== tab) go(k);
   };
 
