@@ -382,25 +382,23 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-nav-item:active { transform: none; }
 .u-nav-icon { display: block; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .u-nav-item:active .u-nav-icon { transform: scale(0.9); }
-/* The lens: positioned by translateX (GPU only), a capsule at rest, a round magnifying glass while it moves. */
-.u-tglens { position: absolute; left: 0; z-index: 2; pointer-events: none; will-change: transform; transition: transform 0.42s cubic-bezier(0.3, 1.35, 0.45, 1); }
-.u-tglens.u-lens-drag { transition: none; }
-.u-tglens-cap { position: absolute; border-radius: 9999px; background: rgba(15, 23, 42, 0.07); transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); }
-.u-dark .u-tglens-cap { background: rgba(255, 255, 255, 0.12); }
-.u-tglens-glass {
-  position: absolute; inset: 0; overflow: hidden; border-radius: 9999px; opacity: 0; transform: scale(0.72, 0.6);
-  background: var(--lens-bg);
-  box-shadow: inset 0 0 0 1.25px rgba(255, 255, 255, 0.5), inset 0 3px 6px rgba(255, 255, 255, 0.22), inset 0 -4px 8px rgba(0, 0, 0, 0.35), 0 10px 24px -8px rgba(0, 0, 0, 0.6);
-  transition: opacity 0.16s ease, transform 0.38s cubic-bezier(0.3, 1.45, 0.5, 1);
+/* The lens: moved by a JS spring (transform only). At rest a soft capsule; while moving a clear glass bubble that
+   bulges past the bar, and the icon under it grows a little, like a magnifier. */
+.u-navlens { position: absolute; left: 0; top: 5px; bottom: 5px; z-index: 0; border-radius: 9999px; pointer-events: none; will-change: transform; }
+.u-navlens::before, .u-navlens::after { content: ""; position: absolute; inset: 0; border-radius: inherit; transition: opacity 0.18s ease, transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.u-navlens::before { background: rgba(15, 23, 42, 0.07); }
+.u-dark .u-navlens::before { background: rgba(255, 255, 255, 0.12); }
+.u-navlens::after {
+  opacity: 0; transform: scale(1);
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.1));
+  box-shadow: inset 0 0 0 1.25px rgba(255, 255, 255, 0.55), inset 0 -3px 6px rgba(0, 0, 0, 0.25), 0 8px 20px -8px rgba(0, 0, 0, 0.55);
 }
-.u-light .u-tglens-glass { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09), inset 0 3px 6px rgba(255, 255, 255, 0.9), inset 0 -3px 6px rgba(0, 0, 0, 0.06), 0 10px 24px -10px rgba(0, 0, 0, 0.3); }
-.u-tglens-glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: radial-gradient(120% 70% at 50% 0%, rgba(255, 255, 255, 0.16), transparent 55%), radial-gradient(90% 60% at 50% 110%, rgba(255, 255, 255, 0.08), transparent 60%); }
-.u-tglens-copy { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform 0.42s cubic-bezier(0.3, 1.35, 0.45, 1); }
-.u-lens-drag .u-tglens-copy { transition: none; }
-.u-tglens.u-lens-up .u-tglens-glass { opacity: 1; transform: none; }
-.u-tglens.u-lens-up .u-tglens-cap { opacity: 0; transform: scale(1.15); }
-@media (prefers-reduced-motion: reduce) { .u-tglens, .u-tglens-copy, .u-tglens-glass, .u-tglens-cap, .u-nav-icon { transition: none; } }
+.u-light .u-navlens::after { background: radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.6)); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.3); }
+.u-navlens.u-lens-up::before { opacity: 0; }
+.u-navlens.u-lens-up::after { opacity: 1; transform: scale(1.14, 1.36); }
+.u-nav-hot .u-nav-icon { transform: scale(1.2) translateY(-1px); }
+.u-nav-hot { color: var(--nav-accent); }
+@media (prefers-reduced-motion: reduce) { .u-navlens::before, .u-navlens::after, .u-nav-icon { transition: none; } }
 /* Light theme: photo placeholders are a soft grey, not black. */
 .u-light .u-shimmer { background-color: #e5e5ea; }
 /* Checkboxes: a clear outline in dark mode (filled crimson once ticked). */
@@ -408,3 +406,5 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Inside sheets (which are #1c1c1e themselves) fields need a lighter fill to be seen. */
 .u-dark.u-dark .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #2c2c2e; }
 .u-light.u-light .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #eeeef2; }
+/* While sliding only the tab under the finger is highlighted. */
+.u-dragging .u-nav-item.u-nav-on:not(.u-nav-hot) { color: var(--nav-on); }
