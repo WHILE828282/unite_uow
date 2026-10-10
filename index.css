@@ -382,28 +382,25 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .u-nav-item:active { transform: none; }
 .u-nav-icon { display: block; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .u-nav-item:active .u-nav-icon { transform: scale(0.9); }
-/* The lens. Position: a GPU transition on transform (smooth even while the page redraws); none while dragging.
-   Look: a soft capsule at rest; while moving a clear glass bubble a bit bigger than the bar, with a bright rim, and
-   the icon under it grows like under a magnifier. Only opacity and transform ever animate. */
-.u-navlens { position: absolute; left: 0; top: 5px; bottom: 5px; z-index: 0; border-radius: 9999px; pointer-events: none; will-change: transform;
-  transition: transform 0.38s cubic-bezier(0.32, 1.28, 0.45, 1), width 0.25s ease; }
-.u-navlens.u-lens-still { transition: none; }
-.u-navlens::before, .u-navlens::after { content: ""; position: absolute; border-radius: 9999px; }
-.u-navlens::before { inset: 0; background: rgba(15, 23, 42, 0.07); transition: opacity 0.2s ease; }
-.u-dark .u-navlens::before { background: rgba(255, 255, 255, 0.13); }
-.u-navlens::after {
-  inset: -9px -7px; opacity: 0; transform: scale(0.82);
-  background: radial-gradient(110% 75% at 50% 8%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.03) 60%, rgba(255, 255, 255, 0.07));
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), inset 0 2px 1px rgba(255, 255, 255, 0.35), inset 0 -2px 4px rgba(0, 0, 0, 0.3), 0 6px 18px -6px rgba(0, 0, 0, 0.55);
-  transition: opacity 0.16s ease, transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
-}
-.u-light .u-navlens::after { background: radial-gradient(110% 75% at 50% 8%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.75)); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), inset 0 2px 1px #fff, 0 6px 18px -8px rgba(0, 0, 0, 0.3); }
-.u-navlens.u-lens-up::before { opacity: 0; }
-.u-navlens.u-lens-up::after { opacity: 1; transform: none; }
-.u-nav-icon { will-change: transform; }
-.u-nav-hot .u-nav-icon { transform: scale(1.18) translateY(-1px); }
-.u-nav-hot { color: var(--nav-accent); }
-@media (prefers-reduced-motion: reduce) { .u-navlens, .u-navlens::before, .u-navlens::after, .u-nav-icon { transition: none; } }
+/* Telegram-style lens (see Tabs.jsx). The lens is an opaque pill (so the white row under it is hidden) holding the
+   accent copy of the tabs; position by transform, size by width/height, all on one spring-like curve (0.4 s). */
+.u-glass-bar { --lens-rest: #ececef; --lens-lift: #f6f6f8; }
+.u-dark .u-glass-bar { --lens-rest: #303034; --lens-lift: #3a3a3f; }
+.u-tgl-item { color: var(--nav-on); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.u-tgl-item:active { transform: none; }
+.u-tgl-accent { color: var(--nav-accent); }
+.u-tgl-lens { position: absolute; left: 0; top: 0; z-index: 2; overflow: hidden; border-radius: 9999px; pointer-events: none;
+  background: var(--lens-rest); will-change: transform; transition: none; }
+.u-tgl-lens.u-tgl-lifted { background: var(--lens-lift); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 16px -6px rgba(0, 0, 0, 0.55); }
+.u-light .u-tgl-lens.u-tgl-lifted { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 6px 16px -8px rgba(0, 0, 0, 0.28); }
+.u-tgl-copy { position: absolute; left: 0; top: 0; will-change: transform; transition: none; }
+.u-tgl-anim { transition: transform 0.4s cubic-bezier(0.28, 1.22, 0.42, 1), width 0.4s cubic-bezier(0.28, 1.22, 0.42, 1), height 0.4s cubic-bezier(0.28, 1.22, 0.42, 1), background-color 0.25s ease, box-shadow 0.25s ease !important; }
+.u-tgl-copy .u-tgl-item { transition: transform 0.4s cubic-bezier(0.28, 1.22, 0.42, 1); }
+.u-tgl-copy.u-tgl-lifted .u-tgl-item { transform: scale(1.15); }
+.u-nav-icon { display: block; }
+@keyframes uNavPop { 0% { transform: scale(1); } 35% { transform: scale(0.86); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.u-nav-pop { animation: uNavPop 0.42s cubic-bezier(0.3, 1.2, 0.5, 1); }
+@media (prefers-reduced-motion: reduce) { .u-tgl-anim, .u-tgl-copy .u-tgl-item { transition: none !important; } .u-nav-pop { animation: none; } }
 /* Light theme: photo placeholders are a soft grey, not black. */
 .u-light .u-shimmer { background-color: #e5e5ea; }
 /* Checkboxes: a clear outline in dark mode (filled crimson once ticked). */
@@ -411,7 +408,5 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Inside sheets (which are #1c1c1e themselves) fields need a lighter fill to be seen. */
 .u-dark.u-dark .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #2c2c2e; }
 .u-light.u-light .u-sheet-h :where(input:not(.u-keep):not([type=checkbox]):not([type=radio]), select:not(.u-keep), textarea:not(.u-keep)) { background-color: #eeeef2; }
-/* While sliding only the tab under the finger is highlighted. */
-.u-dragging .u-nav-item.u-nav-on:not(.u-nav-hot) { color: var(--nav-on); }
 /* No live blur under the bottom bar: it was the most expensive thing while scrolling on iPhones. */
 .u-glass-bar { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
